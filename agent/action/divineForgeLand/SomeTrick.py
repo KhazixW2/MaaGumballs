@@ -170,8 +170,11 @@ class PoolTrick_Test(CustomAction):
                     "recognition": "TemplateMatch",
                     "template": [
                         "fight/divineForgeLand/Firegod.png",
+                        "fight/divineForgeLand/Firegod_time_stop.png",
                         "fight/divineForgeLand/RedHatBody.png",
+                        "fight/divineForgeLand/RedHatBody_stop.png",
                         "fight/divineForgeLand/Weapon.png",
+                        "fight/divineForgeLand/Weapon_time_stop.png",
                     ],
                     "roi": [8, 131, 710, 997],
                     "timeout": 3000,
@@ -298,8 +301,11 @@ class SunlightTrick_Test(CustomAction):
                     "recognition": "TemplateMatch",
                     "template": [
                         "fight/divineForgeLand/Firegod.png",
+                        "fight/divineForgeLand/Firegod_time_stop.png",
                         "fight/divineForgeLand/RedHatBody.png",
+                        "fight/divineForgeLand/RedHatBody_stop.png",
                         "fight/divineForgeLand/Weapon.png",
+                        "fight/divineForgeLand/Weapon_time_stop.png",
                     ],
                     "roi": [8, 131, 710, 997],
                     "timeout": 3000,

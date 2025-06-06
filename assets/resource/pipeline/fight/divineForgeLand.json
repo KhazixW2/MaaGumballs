@@ -65,7 +65,10 @@
     },
     "ConfirmPutonArmor": {
         "recognition": "TemplateMatch",
-        "template": "fight/divineForgeLand/Armor_2.png",
+        "template": [
+            "fight/divineForgeLand/Armor_2.png",
+            "fight/divineForgeLand/Armor_2_time_stop.png"
+        ],
         "roi": [
             226,
             73,
@@ -379,7 +382,8 @@
             814
         ],
         "template": [
-            "fight/divineForgeLand/Pool.png"
+            "fight/divineForgeLand/Pool.png",
+            "fight/divineForgeLand/Pool_time_stop.png"
         ],
         "action": "DoNothing",
         "threshold": 0.8,
@@ -413,7 +417,10 @@
     },
     "OpenArmorPage": {
         "recognition": "TemplateMatch",
-        "template": "fight/divineForgeLand/Armor_1.png",
+        "template": [
+            "fight/divineForgeLand/Armor_1.png",
+            "fight/divineForgeLand/Armor_1_time_stop.png"
+        ],
         "roi": [
             17,
             832,
@@ -645,7 +652,9 @@
         ],
         "template": [
             "fight/divineForgeLand/BlueHatBody.png",
-            "fight/divineForgeLand/BrokenWeapon.png"
+            "fight/divineForgeLand/BlueHatBody_time_stop.png",
+            "fight/divineForgeLand/BrokenWeapon.png",
+            "fight/divineForgeLand/BrokenWeapon_time_stop.png"
         ],
         "action": "DoNothing",
         "threshold": 0.8,
