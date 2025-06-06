@@ -218,29 +218,33 @@
         "action": "Click",
         "post_delay": 1000,
         "threshold": 0.8,
-        "timeout": 3000,
         "next": "OpenEquipmentStovePage_Next"
     },
     "OpenEquipmentStovePage_Next": {
         "recognition": "TemplateMatch",
-        "template": "fight/divineForgeLand/Equipment_Stove.png",
+        "template": "fight/divineForgeLand/AddEquipment.png",
         "roi": [
-            14,
-            247,
-            691,
-            748
-        ],
-        "target_offset": [
-            200,
-            -25,
-            0,
-            0
+            24,
+            302,
+            669,
+            670
         ],
         "action": "Click",
         "pre_delay": 500,
         "post_delay": 1000,
-        "threshold": 0.8,
-        "timeout": 3000
+        "threshold": 0.8
+    },
+    "GetCurrentHealth": {
+        "recognition": "OCR",
+        "expected": "\\d+",
+        "action": "DoNothing",
+        "roi": [
+            7,
+            1183,
+            124,
+            59
+        ],
+        "post_delay": 1000
     },
     "GoToTheRightestPage": {
         "recognition": "TemplateMatch",
@@ -305,45 +309,40 @@
         "recognition_doc": "检测攻击或者血量增加",
         "expected": [
             "攻击",
-            "魔力",
-            "生命值",
             "魔法值"
         ],
         "roi": [
-            158,
-            1013,
-            331,
-            203
+            184,
+            1041,
+            340,
+            205
         ],
         "action": "DoNothing",
         "timeout": 2500
     },
     "Click_Select_Equipment": {
-        "recognition": "TemplateMatch",
-        "template": "fight/divineForgeLand/SelectEquipment.png",
+        "recognition": "OCR",
+        "expected": "选择",
         "roi": [
-            3,
-            542,
-            716,
-            505
+            33,
+            625,
+            656,
+            402
         ],
         "action": "Click",
-        "post_delay": 1000,
-        "threshold": 0.8,
-        "timeout": 3000
+        "post_delay": 1000
     },
     "Click_Smelt_Equipment": {
-        "recognition": "TemplateMatch",
-        "template": "fight/divineForgeLand/SmeltEquipment.png",
+        "recognition": "OCR",
+        "expected": "熔炼装备",
         "roi": [
-            122,
-            777,
-            514,
-            168
+            36,
+            763,
+            670,
+            221
         ],
         "action": "Click",
-        "threshold": 0.8,
-        "timeout": 3000
+        "interrupt": "Click_Select_Equipment"
     },
     "AddLowLevelEquipment": {
         "recognition": "TemplateMatch",
@@ -355,9 +354,7 @@
             64
         ],
         "action": "Click",
-        "threshold": 0.8,
-        "post_delay": 500,
-        "timeout": 3000,
+        "post_delay": 1000,
         "target": [
             91,
             677,

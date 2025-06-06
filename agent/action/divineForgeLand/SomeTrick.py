@@ -478,12 +478,16 @@ class Find_Stove_Sequence_Test(CustomAction):
         context.run_task("GoToTheLeftestPage")
         for _ in range(page):
             context.run_task("GoToNextPage")
+
+        time.sleep(1)
         for _ in range(num):
 
             context.run_task("AddLowLevelEquipment")
-            context.run_task("Click_Select_Equipment")
-            context.run_task("Click_Smelt_Equipment")
+            checkpoint1 = context.run_task("Click_Select_Equipment")
+            checkpoint2 = context.run_task("Click_Smelt_Equipment")
             context.run_task("OpenEquipmentStovePage_Next")
+            if not checkpoint1.nodes and checkpoint2.nodes:
+                return CustomAction.RunResult(success=False)
         logger.info(f"填入低星装备{num}个成功")
 
     def get_base_stove_sequence(self, context: Context, stove_sequence: list = None):
@@ -495,17 +499,25 @@ class Find_Stove_Sequence_Test(CustomAction):
                 logger.info("测序被停止")
                 return []
 
-            logger.info(f"第{i}次尝试")
+            atk_detail = context.run_task("GetCurrentHealth")
+            if atk_detail.nodes:
+                before_atk = atk_detail.nodes[0].recognition.best_result.text
+                logger.info(f"当前攻击{before_atk}")
             find_equipment_detail = self.find_and_click_equipment_from_right(context, 6)
             if find_equipment_detail.nodes:
                 # 找到装备并且点击，进入后续操作，点击选择--点击熔炼装备--判断是否出现天下布武
                 context.run_task("Click_Select_Equipment")
                 context.run_task("Click_Smelt_Equipment")
-                if context.run_task("Find_Stove_Sequence_Check").nodes:
-                    # 出现天下布武,记录
-                    logger.info(f"第{i}次出现天下布武")
-                    stove_sequence[i] = 6
                 context.run_task("OpenEquipmentStovePage_Next")
+
+                atk_detail = context.run_task("GetCurrentHealth")
+                if atk_detail.nodes:
+                    after_atk = atk_detail.nodes[0].recognition.best_result.text
+                    logger.info(f"熔炼装备之后 攻击{after_atk}")
+                if after_atk != before_atk:
+                    logger.info(f"第{i}次攻击变动")
+                    stove_sequence[i] = 6
+
             else:
                 # 没找到装备，进入后续操作，点击返回--点击返回--小SL--回到之前的状态--根据当前轮次填入一定数量的低星装备--找到装备--点击选择--点击熔炼装备--判断是否出现天下布武
                 context.run_task("BackText")
@@ -516,6 +528,10 @@ class Find_Stove_Sequence_Test(CustomAction):
                 context.run_task("OpenEquipmentStovePage")
                 # 这里要填入i次低星装备，填入低星装备之后正常填入高星装备
                 self.add_low_level_equipment(context, i)
+                atk_detail = context.run_task("GetCurrentHealth")
+                if atk_detail.nodes:
+                    before_atk = atk_detail.nodes[0].recognition.best_result.text
+                    logger.info(f"当前攻击{before_atk}")
                 find_equipment_detail = self.find_and_click_equipment_from_right(
                     context, 6
                 )
@@ -523,10 +539,15 @@ class Find_Stove_Sequence_Test(CustomAction):
                     # 找到装备并且点击，进入后续操作，点击选择--点击熔炼装备--判断是否出现天下布武
                     context.run_task("Click_Select_Equipment")
                     context.run_task("Click_Smelt_Equipment")
-                    if context.run_task("Find_Stove_Sequence_Check").nodes:
-                        # 出现天下布武,记录
-                        stove_sequence[i] = 6
                     context.run_task("OpenEquipmentStovePage_Next")
+
+                    atk_detail = context.run_task("GetCurrentHealth")
+                    if atk_detail.nodes:
+                        after_atk = atk_detail.nodes[0].recognition.best_result.text
+                        logger.info(f"熔炼装备之后 攻击{after_atk}")
+                    if after_atk != before_atk:
+                        logger.info(f"第{i}次攻击变动")
+                        stove_sequence[i] = 6
         # 恢复现场
         logger.info("恢复现场")
         context.run_task("BackText")
@@ -536,72 +557,100 @@ class Find_Stove_Sequence_Test(CustomAction):
 
         return stove_sequence
 
-    def upgrade_stove_sequence(
-        self, context: Context, low_star_seq: list = None, sun_star_seq: list = None
-    ):
-        context.run_task("ConfirmPutonArmor")
-        context.run_task("OpenEquipmentStovePage")
-        assert len(low_star_seq) >= len(sun_star_seq)
-        for i in range(len(sun_star_seq)):
-            if context.tasker.stopping:
-                logger.info("测序被停止")
-                return [], []
+    def upgrade_stove_sequence(self, context: Context, stove_sequence: list = None):
+        stove_sequence_copy = stove_sequence.copy()
 
-            # 当前轮次状态
-            logger.info(
-                f"当前目标: 轮次为{sum(low_star_seq[: i + 1]) + i},日光装备为{sun_star_seq[i]}星装备"
-            )
-            # 先填入低星装备
-            self.add_low_level_equipment(context, low_star_seq[i])
+        for star in range(1, 4):
+            low_star_num = 0
+            context.run_task("ConfirmPutonArmor")
+            context.run_task("OpenEquipmentStovePage")
+            for i in range(len(stove_sequence)):
+                if context.tasker.stopping:
+                    logger.info("测序被停止")
+                    return [], []
+                if stove_sequence[i] == 0:
+                    # 如果当前序列为0，跳过
+                    low_star_num += 1
 
-            # 进入后续操作，点击选择--点击熔炼装备--判断是否出现天下布武
-            find_equipment_detail = self.find_and_click_equipment_from_right(
-                context, sun_star_seq[i] - 1
-            )
-            if find_equipment_detail.nodes:
-                context.run_task("Click_Select_Equipment")
-                context.run_task("Click_Smelt_Equipment")
-                if context.run_task("Find_Stove_Sequence_Check").nodes:
-                    # 出现天下布武,记录
+                else:
+                    # 如果当前序列不为0，说明需要进行升级操作
+                    logger.info(f"第{i}次尝试")
+                    # 填入低星装备
+                    self.add_low_level_equipment(context, low_star_num)
+                    low_star_num = 0
+                    atk_detail = context.run_task("GetCurrentHealth")
+                    if atk_detail.nodes:
+                        before_atk = atk_detail.nodes[0].recognition.best_result.text
+                        logger.info(f"当前攻击{before_atk}")
 
-                    logger.info(
-                        f"当前轮次为{sum(low_star_seq[: i + 1]) + i},{sun_star_seq[i]}星装备更换为{sun_star_seq[i]-1}星装备"
+                    # 进入后续操作，点击选择--点击熔炼装备--判断是否出现天下布武
+                    find_equipment_detail = self.find_and_click_equipment_from_right(
+                        context, stove_sequence[i] - star
                     )
-                    sun_star_seq[i] = sun_star_seq[i] - 1
-                context.run_task("OpenEquipmentStovePage_Next")
-            else:
-                context.run_task("BackText")
-                context.run_task("BackText")
-                context.run_task("LogoutGame")
-                context.run_task("ReturnMaze")
-                context.run_task("ConfirmPutonArmor")
-                context.run_task("OpenEquipmentStovePage")
+                    if find_equipment_detail.nodes:
+                        context.run_task("Click_Select_Equipment")
+                        context.run_task("Click_Smelt_Equipment")
+                        context.run_task("OpenEquipmentStovePage_Next")
 
-                # 这里要计算填入的装备数量：
-                need_add = sum(low_star_seq[: i + 1]) + i
-                logger.info(f"需要填入低星装备{need_add}个")
-                self.add_low_level_equipment(context, need_add)
-                find_equipment_detail = self.find_and_click_equipment_from_right(
-                    context, sun_star_seq[i] - 1
-                )
-                if find_equipment_detail.nodes:
-                    context.run_task("Click_Select_Equipment")
-                    context.run_task("Click_Smelt_Equipment")
-                    if context.run_task("Find_Stove_Sequence_Check").nodes:
+                        atk_detail = context.run_task("GetCurrentHealth")
+                        if atk_detail.nodes:
+                            after_atk = atk_detail.nodes[0].recognition.best_result.text
+                            logger.info(f"熔炼装备之后 攻击{after_atk}")
+                        if after_atk != before_atk:
+                            logger.info(f"第{i}次攻击变动")
 
-                        # 出现天下布武,记录
-                        logger.info(
-                            f"当前轮次为{sum(low_star_seq[:i+1]) + i},{sun_star_seq[i]}星装备更换为{sun_star_seq[i]-1}星装备"
+                            logger.info(
+                                f"{stove_sequence[i]}星装备更换为{stove_sequence[i]-star}星装备"
+                            )
+                            stove_sequence_copy[i] = stove_sequence[i] - star
+                    else:
+                        context.run_task("BackText")
+                        context.run_task("BackText")
+                        context.run_task("LogoutGame")
+                        context.run_task("ReturnMaze")
+                        context.run_task("ConfirmPutonArmor")
+                        context.run_task("OpenEquipmentStovePage")
+
+                        self.add_low_level_equipment(context, i)
+                        low_star_num = 0
+                        atk_detail = context.run_task("GetCurrentHealth")
+                        if atk_detail.nodes:
+                            before_atk = atk_detail.nodes[
+                                0
+                            ].recognition.best_result.text
+                            logger.info(f"当前攻击{before_atk}")
+                        find_equipment_detail = (
+                            self.find_and_click_equipment_from_right(
+                                context, stove_sequence[i] - star
+                            )
                         )
-                        sun_star_seq[i] = sun_star_seq[i] - 1
-                    context.run_task("OpenEquipmentStovePage_Next")
-        # 恢复现场
-        logger.info("恢复现场")
-        context.run_task("BackText")
-        context.run_task("BackText")
-        context.run_task("LogoutGame")
-        context.run_task("ReturnMaze")
-        return low_star_seq, sun_star_seq
+                        if find_equipment_detail.nodes:
+                            context.run_task("Click_Select_Equipment")
+                            context.run_task("Click_Smelt_Equipment")
+                            context.run_task("OpenEquipmentStovePage_Next")
+
+                            atk_detail = context.run_task("GetCurrentHealth")
+                            if atk_detail.nodes:
+                                after_atk = atk_detail.nodes[
+                                    0
+                                ].recognition.best_result.text
+                                logger.info(f"熔炼装备之后 攻击{after_atk}")
+                            if after_atk != before_atk:
+                                logger.info(f"第{i}次攻击变动")
+                                logger.info(
+                                    f"{stove_sequence[i]}星装备更换为{stove_sequence[i]-star}星装备"
+                                )
+                                stove_sequence_copy[i] = stove_sequence[i] - star
+
+            # 恢复现场
+            logger.info(stove_sequence_copy)
+            logger.info("恢复现场")
+            context.run_task("BackText")
+            context.run_task("BackText")
+            context.run_task("LogoutGame")
+            context.run_task("ReturnMaze")
+
+        return stove_sequence_copy
 
     # 执行函数
     def run(
@@ -623,28 +672,18 @@ class Find_Stove_Sequence_Test(CustomAction):
             f"本次101序列中共有{count}个日光, 目标为{target_sunlight_para}个日光"
         )
         if count >= target_sunlight_para:
-
-            low_star_seq, sun_star_seq = self.split_zero_sequence_advanced(
-                stove_sequence
+            logger.info("本次101序列满足目标日光要求")
+            after_update_stove_sequence = self.upgrade_stove_sequence(
+                context, stove_sequence
             )
-            logger.info(low_star_seq)
-            logger.info(sun_star_seq)
-            low_star_seq, sun_star_seq = self.upgrade_stove_sequence(
-                context, low_star_seq, sun_star_seq
+            logger.info(f"迭代后的101序列为: {after_update_stove_sequence}")
+            # 格式化
+            low_star_list, sun_list = self.split_zero_sequence_advanced(
+                after_update_stove_sequence
             )
-            logger.info(low_star_seq)
-            logger.info(sun_star_seq)
-            low_star_seq, sun_star_seq = self.upgrade_stove_sequence(
-                context, low_star_seq, sun_star_seq
-            )
-            logger.info(low_star_seq)
-            logger.info(sun_star_seq)
-            low_star_seq, sun_star_seq = self.upgrade_stove_sequence(
-                context, low_star_seq, sun_star_seq
-            )
-            logger.info(low_star_seq)
-            logger.info(sun_star_seq)
-
-            if low_star_seq == [] and sun_star_seq == []:
-                return CustomAction.RunResult(success=False)
+            logger.info(f"垫子序列为: {low_star_list}")
+            logger.info(f"日光装备等级序列为: {sun_list}")
+        else:
+            logger.info("本次101序列不满足目标日光要求")
+            return CustomAction.RunResult(success=False)
         return CustomAction.RunResult(success=True)
