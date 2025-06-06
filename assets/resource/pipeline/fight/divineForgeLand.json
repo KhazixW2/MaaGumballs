@@ -7,34 +7,10 @@
         "post_delay": 1000,
         "timeout": 200
     },
-    "DisconnectInternet": {
-        "recognition": "TemplateMatch",
-        "template": [
-            "utils/DisconnectInternet.png"
-        ],
-        "roi": [
-            484,
-            1046,
-            235,
-            233
-        ],
-        "action": "Click",
-        "post_delay": 200,
-        "doc": "这里要快",
-        "next": "Opengumballs_Auto"
-    },
     "Opengumballs_Auto": {
+        "post_delay": 1000,
         "action": "StartApp",
         "package": "com.leiting.gumballs.leiting"
-    },
-    "CheckClosedDoor": {
-        "recognition": "TemplateMatch",
-        "template": [
-            "utils/ClosedDoor.png"
-        ],
-        "action": "DoNothing",
-        "threshold": 0.8,
-        "timeout": 5000
     },
     "OpenEquipmentPackage": {
         "recognition": "TemplateMatch",
@@ -50,80 +26,6 @@
         ],
         "post_delay": 1000,
         "threshold": 0.8
-    },
-    "Use_Earthquake": {
-        "recognition": "TemplateMatch",
-        "template": [
-            "utils/skill_pack.png"
-        ],
-        "action": "Click",
-        "threshold": 0.8,
-        "post_delay": 1000,
-        "roi": [
-            526,
-            1113,
-            193,
-            166
-        ],
-        "next": "ClickEarthMagicPage"
-    },
-    "ClickEarthMagicPage": {
-        "recognition": "OCR",
-        "expected": [
-            "魔法"
-        ],
-        "action": "Click",
-        "roi": [
-            201,
-            286,
-            224,
-            89
-        ],
-        "target": [
-            593,
-            504,
-            86,
-            72
-        ],
-        "post_delay": 1000,
-        "next": "ClickEarthMagic"
-    },
-    "ClickEarthMagic": {
-        "recognition": "OCR",
-        "expected": [
-            "地震术"
-        ],
-        "roi": [
-            52,
-            468,
-            521,
-            103
-        ],
-        "action": "Click",
-        "threshold": 0.8,
-        "post_delay": 1000,
-        "next": "CastEarthMagic"
-    },
-    "CastEarthMagic": {
-        "recognition": "OCR",
-        "expected": [
-            "地震术"
-        ],
-        "action": "Click",
-        "roi": [
-            8,
-            974,
-            711,
-            187
-        ],
-        "threshold": 0.8,
-        "post_delay": 1000,
-        "target": [
-            593,
-            504,
-            86,
-            72
-        ]
     },
     "ClickEquipmentChest": {
         "recognition": "TemplateMatch",
@@ -245,64 +147,6 @@
             59
         ],
         "post_delay": 1000
-    },
-    "GoToTheRightestPage": {
-        "recognition": "TemplateMatch",
-        "template": "fight/divineForgeLand/RightButton.png",
-        "roi": [
-            0,
-            765,
-            720,
-            108
-        ],
-        "action": "Click",
-        "post_delay": 100,
-        "threshold": 0.8,
-        "timeout": 3000,
-        "next": "GoToTheRightestPage"
-    },
-    "GoToTheLeftestPage": {
-        "recognition": "TemplateMatch",
-        "template": "fight/divineForgeLand/LeftButton.png",
-        "roi": [
-            0,
-            765,
-            720,
-            108
-        ],
-        "action": "Click",
-        "post_delay": 100,
-        "threshold": 0.8,
-        "timeout": 3000,
-        "next": "GoToTheLeftestPage"
-    },
-    "GoToNextPage": {
-        "recognition": "TemplateMatch",
-        "template": "fight/divineForgeLand/RightButton.png",
-        "roi": [
-            0,
-            765,
-            720,
-            108
-        ],
-        "action": "Click",
-        "post_delay": 1000,
-        "threshold": 0.8,
-        "timeout": 3000
-    },
-    "GoToPreviousPage": {
-        "recognition": "TemplateMatch",
-        "template": "fight/divineForgeLand/LeftButton.png",
-        "roi": [
-            0,
-            765,
-            720,
-            108
-        ],
-        "action": "Click",
-        "post_delay": 1000,
-        "threshold": 0.8,
-        "timeout": 3000
     },
     "Find_Stove_Sequence_Check": {
         "recognition": "OCR",

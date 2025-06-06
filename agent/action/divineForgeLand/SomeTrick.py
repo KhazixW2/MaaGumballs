@@ -3,10 +3,32 @@ from maa.custom_action import CustomAction
 from maa.context import Context
 from maa.define import RecognitionDetail
 from utils import logger
+from action.Fight import FightUtils
 
 import time
 import re
 import json
+
+
+@AgentServer.custom_action("SaveLoad_little")
+class SaveLoad_little(CustomAction):
+    def run(
+        self, context: Context, argv: CustomAction.RunArg
+    ) -> CustomAction.RunResult:
+        img = context.tasker.controller.post_screencap().wait().get()
+        reco_inMaze = context.run_recognition("ConfirmEquipmentPack", img)
+        if reco_inMaze:
+            # 登出游戏
+            logger.info("登出游戏")
+            context.run_task("LogoutGame")
+
+            # 返回迷宫
+            logger.info("返回迷宫")
+            context.run_task("ReturnMaze")
+        else:
+            logger.warning("不在迷宫中，无需保存")
+
+        return CustomAction.RunResult(success=True)
 
 
 @AgentServer.custom_action("GoDownstairsTrick_Test")
@@ -51,7 +73,7 @@ class GoDownstairsTrick_Test(CustomAction):
         )
         context.run_task("BackText")
 
-        for i in range(30):
+        for i in range(101):
             if context.tasker.stopping:
                 logger.info("检测到停止任务, 开始退出agent")
                 return CustomAction.RunResult(success=False)
@@ -59,9 +81,8 @@ class GoDownstairsTrick_Test(CustomAction):
             logger.info(f"黑永恒第{i}次尝试")
             context.run_task("Save_Status")
             context.run_task("StartAppV2")
-            context.run_task("CheckDoor")
-            context.run_task("CheckClosedDoor")
-            context.run_task("Use_Earthquake")
+            context.run_task("Fight_OpenedDoor")
+            FightUtils.cast_magic("土", "地震术", context)
             context.run_task("KillChestMonster")
 
             logger.info("黑永恒 检查是否黑到目标装备")
@@ -458,7 +479,7 @@ class Find_Stove_Sequence_Test(CustomAction):
             equipment_level_to_action_name[equipment_level]
         )
         if not find_equipment_detail.nodes:
-            context.run_task("GoToTheRightestPage")
+            context.run_task("Bag_ToRightestPage")
 
         # 当前页找不到就往右往左找
         while not find_equipment_detail.nodes:
@@ -467,7 +488,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                 equipment_level_to_action_name[equipment_level]
             )
             if not find_equipment_detail.nodes:
-                previous_page_button_detail = context.run_task("GoToPreviousPage")
+                previous_page_button_detail = context.run_task("Bag_ToPrevPage")
                 # 如果找不到装备又没有上一页按钮则说明需要SL
                 if not previous_page_button_detail.nodes:
                     return find_equipment_detail
@@ -475,9 +496,9 @@ class Find_Stove_Sequence_Test(CustomAction):
         return find_equipment_detail
 
     def add_low_level_equipment(self, context: Context, num: int, page: int = 2):
-        context.run_task("GoToTheLeftestPage")
+        context.run_task("Bag_ToLeftestPage")
         for _ in range(page):
-            context.run_task("GoToNextPage")
+            context.run_task("Bag_ToNextPage")
 
         time.sleep(1)
         for _ in range(num):

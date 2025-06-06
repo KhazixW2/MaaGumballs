@@ -1,4 +1,13 @@
 {
+    "TitlePanel_Learnable": {
+        "next": [
+            "TitlePanel_Series"
+        ],
+        "interrupt": [
+            "TitlePanel_Open",
+            "BackText"
+        ]
+    },
     "TitlePanel_Open": {
         "recognition": "TemplateMatch",
         "template": "fight/UniversalUI/MazePackage.png",
@@ -31,19 +40,38 @@
         ],
         "action": "Click",
         "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "TitlePanel_Learnable_Next",
+            "TitlePanel_Learnable_Fnish"
+        ]
+    },
+    "TitlePanel_Learnable_Fnish": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            53,
+            843,
+            138,
+            152
+        ],
+        "template": [
+            "fight/UniversalUI/star_3.png"
+        ],
+        "action": "DoNothing",
+        "post_delay": 1000,
         "timeout": 2000
     },
-    "TitlePanel_Learnable": {
+    "TitlePanel_Learnable_Next": {
         "recognition": "TemplateMatch",
         "template": [
             "fight/UniversalUI/GreyStar.png",
             "fight/UniversalUI/Title_Learnable.png"
         ],
         "roi": [
-            52,
-            844,
-            621,
-            166
+            199,
+            875,
+            89,
+            84
         ],
         "threshold": 0.9,
         "order_by": "Score",
@@ -61,11 +89,7 @@
     "TitlePanel_TitleCheck_New": {
         "recognition": "OCR",
         "expected": [
-            "寻宝者",
-            "勘探家",
-            "锻造师",
-            "武器大师",
-            "大铸剑师"
+            "寻宝者"
         ],
         "roi": [
             79,
@@ -119,7 +143,6 @@
             489,
             149
         ],
-        "action": "StopTask",
         "post_delay": 1000,
         "timeout": 2000
     },
@@ -137,10 +160,7 @@
         ],
         "action": "DoNothing",
         "post_delay": 1000,
-        "timeout": 2000,
-        "next": [
-            "TitlePanel_Learnable"
-        ]
+        "timeout": 2000
     },
     "TitlePanel_TitleLearn_GetNewTitle": {
         "recognition": "OCR",
@@ -153,12 +173,6 @@
         ],
         "action": "Click",
         "post_delay": 1000,
-        "timeout": 2000,
-        "next": [
-            "TitlePanel_Learnable"
-        ],
-        "interrupt": [
-            "ConfirmButton"
-        ]
+        "timeout": 2000
     }
 }

@@ -15,17 +15,14 @@
         "recognition": "OCR",
         "expected": "炼金资源",
         "roi": [
-            223,
-            334,
-            275,
-            155
+            212,
+            126,
+            287,
+            918
         ],
-        "action": "Click",
-        "target": [
-            124,
-            802,
-            467,
-            112
+        "action": "DoNothing",
+        "next": [
+            "ConfirmButton"
         ],
         "post_delay": 1000,
         "timeout": 2000
@@ -154,6 +151,7 @@
         "package": "com.leiting.gumballs.leiting"
     },
     "StopGumballs": {
+        "post_delay": 1000,
         "action": "StopApp",
         "package": "com.leiting.gumballs.leiting"
     }

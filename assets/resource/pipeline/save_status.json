@@ -11,6 +11,22 @@
         "post_delay": 1000,
         "next": "DisconnectInternet"
     },
+    "DisconnectInternet": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "utils/DisconnectInternet.png"
+        ],
+        "roi": [
+            484,
+            1046,
+            235,
+            233
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "doc": "这里要快",
+        "next": "Opengumballs_Auto"
+    },
     "Save_Status": {
         "recognition": "TemplateMatch",
         "template": [
@@ -100,7 +116,28 @@
             131,
             121
         ],
-        "next": "LogoutGame_ClickSwitch"
+        "next": [
+            "LogoutGame_ClickSwitch"
+        ],
+        "interrupt": [
+            "LogoutGame_Swipe"
+        ]
+    },
+    "LogoutGame_Swipe": {
+        "action": "Swipe",
+        "begin": [
+            367,
+            931,
+            30,
+            30
+        ],
+        "end": [
+            354,
+            537,
+            30,
+            30
+        ],
+        "post_delay": 1000
     },
     "LogoutGame_ClickSwitch": {
         "recognition": "TemplateMatch",

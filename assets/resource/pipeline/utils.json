@@ -25,10 +25,10 @@
     "ConfirmButton": {
         "recognition": "OCR",
         "roi": [
-            28,
-            418,
-            675,
-            531
+            31,
+            186,
+            662,
+            872
         ],
         "expected": [
             "确定",

@@ -1,10 +1,8 @@
-from asyncio import tasks
-from math import log
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
 from loguru import logger
-from numpy import true_divide
+
 from action import Utils
 from action.Fight import FightUtils
 
@@ -65,6 +63,7 @@ class JJC101(CustomAction):
                     FightUtils.cast_magic("光", "祝福术", context)
                     FightUtils.cast_magic_special("天眼", context)
                     FightUtils.cast_magic_special("天眼", context)
+                    FightUtils.cast_magic_special("天眼", context)
                 elif layers >= 30:
                     context.run_task("JJC_Find_Abattoir")
                     FightUtils.cast_magic("土", "石肤术", context)
@@ -117,7 +116,7 @@ class JJC101(CustomAction):
             img = context.tasker.controller.post_screencap().wait().get()
             RunResult = context.run_recognition("JJC_Find_Body", img)
             if RunResult:
-                logger.info("Find Body")
+                logger.info("找到斯巴达实体啦")
                 context.run_task("JJC_Find_Body")
 
             # 该层探索结束
@@ -212,13 +211,7 @@ class JJC101_Title(CustomAction):
         else:
             return 0
 
-    # 执行函数
-    def run(
-        self,
-        context: Context,
-        argv: CustomAction.RunArg,
-    ) -> CustomAction.RunResult:
-
+    def test(self, context: Context):
         layers = self.Fight_CheckLayer(context)
         if layers > 0:
             # 打开称号面板
@@ -248,6 +241,21 @@ class JJC101_Title(CustomAction):
             if not recodetail:
                 logger.warning("当前冒险系没有可学习的称号")
                 return CustomAction.RunResult(success=False)
+
+            return CustomAction.RunResult(success=True)
+
+    # 执行函数
+    def run(
+        self,
+        context: Context,
+        argv: CustomAction.RunArg,
+    ) -> CustomAction.RunResult:
+
+        FightUtils.title_learn("战斗", 1, "见习战士", 1, context)
+        FightUtils.title_learn("战斗", 2, "战士", 1, context)
+        FightUtils.title_learn("战斗", 3, "魔战士", 1, context)
+        FightUtils.title_learn("战斗", 4, "炎龙武士", 1, context)
+        FightUtils.title_learn("战斗", 5, "毁灭公爵", 1, context)
 
         return CustomAction.RunResult(success=True)
 
@@ -294,12 +302,13 @@ class JJC_Fight_ClearCurrentLayer(CustomAction):
             return False
 
     def CheckMonsterCnt(self, context: Context):
+        global visited
         img = context.tasker.controller.post_screencap().wait().get()
 
         # 检测是否有怪物并攻击
         for r in range(rows):
             for c in range(cols):  # 重试次数
-                if visited[r][c] >= 3:
+                if visited[r][c] >= 30:
                     continue
                 # 计算 ROI 区域
                 x, y, w, h = roi_matrix[r][c]
@@ -349,16 +358,16 @@ class JJC_Fight_ClearCurrentLayer(CustomAction):
         context: Context,
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
-        # 进入战斗
-        context.run_task("JJC_Fight_Enter")
+        # 初始化
         FailCheckMonsterCnt = 0
         FailCheckGridCnt = 0
         checkGridCnt = 0
-        visited = [[0] * cols for _ in range(rows)]
-
+        global visited
         DoorX, DoorY = self.CheckClosedDoor(context)
+        visited = [[0] * cols for _ in range(rows)]
         visited[DoorX][DoorY] = 999
 
+        # 开始清理当前层
         cnt = 15
         while cnt > 0:
             if context.tasker.stopping:
@@ -371,7 +380,7 @@ class JJC_Fight_ClearCurrentLayer(CustomAction):
             for r in range(rows):
                 for c in range(cols):  # 重试次数
                     # 如果已经访问过该格子，并且已经清理过，跳过
-                    if visited[r][c] >= 3:
+                    if visited[r][c] >= 5:
                         continue
 
                     # 计算 ROI 区域

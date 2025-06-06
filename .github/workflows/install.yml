@@ -62,7 +62,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      
+
       - name: Download MaaFramework
         uses: robinraju/release-downloader@v1
         with:
@@ -72,17 +72,11 @@ jobs:
           preRelease: false
           out-file-path: "deps"
           extract: true
-      
+
       - name: Setup Embed Python
         shell: powershell
         run: |
           ./ci/setup_embed_python.ps1
-
-      # - name: Download Python requirements
-      #   shell: bash
-      #   run: |
-      #     python -m pip install -r requirements.txt
-
 
       - name: Install Python
         shell: bash
@@ -90,7 +84,7 @@ jobs:
           TARGET_OS: ${{ matrix.os }}
         run: |
           python ./install.py ${{ needs.meta.outputs.tag }}
-        
+
       - name: Set up MFAAvalonia naming
         id: mfa_naming
         shell: bash
@@ -104,7 +98,7 @@ jobs:
           else
             echo "mfa_os=unknown" >> $GITHUB_OUTPUT
           fi
-          
+
           if [ "${{ matrix.arch }}" = "x86_64" ]; then
             echo "mfa_arch=x64" >> $GITHUB_OUTPUT
           elif [ "${{ matrix.arch }}" = "aarch64" ]; then
@@ -112,7 +106,7 @@ jobs:
           else
             echo "mfa_arch=unknown" >> $GITHUB_OUTPUT
           fi
-        
+
       - name: Download MFA
         if: ${{ matrix.os != 'android' }}
         uses: robinraju/release-downloader@v1
@@ -130,6 +124,11 @@ jobs:
           rm -rf MFAAvalonia/resource/base/model
           cp -r MFAAvalonia/* install
           rm -rf install/MFAAvalonia-*${{ steps.mfa_naming.outputs.mfa_os }}-${{ steps.mfa_naming.outputs.mfa_arch }}*
+
+      - name: Replace Icon
+        shell: bash
+        run: |
+          cp logo.ico install/logo.ico
 
       - uses: actions/upload-artifact@v4
         with:
@@ -171,7 +170,7 @@ jobs:
           for f in *; do
             (cd $f && zip -r ../$f-${{ needs.meta.outputs.tag }}.zip .)
           done
-          
+
       - uses: softprops/action-gh-release@v2
         with:
           files: assets/*
@@ -184,3 +183,10 @@ jobs:
           files: assets/*
           tag_name: ${{ needs.meta.outputs.tag }}
           generate_release_notes: true
+
+      - name: Trigger MirrorChyanUploading
+        run: |
+          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan
+          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_release_note
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

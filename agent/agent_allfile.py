@@ -2,7 +2,6 @@ from action.Fight import JJC101
 from action.Fight import GetKeyFromHole
 from action.Fight import TL01_Fighting
 from action.Fight import CheckGrid
-from action.Fight import GoDownstairsTrick
 
 from action import Count
 from action import DailyTask

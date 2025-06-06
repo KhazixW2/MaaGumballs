@@ -400,10 +400,9 @@
             "JJC_Inter_Confirm"
         ]
     },
-    "JJC_GridReco_Test": {
-        "recognition": "Custom",
-        "custom_recognition": "Reco_Door",
-        "action": "DoNothing",
+    "JJC_Title_Test": {
+        "action": "Custom",
+        "custom_action": "JJC101_Title",
         "post_delay": 1000
     }
 }

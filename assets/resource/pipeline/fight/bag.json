@@ -1,0 +1,75 @@
+{
+    "Bag_open": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/UniversalUI/MazePackage.png"
+        ],
+        "roi": [
+            47,
+            1147,
+            136,
+            117
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000
+    },
+    "Bag_ToRightestPage": {
+        "recognition": "TemplateMatch",
+        "template": "fight/divineForgeLand/RightButton.png",
+        "roi": [
+            0,
+            765,
+            720,
+            108
+        ],
+        "action": "Click",
+        "post_delay": 100,
+        "threshold": 0.8,
+        "timeout": 3000,
+        "next": "Bag_ToRightestPage"
+    },
+    "Bag_ToLeftestPage": {
+        "recognition": "TemplateMatch",
+        "template": "fight/divineForgeLand/LeftButton.png",
+        "roi": [
+            0,
+            765,
+            720,
+            108
+        ],
+        "action": "Click",
+        "post_delay": 100,
+        "threshold": 0.8,
+        "timeout": 3000,
+        "next": "Bag_ToLeftestPage"
+    },
+    "Bag_ToNextPage": {
+        "recognition": "TemplateMatch",
+        "template": "fight/divineForgeLand/RightButton.png",
+        "roi": [
+            0,
+            765,
+            720,
+            108
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "threshold": 0.8,
+        "timeout": 3000
+    },
+    "Bag_ToPrevPage": {
+        "recognition": "TemplateMatch",
+        "template": "fight/divineForgeLand/LeftButton.png",
+        "roi": [
+            0,
+            765,
+            720,
+            108
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "threshold": 0.8,
+        "timeout": 3000
+    }
+}
