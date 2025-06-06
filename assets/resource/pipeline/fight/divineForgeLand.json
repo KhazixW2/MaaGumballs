@@ -136,7 +136,7 @@
         "post_delay": 1000,
         "threshold": 0.8
     },
-    "GetCurrentHealth": {
+    "GetCurrentAtk": {
         "recognition": "OCR",
         "expected": "\\d+",
         "action": "DoNothing",

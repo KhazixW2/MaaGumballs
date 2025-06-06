@@ -520,7 +520,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                 logger.info("测序被停止")
                 return []
 
-            atk_detail = context.run_task("GetCurrentHealth")
+            atk_detail = context.run_task("GetCurrentAtk")
             if atk_detail.nodes:
                 before_atk = atk_detail.nodes[0].recognition.best_result.text
                 logger.info(f"当前攻击{before_atk}")
@@ -531,7 +531,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                 context.run_task("Click_Smelt_Equipment")
                 context.run_task("OpenEquipmentStovePage_Next")
 
-                atk_detail = context.run_task("GetCurrentHealth")
+                atk_detail = context.run_task("GetCurrentAtk")
                 if atk_detail.nodes:
                     after_atk = atk_detail.nodes[0].recognition.best_result.text
                     logger.info(f"熔炼装备之后 攻击{after_atk}")
@@ -549,7 +549,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                 context.run_task("OpenEquipmentStovePage")
                 # 这里要填入i次低星装备，填入低星装备之后正常填入高星装备
                 self.add_low_level_equipment(context, i)
-                atk_detail = context.run_task("GetCurrentHealth")
+                atk_detail = context.run_task("GetCurrentAtk")
                 if atk_detail.nodes:
                     before_atk = atk_detail.nodes[0].recognition.best_result.text
                     logger.info(f"当前攻击{before_atk}")
@@ -562,7 +562,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                     context.run_task("Click_Smelt_Equipment")
                     context.run_task("OpenEquipmentStovePage_Next")
 
-                    atk_detail = context.run_task("GetCurrentHealth")
+                    atk_detail = context.run_task("GetCurrentAtk")
                     if atk_detail.nodes:
                         after_atk = atk_detail.nodes[0].recognition.best_result.text
                         logger.info(f"熔炼装备之后 攻击{after_atk}")
@@ -599,7 +599,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                     # 填入低星装备
                     self.add_low_level_equipment(context, low_star_num)
                     low_star_num = 0
-                    atk_detail = context.run_task("GetCurrentHealth")
+                    atk_detail = context.run_task("GetCurrentAtk")
                     if atk_detail.nodes:
                         before_atk = atk_detail.nodes[0].recognition.best_result.text
                         logger.info(f"当前攻击{before_atk}")
@@ -613,7 +613,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                         context.run_task("Click_Smelt_Equipment")
                         context.run_task("OpenEquipmentStovePage_Next")
 
-                        atk_detail = context.run_task("GetCurrentHealth")
+                        atk_detail = context.run_task("GetCurrentAtk")
                         if atk_detail.nodes:
                             after_atk = atk_detail.nodes[0].recognition.best_result.text
                             logger.info(f"熔炼装备之后 攻击{after_atk}")
@@ -634,7 +634,7 @@ class Find_Stove_Sequence_Test(CustomAction):
 
                         self.add_low_level_equipment(context, i)
                         low_star_num = 0
-                        atk_detail = context.run_task("GetCurrentHealth")
+                        atk_detail = context.run_task("GetCurrentAtk")
                         if atk_detail.nodes:
                             before_atk = atk_detail.nodes[
                                 0
@@ -650,7 +650,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                             context.run_task("Click_Smelt_Equipment")
                             context.run_task("OpenEquipmentStovePage_Next")
 
-                            atk_detail = context.run_task("GetCurrentHealth")
+                            atk_detail = context.run_task("GetCurrentAtk")
                             if atk_detail.nodes:
                                 after_atk = atk_detail.nodes[
                                     0
