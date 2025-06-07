@@ -65,6 +65,7 @@
         "recognition": "TemplateMatch",
         "template": [
             "fight/UniversalUI/GreyStar.png",
+            "fight/UniversalUI/GreyMoon.png",
             "fight/UniversalUI/Title_Learnable.png"
         ],
         "roi": [
@@ -115,13 +116,14 @@
         "recognition": "OCR",
         "expected": [
             "学习新称号",
-            "升级"
+            "升级",
+            "强化"
         ],
         "roi": [
-            70,
-            813,
-            591,
-            196
+            26,
+            673,
+            680,
+            421
         ],
         "action": "Click",
         "post_delay": 1000,
@@ -174,5 +176,10 @@
         "action": "Click",
         "post_delay": 1000,
         "timeout": 2000
+    },
+    "TitlePanel_Test": {
+        "action": "Custom",
+        "custom_action": "JJC101_Title",
+        "post_delay": 1000
     }
 }

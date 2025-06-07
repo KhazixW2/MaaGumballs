@@ -127,139 +127,6 @@ class JJC101(CustomAction):
         return CustomAction.RunResult(success=True)
 
 
-@AgentServer.custom_action("JJC101_Select")
-class JJC101_Select(CustomAction):
-    # 执行函数
-    def run(
-        self,
-        context: Context,
-        argv: CustomAction.RunArg,
-    ) -> CustomAction.RunResult:
-        logger.info("选择药剂中")
-        context.run_task("JJC_SelectDrug")
-
-        logger.info("选择神器中")
-        context.run_task("JJC_SelectArtifact")
-
-        # 选择帝释天
-        img = context.tasker.controller.post_screencap().wait().get()
-        recodetail = context.run_recognition(
-            "JJC_Select_Gumball_Check",
-            img,
-            pipeline_override={
-                "JJC_Select_Gumball_Check": {
-                    "recognition": "TemplateMatch",
-                    "template": ["fight/JJC/帝释天冈布奥_小.png"],
-                    "roi": [348, 604, 294, 231],
-                },
-            },
-        )
-
-        if recodetail:
-            logger.info("帝释天已检测到")
-        else:
-            logger.info("帝释天未检测到，自动选择中")
-            context.run_task(
-                "JJC_Select_Gumball_1",
-                pipeline_override={
-                    "JJC_Select_Gumball_Next": {
-                        "template": "fight/JJC/帝释天冈布奥.png",
-                    }
-                },
-            )
-
-        # 选择夜叉
-        img = context.tasker.controller.post_screencap().wait().get()
-        recodetail = context.run_recognition(
-            "JJC_Select_Gumball_Check",
-            img,
-            pipeline_override={
-                "JJC_Select_Gumball_Check": {
-                    "recognition": "TemplateMatch",
-                    "template": ["fight/JJC/夜叉冈布奥_小.png"],
-                    "roi": [348, 604, 294, 231],
-                },
-            },
-        )
-        if recodetail:
-            logger.info("夜叉已检测到")
-        else:
-            logger.info("夜叉未检测到, 自动选择中")
-            context.run_task(
-                "JJC_Select_Gumball_2",
-                pipeline_override={
-                    "JJC_Select_Gumball_Next": {
-                        "template": "fight/JJC/夜叉冈布奥.png",
-                    }
-                },
-            )
-
-        return CustomAction.RunResult(success=True)
-
-
-@AgentServer.custom_action("JJC101_Title")
-class JJC101_Title(CustomAction):
-
-    def Fight_CheckLayer(self, context: Context):
-        RunResult = context.run_task("Fight_CheckLayer")
-        if RunResult.nodes:
-            layers = Utils.extract_numbers(
-                RunResult.nodes[0].recognition.best_result.text
-            )
-            logger.info(f"current layer {layers}")
-            return layers
-        else:
-            return 0
-
-    def test(self, context: Context):
-        layers = self.Fight_CheckLayer(context)
-        if layers > 0:
-            # 打开称号面板
-            recodetail = context.run_task("Fight_TitlePanel_Open")
-            if not recodetail.nodes:
-                logger.warning("打开称号面板失败, 识别错误")
-                return CustomAction.RunResult(success=False)
-            else:
-                logger.info("打开称号面板")
-
-            # 进入冒险系称号
-            recodetail = context.run_task(
-                "Fight_TitlePanel_Series",
-                pipeline_override={"Fight_TitlePanel_Series": {"expected": "冒险"}},
-            )
-
-            if not recodetail.nodes:
-                logger.warning("进入冒险系称号失败, 请检查是否携带冒险系冈布奥")
-                return CustomAction.RunResult(success=False)
-            else:
-                logger.info("进入冒险系称号")
-
-            # 选择称号
-            logger.info("开始学习称号")
-            img = context.tasker.controller.post_screencap().wait().get()
-            recodetail = context.run_recognition("Fight_TitlePanel_Learnable", img)
-            if not recodetail:
-                logger.warning("当前冒险系没有可学习的称号")
-                return CustomAction.RunResult(success=False)
-
-            return CustomAction.RunResult(success=True)
-
-    # 执行函数
-    def run(
-        self,
-        context: Context,
-        argv: CustomAction.RunArg,
-    ) -> CustomAction.RunResult:
-
-        FightUtils.title_learn("战斗", 1, "见习战士", 1, context)
-        FightUtils.title_learn("战斗", 2, "战士", 1, context)
-        FightUtils.title_learn("战斗", 3, "魔战士", 1, context)
-        FightUtils.title_learn("战斗", 4, "炎龙武士", 1, context)
-        FightUtils.title_learn("战斗", 5, "毁灭公爵", 1, context)
-
-        return CustomAction.RunResult(success=True)
-
-
 @AgentServer.custom_action("JJC_Fight_ClearCurrentLayer")
 class JJC_Fight_ClearCurrentLayer(CustomAction):
     def CheckMonster(self, context: Context):
@@ -444,6 +311,109 @@ class JJC_Fight_ClearCurrentLayer(CustomAction):
         return CustomAction.RunResult(success=True)
 
 
+@AgentServer.custom_action("JJC101_Select")
+class JJC101_Select(CustomAction):
+    # 执行函数
+    def run(
+        self,
+        context: Context,
+        argv: CustomAction.RunArg,
+    ) -> CustomAction.RunResult:
+        logger.info("选择药剂中")
+        context.run_task("JJC_SelectDrug")
+
+        logger.info("选择神器中")
+        context.run_task("JJC_SelectArtifact")
+
+        # 选择帝释天
+        img = context.tasker.controller.post_screencap().wait().get()
+        recodetail = context.run_recognition(
+            "JJC_Select_Gumball_Check",
+            img,
+            pipeline_override={
+                "JJC_Select_Gumball_Check": {
+                    "recognition": "TemplateMatch",
+                    "template": ["fight/JJC/帝释天冈布奥_小.png"],
+                    "roi": [348, 604, 294, 231],
+                },
+            },
+        )
+
+        if recodetail:
+            logger.info("帝释天已检测到")
+        else:
+            logger.info("帝释天未检测到，自动选择中")
+            context.run_task(
+                "JJC_Select_Gumball_1",
+                pipeline_override={
+                    "JJC_Select_Gumball_Next": {
+                        "template": "fight/JJC/帝释天冈布奥.png",
+                    }
+                },
+            )
+
+        # 选择夜叉
+        img = context.tasker.controller.post_screencap().wait().get()
+        recodetail = context.run_recognition(
+            "JJC_Select_Gumball_Check",
+            img,
+            pipeline_override={
+                "JJC_Select_Gumball_Check": {
+                    "recognition": "TemplateMatch",
+                    "template": ["fight/JJC/夜叉冈布奥_小.png"],
+                    "roi": [348, 604, 294, 231],
+                },
+            },
+        )
+        if recodetail:
+            logger.info("夜叉已检测到")
+        else:
+            logger.info("夜叉未检测到, 自动选择中")
+            context.run_task(
+                "JJC_Select_Gumball_2",
+                pipeline_override={
+                    "JJC_Select_Gumball_Next": {
+                        "template": "fight/JJC/夜叉冈布奥.png",
+                    }
+                },
+            )
+
+        return CustomAction.RunResult(success=True)
+
+
+@AgentServer.custom_action("JJC101_Title")
+class JJC101_Title(CustomAction):
+
+    def Fight_CheckLayer(self, context: Context):
+        RunResult = context.run_task("Fight_CheckLayer")
+        if RunResult.nodes:
+            layers = Utils.extract_numbers(
+                RunResult.nodes[0].recognition.best_result.text
+            )
+            logger.info(f"current layer {layers}")
+            return layers
+        else:
+            return 0
+
+    # 执行函数
+    def run(
+        self,
+        context: Context,
+        argv: CustomAction.RunArg,
+    ) -> CustomAction.RunResult:
+
+        # FightUtils.title_learn("战斗", 1, "见习战士", 1, context)
+        # FightUtils.title_learn("战斗", 2, "战士", 1, context)
+        # FightUtils.title_learn("战斗", 3, "魔战士", 1, context)
+        # FightUtils.title_learn("战斗", 4, "炎龙武士", 1, context)
+        # FightUtils.title_learn("战斗", 5, "毁灭公爵", 1, context)
+
+        # FightUtils.title_learn_branch("战斗", 5, "生命强化", 3, context)
+        # FightUtils.title_learn_branch("战斗", 5, "攻击强化", 3, context)
+
+        return CustomAction.RunResult(success=True)
+
+
 @AgentServer.custom_action("JJC_BagTest")
 class JJC_BagTest(CustomAction):
 
@@ -463,6 +433,8 @@ class JJC_BagTest(CustomAction):
                 FightUtils.findEquipment(2, "礼仪戒指", True, context)
             if not FightUtils.checkEquipment("披风", 3, "天鹅绒斗篷", context):
                 FightUtils.findEquipment(3, "天鹅绒斗篷", True, context)
+            if not FightUtils.checkEquipment("宝物", 7, "冒险家竖琴", context):
+                FightUtils.findEquipment(7, "冒险家竖琴", True, context)
             time.sleep(1)
             context.run_task("BackText")
         else:

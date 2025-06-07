@@ -1,5 +1,6 @@
 from maa.context import Context
 from loguru import logger
+import time
 
 MagicType: dict = {
     "火": "Fight_ClickFireMagicPage",
@@ -123,6 +124,45 @@ def title_learn(
         )
 
 
+def title_learn_branch(
+    titleType: str,
+    titleLevel: int,
+    titleName: str,
+    expectedLevel: int,
+    context: Context,
+):
+
+    # 对应几级称号的坐标
+    titileRect: list = [
+        [0, 0, 0, 0],
+        [53, 843, 138, 152],
+        [185, 854, 119, 136],
+        [296, 847, 127, 140],
+        [418, 842, 123, 147],
+        [530, 847, 133, 147],
+    ]
+
+    for i in range(0, expectedLevel):
+        logger.info(f"学习第{i+1}级{titleName}")
+        context.run_task(
+            "TitlePanel_Learnable",
+            pipeline_override={
+                "TitlePanel_Learnable_Next": {
+                    "roi": titileRect[titleLevel],
+                },
+                "TitlePanel_Learnable_Fnish": {
+                    "roi": titileRect[titleLevel],
+                },
+                "TitlePanel_TitleCheck_New": {
+                    "expected": titleName,
+                    "roi": [54, 463, 623, 550],
+                    "target_offset": [0, 0, 0, 0],
+                },
+                "TitlePanel_Series": {"expected": titleType},
+            },
+        )
+
+
 def checkEquipment(
     equipmentType: str, equipmentLevel: int, equipmentName: str, context: Context
 ):
@@ -160,30 +200,43 @@ def findEquipment(
     """检查是否存在目标装备"""
 
     global EquipmentType
-    EquipmentPath = f"equipments/{equipmentLevel}level/{equipmentName}.png"
+    equipment_path = f"equipments/{equipmentLevel}level/{equipmentName}.png"
 
-    image = context.tasker.controller.post_screencap().wait().get()
-    ItemRecoDetail = context.run_recognition(
-        "Bag_FindItem",
-        image,
-        pipeline_override={
-            "Bag_FindItem": {
-                "template": EquipmentPath,
+    # 初始化背包
+    context.run_task("Bag_ToLeftestPage")
+
+    # 初始化背包
+    while True:
+        image = context.tasker.controller.post_screencap().wait().get()
+        ItemRecoDetail = context.run_recognition(
+            "Bag_FindItem",
+            image,
+            pipeline_override={
+                "Bag_FindItem": {
+                    "template": equipment_path,
+                },
             },
-        },
-    )
+        )
 
-    # 输出目标装备是否存在
-    if ItemRecoDetail:
-        logger.info(f"已找到: {equipmentName}")
-        if isEquip:
-            center_x, center_y = (
-                ItemRecoDetail.box[0] + ItemRecoDetail.box[2] // 2,
-                ItemRecoDetail.box[1] + ItemRecoDetail.box[3] // 2,
-            )
-            context.tasker.controller.post_click(center_x, center_y).wait()
-            context.run_task("Bag_LoadItem")
-    else:
-        logger.info(f"背包未找到: {equipmentName}")
+        # 输出目标装备是否存在
+        if ItemRecoDetail:
+            logger.info(f"已找到: {equipmentName}")
+            if isEquip:
+                center_x, center_y = (
+                    ItemRecoDetail.box[0] + ItemRecoDetail.box[2] // 2,
+                    ItemRecoDetail.box[1] + ItemRecoDetail.box[3] // 2,
+                )
+                context.tasker.controller.post_click(center_x, center_y).wait()
+                time.sleep(1)
+                context.run_task("Bag_LoadItem")
+            break
+        elif context.run_recognition(
+            "Bag_ToNextPage",
+            context.tasker.controller.post_screencap().wait().get(),
+        ):
+            context.run_task("Bag_ToNextPage")
+        else:
+            logger.info(f"背包未找到: {equipmentName}")
+            return False
 
-    return ItemRecoDetail
+    return True

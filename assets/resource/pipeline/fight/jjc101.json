@@ -399,10 +399,5 @@
         "next": [
             "JJC_Inter_Confirm"
         ]
-    },
-    "JJC_Title_Test": {
-        "action": "Custom",
-        "custom_action": "JJC101_Title",
-        "post_delay": 1000
     }
 }

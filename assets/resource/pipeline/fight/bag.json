@@ -35,7 +35,7 @@
         "action": "Click",
         "post_delay": 100,
         "threshold": 0.8,
-        "timeout": 3000,
+        "timeout": 1000,
         "next": "Bag_ToRightestPage"
     },
     "Bag_ToLeftestPage": {
@@ -50,7 +50,7 @@
         "action": "Click",
         "post_delay": 100,
         "threshold": 0.8,
-        "timeout": 3000,
+        "timeout": 1000,
         "next": "Bag_ToLeftestPage"
     },
     "Bag_ToNextPage": {
