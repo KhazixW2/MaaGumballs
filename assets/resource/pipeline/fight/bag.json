@@ -85,6 +85,10 @@
         "action": "Custom",
         "custom_action": "JJC_BagTest"
     },
+    "Bag_Items_test": {
+        "action": "Custom",
+        "custom_action": "JJC_ItemTest"
+    },
     "Bag_CheckItem": {
         "recognition": "TemplateMatch",
         "template": "equipments/1level/贵族丝带.png",
@@ -115,7 +119,10 @@
     },
     "Bag_LoadItem": {
         "recognition": "TemplateMatch",
-        "template": "fight/UniversalUI/LoadEquipButton.png",
+        "template": [
+            "fight/UniversalUI/LoadEquipButton.png",
+            "fight/UniversalUI/useButton.png"
+        ],
         "roi": [
             53,
             428,

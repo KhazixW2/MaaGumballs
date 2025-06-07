@@ -25,6 +25,7 @@ class JJC101(CustomAction):
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
         # 检查当前层数
+        boss_x, boss_y = 360, 750
         layers = 1
         RunResult = context.run_task("Fight_CheckLayer")
         if RunResult.nodes:
@@ -58,31 +59,45 @@ class JJC101(CustomAction):
                 "JJC_Find_Abattoir",
                 image,
             ):
+                context.run_task("JJC_Find_Abattoir")
                 if layers < 30:
-                    context.run_task("JJC_Find_Abattoir")
                     FightUtils.cast_magic("光", "祝福术", context)
                     FightUtils.cast_magic_special("天眼", context)
                     FightUtils.cast_magic_special("天眼", context)
                     FightUtils.cast_magic_special("天眼", context)
-                elif layers >= 30:
-                    context.run_task("JJC_Find_Abattoir")
-                    FightUtils.cast_magic("土", "石肤术", context)
-                    FightUtils.cast_magic("土", "石肤术", context)
-
-                context.run_task("JJC_Fight_ClearCurrentLayer")
+                elif layers <= 50:
+                    FightUtils.cast_magic("光", "祝福术", context)
+                    context.tasker.controller.post_click(boss_x, boss_y).wait()
+                    time.sleep(0.3)
+                    context.tasker.controller.post_click(boss_x, boss_y).wait()
+                    time.sleep(0.3)
+                    context.tasker.controller.post_click(boss_x, boss_y).wait()
+                    time.sleep(0.3)
+                else:
+                    time.sleep(3)
+                    context.run_task("Bag_Open")
+                    FightUtils.findItem("异域的灯芯", True, context, 360, 810)
                 context.run_task("JJC_Abattoir_Chest")
                 context.run_task("Fight_OpenedDoor")
 
             # Boos层开始探索
             if layers >= 30 and layers % 10 == 0:
                 # todo
-                if layers <= 70:
-                    FightUtils.cast_magic("土", "石肤术", context)
-                    context.tasker.controller.post_click(640, 360)
+                if layers <= 50:
+                    FightUtils.cast_magic("光", "祝福术", context)
+                    context.tasker.controller.post_click(boss_x, boss_y).wait()
                     time.sleep(0.3)
-                    context.tasker.controller.post_click(640, 360)
+                    context.tasker.controller.post_click(boss_x, boss_y).wait()
                     time.sleep(0.3)
-                    context.tasker.controller.post_click(640, 360)
+                    context.tasker.controller.post_click(boss_x, boss_y).wait()
+                    time.sleep(0.3)
+                elif layers <= 70:
+                    FightUtils.cast_magic("水", "冰锥术", context)
+                    context.tasker.controller.post_click(boss_x, boss_y).wait()
+                    time.sleep(0.3)
+                    context.tasker.controller.post_click(boss_x, boss_y).wait()
+                    time.sleep(0.3)
+                    context.tasker.controller.post_click(boss_x, boss_y).wait()
                     time.sleep(0.3)
                 elif layers >= 80 and layers <= 100:
                     if layers >= 90:
@@ -110,7 +125,8 @@ class JJC101(CustomAction):
                 continue
 
             # 胜利者石柱
-            context.run_task("JJC_StoneChest")
+            if layers <= 30:
+                context.run_task("JJC_StoneChest")
 
             # 寻找身体
             img = context.tasker.controller.post_screencap().wait().get()
@@ -402,14 +418,14 @@ class JJC101_Title(CustomAction):
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
 
-        # FightUtils.title_learn("战斗", 1, "见习战士", 1, context)
-        # FightUtils.title_learn("战斗", 2, "战士", 1, context)
-        # FightUtils.title_learn("战斗", 3, "魔战士", 1, context)
-        # FightUtils.title_learn("战斗", 4, "炎龙武士", 1, context)
-        # FightUtils.title_learn("战斗", 5, "毁灭公爵", 1, context)
+        FightUtils.title_learn("战斗", 1, "见习战士", 1, context)
+        FightUtils.title_learn("战斗", 2, "战士", 1, context)
+        FightUtils.title_learn("战斗", 3, "魔战士", 1, context)
+        FightUtils.title_learn("战斗", 4, "炎龙武士", 1, context)
+        FightUtils.title_learn("战斗", 5, "毁灭公爵", 1, context)
 
-        # FightUtils.title_learn_branch("战斗", 5, "生命强化", 3, context)
-        # FightUtils.title_learn_branch("战斗", 5, "攻击强化", 3, context)
+        FightUtils.title_learn_branch("战斗", 5, "生命强化", 3, context)
+        FightUtils.title_learn_branch("战斗", 5, "攻击强化", 3, context)
 
         return CustomAction.RunResult(success=True)
 
@@ -437,6 +453,40 @@ class JJC_BagTest(CustomAction):
                 FightUtils.findEquipment(7, "冒险家竖琴", True, context)
             time.sleep(1)
             context.run_task("BackText")
+        else:
+            logger.info("背包打开失败")
+
+        return CustomAction.RunResult(success=True)
+
+
+@AgentServer.custom_action("JJC_ItemTest")
+class JJC_ItemTest(CustomAction):
+
+    # 执行函数
+    def run(
+        self,
+        context: Context,
+        argv: CustomAction.RunArg,
+    ) -> CustomAction.RunResult:
+
+        # 打开背包
+        OpenDetail = context.run_task("Bag_Open")
+        if OpenDetail.nodes:
+            FightUtils.findItem("狼人药剂", True, context)
+            context.run_task("Bag_Open")
+            FightUtils.findItem("狼人药剂", True, context)
+            context.run_task("Bag_Open")
+            FightUtils.findItem("狼人药剂", True, context)
+            for i in range(1, 75):
+                context.run_task("JJC_OpenForceOfNature")
+            FightUtils.cast_magic("气", "静电场", context)
+            FightUtils.cast_magic("土", "地震术", context)
+            FightUtils.cast_magic_special("天眼", context)
+
+            OpenDetail = context.run_task("Bag_Open")
+            FightUtils.findItem("东方剪纸", True, context)
+
+            time.sleep(1)
         else:
             logger.info("背包打开失败")
 

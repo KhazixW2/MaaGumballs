@@ -367,7 +367,8 @@
     "JJC_Find_Abattoir": {
         "recognition": "TemplateMatch",
         "template": [
-            "fight/JJC/Abattoir.png"
+            "fight/JJC/Abattoir.png",
+            "fight/JJC/Abattoir_1.png"
         ],
         "roi": [
             7,
@@ -399,5 +400,73 @@
         "next": [
             "JJC_Inter_Confirm"
         ]
+    },
+    "JJC_OpenForceOfNature": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/JJC/自然之子技能.png"
+        ],
+        "roi": [
+            446,
+            78,
+            273,
+            101
+        ],
+        "action": "Click",
+        "post_delay": 200,
+        "next": [
+            "JJC_OpenForceOfNature_Switch"
+        ]
+    },
+    "JJC_OpenForceOfNature_Switch": {
+        "recognition": "OCR",
+        "expected": [
+            "开启自然之力",
+            "开启自然守护"
+        ],
+        "roi": [
+            87,
+            652,
+            554,
+            287
+        ],
+        "action": "Click",
+        "post_delay": 200,
+        "timeout": 2000,
+        "next": [
+            "ClickCenter_200ms"
+        ]
+    },
+    "Event_DragonBall": {
+        "recognition": "OCR",
+        "expected": [
+            "请选择你的愿望",
+            "愿望"
+        ],
+        "roi": [
+            171,
+            446,
+            397,
+            150
+        ],
+        "action": "DoNothing",
+        "next": "Event_DragonBall_Select"
+    },
+    "Event_DragonBall_Select": {
+        "recognition": "OCR",
+        "expected": [
+            "钻石",
+            "富有",
+            "碎片"
+        ],
+        "roi": [
+            85,
+            569,
+            578,
+            419
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000
     }
 }

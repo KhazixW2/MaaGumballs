@@ -44,6 +44,9 @@
         "next": [
             "TitlePanel_Learnable_Next",
             "TitlePanel_Learnable_Fnish"
+        ],
+        "interrupt": [
+            "ConfirmButton"
         ]
     },
     "TitlePanel_Learnable_Fnish": {

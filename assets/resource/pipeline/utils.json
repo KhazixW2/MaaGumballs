@@ -49,6 +49,17 @@
         ],
         "post_delay": 1000
     },
+    "ClickCenter_200ms": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            237,
+            602,
+            242,
+            149
+        ],
+        "post_delay": 200
+    },
     "ReturnHall": {
         "recognition": "DirectHit",
         "next": [

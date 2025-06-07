@@ -42,13 +42,12 @@ def cast_magic(Type: str, MagicName: str, context: Context):
     """
 
     # run
-    RunDetail = context.run_task(
+    context.run_task(
         "Fight_Magic_Elemental",
         pipeline_override={
-            "Fight_Magic_Cast": {"expected": MagicName},
             "Fight_Magic_Elemental": {
+                "next": [MagicType[Type]],
                 "interrupt": [
-                    MagicType[Type],
                     "Fight_SkillPack_Type",
                     "Fight_SkillPack_Open",
                 ],
@@ -56,7 +55,20 @@ def cast_magic(Type: str, MagicName: str, context: Context):
         },
     )
 
-    if not RunDetail:
+    image = context.tasker.controller.post_screencap().wait().get()
+    if context.run_recognition(
+        "Fight_Magic_Cast",
+        image,
+        pipeline_override={"Fight_Magic_Cast": {"expected": MagicName}},
+    ):
+        context.run_task(
+            "Fight_Magic_Cast",
+            pipeline_override={"Fight_Magic_Cast": {"expected": MagicName}},
+        )
+        logger.info(f"施放魔法:{MagicName}")
+    else:
+        logger.info(f"没有找到对应的魔法:{MagicName}")
+        context.run_task("BackText")
         return False
 
     return True
@@ -78,14 +90,22 @@ def cast_magic_special(MagicName: str, context: Context):
     """
 
     # run
-    RunDetail = context.run_task(
-        "Fight_Magic_Special",
+    context.run_task("Fight_Magic_Special")
+    image = context.tasker.controller.post_screencap().wait().get()
+    if context.run_recognition(
+        "Fight_Magic_Special_Cast",
+        image,
         pipeline_override={"Fight_Magic_Special_Cast": {"expected": MagicName}},
-    )
-
-    if not RunDetail:
+    ):
+        context.run_task(
+            "Fight_Magic_Special_Cast",
+            pipeline_override={"Fight_Magic_Special_Cast": {"expected": MagicName}},
+        )
+        logger.info(f"施放魔法:{MagicName}")
+    else:
+        logger.info(f"没有找到对应的魔法:{MagicName}")
+        context.run_task("BackText")
         return False
-
     return True
 
 
@@ -205,7 +225,7 @@ def findEquipment(
     # 初始化背包
     context.run_task("Bag_ToLeftestPage")
 
-    # 初始化背包
+    # 开始寻找背包
     while True:
         image = context.tasker.controller.post_screencap().wait().get()
         ItemRecoDetail = context.run_recognition(
@@ -229,6 +249,58 @@ def findEquipment(
                 context.tasker.controller.post_click(center_x, center_y).wait()
                 time.sleep(1)
                 context.run_task("Bag_LoadItem")
+            break
+        elif context.run_recognition(
+            "Bag_ToNextPage",
+            context.tasker.controller.post_screencap().wait().get(),
+        ):
+            context.run_task("Bag_ToNextPage")
+        else:
+            logger.info(f"背包未找到: {equipmentName}")
+            return False
+
+    return True
+
+
+def findItem(
+    equipmentName: str, isUse: bool, context: Context, dst_x: int = 0, dst_y: int = 0
+):
+    """检查是否存在目标装备"""
+
+    global EquipmentType
+    equipment_path = f"items/{equipmentName}.png"
+
+    # 初始化背包
+    context.run_task("Bag_ToLeftestPage")
+
+    # 开始寻找
+    while True:
+        image = context.tasker.controller.post_screencap().wait().get()
+        ItemRecoDetail = context.run_recognition(
+            "Bag_FindItem",
+            image,
+            pipeline_override={
+                "Bag_FindItem": {
+                    "template": equipment_path,
+                },
+            },
+        )
+
+        # 输出目标装备是否存在
+        if ItemRecoDetail:
+            logger.info(f"已找到: {equipmentName}")
+            if isUse:
+                center_x, center_y = (
+                    ItemRecoDetail.box[0] + ItemRecoDetail.box[2] // 2,
+                    ItemRecoDetail.box[1] + ItemRecoDetail.box[3] // 2,
+                )
+                context.tasker.controller.post_click(center_x, center_y).wait()
+                time.sleep(1)
+                context.run_task("Bag_LoadItem")
+
+                if (dst_x != 0) or (dst_y != 0):
+                    logger.info(f"使用物品 {equipmentName}, at {dst_x},{dst_y}")
+                    context.tasker.controller.post_click(dst_x, dst_y).wait()
             break
         elif context.run_recognition(
             "Bag_ToNextPage",
