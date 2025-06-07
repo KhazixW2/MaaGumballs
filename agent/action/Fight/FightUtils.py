@@ -2,6 +2,9 @@ from maa.context import Context
 from loguru import logger
 import time
 
+# 神龙许愿ROI [77,465,570,553]
+# 神龙许愿list = ["我要获得钻石", "我要神奇的果实", "我要更多的伙伴", "我要获得巨龙之力", "我要学习龙语魔法", "我要变得更强", "我要变得富有", "我要最凶残的装备", "我要更多的伙伴", "我要大量的矿石", "我要你的收藏品", "我要您的碎片"]
+
 MagicType: dict = {
     "火": "Fight_ClickFireMagicPage",
     "水": "Fight_ClickWaterMagicPage",
