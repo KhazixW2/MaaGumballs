@@ -4,7 +4,7 @@
 $PythonVersion = "3.12.9"
 $Architecture = "amd64" # 可选 "win32"
 $DestDir = "install/python"
-$ScriptsDir = "ci"  # 存放准备好的文件的目录
+$ScriptsDir = "tools/ci"  # 存放准备好的文件的目录
  
 # 创建目标目录
 if (-not (Test-Path $DestDir)) {
@@ -16,7 +16,8 @@ Write-Host "create directory: $DestDir" -ForegroundColor Cyan
 $PythonExePath = Join-Path $DestDir "python.exe"
 if (Test-Path $PythonExePath) {
     Write-Host "Python already exitst in $DestDir, skip install." -ForegroundColor Yellow
-} else {
+}
+else {
     # 下载Python嵌入式包
     $PythonUrl = "https://www.python.org/ftp/python/$PythonVersion/python-$PythonVersion-embed-$Architecture.zip"
     $PythonZip = "python-embedded.zip"
@@ -59,7 +60,8 @@ $SetupPipSource = Join-Path $ScriptsDir "setup_pip.py"
 $SetupPipDest = Join-Path $DestDir "setup_pip.py"
 if (Test-Path $SetupPipSource) {
     Copy-Item -Path $SetupPipSource -Destination $SetupPipDest -Force
-} else {
+}
+else {
     Write-Host "error: don't find $SetupPipSource" -ForegroundColor Red
     exit 1
 }
@@ -78,7 +80,8 @@ try {
         Write-Host "pip already installed, edition: $PipCheckOutput" -ForegroundColor Yellow
         $PipInstalled = $true
     }
-} catch {
+}
+catch {
     # 如果出错，则认为pip未安装
     $PipInstalled = $false
 }
@@ -90,9 +93,11 @@ try {
         Write-Host "pip installed" -ForegroundColor Green
     }
     Write-Host "install finished" -ForegroundColor Green
-} catch {
+}
+catch {
     Write-Host "install failed: $_" -ForegroundColor Red
-} finally {
+}
+finally {
     Set-Location $CurrentLocation
 }
 

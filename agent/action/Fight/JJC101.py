@@ -442,3 +442,30 @@ class JJC_Fight_ClearCurrentLayer(CustomAction):
                 break
 
         return CustomAction.RunResult(success=True)
+
+
+@AgentServer.custom_action("JJC_BagTest")
+class JJC_BagTest(CustomAction):
+
+    # 执行函数
+    def run(
+        self,
+        context: Context,
+        argv: CustomAction.RunArg,
+    ) -> CustomAction.RunResult:
+
+        # 打开背包
+        OpenDetail = context.run_task("Bag_Open")
+        if OpenDetail.nodes:
+            if not FightUtils.checkEquipment("腰带", 1, "贵族丝带", context):
+                FightUtils.findEquipment(1, "贵族丝带", True, context)
+            if not FightUtils.checkEquipment("戒指", 2, "礼仪戒指", context):
+                FightUtils.findEquipment(2, "礼仪戒指", True, context)
+            if not FightUtils.checkEquipment("披风", 3, "天鹅绒斗篷", context):
+                FightUtils.findEquipment(3, "天鹅绒斗篷", True, context)
+            time.sleep(1)
+            context.run_task("BackText")
+        else:
+            logger.info("背包打开失败")
+
+        return CustomAction.RunResult(success=True)

@@ -1,5 +1,14 @@
 {
-    "Bag_open": {
+    "Bag_Open": {
+        "next": [
+            "Bag_OpenClick"
+        ],
+        "interrupt": [
+            "BackText"
+        ],
+        "timeout": 2000
+    },
+    "Bag_OpenClick": {
         "recognition": "TemplateMatch",
         "template": [
             "fight/UniversalUI/MazePackage.png"
@@ -71,5 +80,51 @@
         "post_delay": 1000,
         "threshold": 0.8,
         "timeout": 3000
+    },
+    "Bag_Python_test": {
+        "action": "Custom",
+        "custom_action": "JJC_BagTest"
+    },
+    "Bag_CheckItem": {
+        "recognition": "TemplateMatch",
+        "template": "equipments/1level/贵族丝带.png",
+        "roi": [
+            56,
+            262,
+            138,
+            120
+        ],
+        "action": "DoNothing",
+        "post_delay": 1000,
+        "threshold": 0.8,
+        "timeout": 2000
+    },
+    "Bag_FindItem": {
+        "recognition": "TemplateMatch",
+        "template": "equipments/1level/贵族丝带.png",
+        "roi": [
+            43,
+            599,
+            644,
+            470
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "threshold": 0.8,
+        "timeout": 2000
+    },
+    "Bag_LoadItem": {
+        "recognition": "TemplateMatch",
+        "template": "fight/UniversalUI/LoadEquipButton.png",
+        "roi": [
+            53,
+            428,
+            625,
+            590
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "threshold": 0.8,
+        "timeout": 2000
     }
 }

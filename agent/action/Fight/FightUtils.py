@@ -10,6 +10,19 @@ MagicType: dict = {
     "暗": "Fight_ClickDarkMagicPage",
 }
 
+EquipmentType: dict = {
+    "腰带": [56, 262, 138, 120],
+    "手套": [67, 150, 122, 117],
+    "盔甲": [186, 143, 117, 123],
+    "头盔": [301, 138, 123, 129],
+    "副手": [415, 143, 120, 122],
+    "项链": [536, 150, 124, 119],
+    "戒指": [529, 266, 127, 117],
+    "披风": [522, 380, 138, 116],
+    "鞋子": [536, 491, 122, 123],
+    "宝物": [411, 477, 131, 141],
+}
+
 
 def cast_magic(Type: str, MagicName: str, context: Context):
     """施放指定类型的魔法
@@ -82,6 +95,8 @@ def title_learn(
     expectedLevel: int,
     context: Context,
 ):
+
+    # 对应几级称号的坐标
     titileRect: list = [
         [0, 0, 0, 0],
         [53, 843, 138, 152],
@@ -106,3 +121,69 @@ def title_learn(
                 "TitlePanel_Series": {"expected": titleType},
             },
         )
+
+
+def checkEquipment(
+    equipmentType: str, equipmentLevel: int, equipmentName: str, context: Context
+):
+    """检查是否装备指定的装备"""
+
+    # init
+    global EquipmentType
+    EquipmentPath = f"equipments/{equipmentLevel}level/{equipmentName}.png"
+
+    # 检查是否装备上目标装备
+    image = context.tasker.controller.post_screencap().wait().get()
+    ItemRecoDetail = context.run_recognition(
+        "Bag_CheckItem",
+        image,
+        pipeline_override={
+            "Bag_CheckItem": {
+                "template": EquipmentPath,
+                "roi": EquipmentType[equipmentType],
+            },
+        },
+    )
+
+    # 输出目标装备是否装备上
+    if ItemRecoDetail:
+        logger.info(f"已装备: {equipmentName}")
+    else:
+        logger.info(f"未装备: {equipmentName}")
+
+    return ItemRecoDetail
+
+
+def findEquipment(
+    equipmentLevel: int, equipmentName: str, isEquip: bool, context: Context
+):
+    """检查是否存在目标装备"""
+
+    global EquipmentType
+    EquipmentPath = f"equipments/{equipmentLevel}level/{equipmentName}.png"
+
+    image = context.tasker.controller.post_screencap().wait().get()
+    ItemRecoDetail = context.run_recognition(
+        "Bag_FindItem",
+        image,
+        pipeline_override={
+            "Bag_FindItem": {
+                "template": EquipmentPath,
+            },
+        },
+    )
+
+    # 输出目标装备是否存在
+    if ItemRecoDetail:
+        logger.info(f"已找到: {equipmentName}")
+        if isEquip:
+            center_x, center_y = (
+                ItemRecoDetail.box[0] + ItemRecoDetail.box[2] // 2,
+                ItemRecoDetail.box[1] + ItemRecoDetail.box[3] // 2,
+            )
+            context.tasker.controller.post_click(center_x, center_y).wait()
+            context.run_task("Bag_LoadItem")
+    else:
+        logger.info(f"背包未找到: {equipmentName}")
+
+    return ItemRecoDetail

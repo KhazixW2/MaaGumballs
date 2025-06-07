@@ -76,7 +76,7 @@ jobs:
       - name: Setup Embed Python
         shell: powershell
         run: |
-          ./ci/setup_embed_python.ps1
+          ./tools/ci/setup_embed_python.ps1
 
       - name: Install Python
         shell: bash
