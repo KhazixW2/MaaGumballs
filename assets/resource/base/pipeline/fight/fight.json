@@ -26,7 +26,7 @@
         "recognition": "TemplateMatch",
         "template": [
             "fight/closedDoor.png",
-            "fight/closedDoorTimeStop.png"
+            "fight/closedDoor_time_stop.png"
         ],
         "roi": [
             21,
