@@ -224,7 +224,7 @@ def agnet():
     from maa.toolkit import Toolkit
 
     # 声明所有Agent
-    import  agent_allfile
+    import agent_allfile
 
     Toolkit.init_option("./")
     if len(sys.argv) > 1:

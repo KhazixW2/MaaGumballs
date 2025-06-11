@@ -296,6 +296,19 @@
             "Fight_CheckOpenedDoor"
         ]
     },
+    "Fight_ClearCurrentLayer_time_stop": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "custom_action": "Fight_ClearCurrentLayer_time_stop",
+        "post_delay": 300,
+        "timeout": 1000,
+        "next": [],
+        "interrupt": [
+            "Fight_OpenRewardBox",
+            "BackText",
+            "Fight_CheckOpenedDoor"
+        ]
+    },
     "JJC_StoneChest": {
         "recognition": "TemplateMatch",
         "template": "fight/JJC/StoneChest.png",

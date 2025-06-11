@@ -4,7 +4,7 @@ from maa.context import Context
 from loguru import logger
 
 from action import utils
-from action.fight import fightUtils
+from action.Fight import fightUtils
 
 import time
 
