@@ -202,8 +202,9 @@ class PoolTrick_Test(CustomAction):
         searchDetail = context.run_task("SearchPool")
         while not (searchDetail.nodes or checkCount <= 0):
             checkCount -= 1
+            context.run_task("PushOne")
             searchDetail = context.run_task("SearchPool")
-        if searchDetail:
+        if searchDetail.nodes:
             logger.info("找到泉水位置")
             searchpoolpos = searchDetail.nodes[0].recognition.best_result.box
         else:
@@ -338,6 +339,7 @@ class SunlightTrick_Test(CustomAction):
         searchDetail = context.run_task("SearchBody")
         while not (searchDetail.nodes or checkCount <= 0):
             checkCount -= 1
+            context.run_task("PushOne")
             searchDetail = context.run_task("SearchBody")
         if searchDetail.nodes:
             searchbodypos = searchDetail.nodes[0].recognition.best_result.box
