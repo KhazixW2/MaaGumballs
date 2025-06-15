@@ -138,7 +138,8 @@
         "pre_delay": 500,
         "custom_action": "Find_Stove_Sequence_Test",
         "custom_action_param": {
-            "target_sunlight": 18
+            "target_sunlight": 18,
+            "auto_melt": 3
         },
         "post_delay": 1000
     },
@@ -295,6 +296,37 @@
         "threshold": 0.8,
         "timeout": 3000
     },
+    "CheckFirstEquipmentLevel": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "equipments/4level/勇气腰带.png",
+            "equipments/4level/圣裁官手套.png",
+            "equipments/4level/坚韧战靴.png",
+            "equipments/4level/巫毒斗篷.png",
+            "equipments/4level/忠诚勋章.png",
+            "equipments/4level/恶魔之戒.png",
+            "equipments/4level/恶魔披肩.png",
+            "equipments/4level/恶魔挂坠.png",
+            "equipments/4level/恶魔骨靴.png",
+            "equipments/4level/正义铠甲.png",
+            "equipments/4level/毁灭者石板.png",
+            "equipments/4level/泉水项链.png",
+            "equipments/4level/泰坦之盔.png",
+            "equipments/4level/重力之源.png",
+            "equipments/4level/龙鳞护腕.png",
+            "equipments/4level/龙鳞甲.png",
+            "equipments/4level/龙鳞盔.png",
+            "equipments/4level/龙鳞腰带.png"
+        ],
+        "roi": [
+            57,
+            630,
+            131,
+            142
+        ],
+        "action": "DoNothing",
+        "timeout": 1500
+    },
     "Click_Select_Equipment": {
         "recognition": "OCR",
         "expected": "选择",
@@ -305,7 +337,11 @@
             402
         ],
         "action": "Click",
-        "post_delay": 1000
+        "post_delay": 1000,
+        "timeout": 5000,
+        "next": [
+            "Click_Smelt_Equipment"
+        ]
     },
     "Click_Smelt_Equipment": {
         "recognition": "OCR",
@@ -317,7 +353,11 @@
             221
         ],
         "action": "Click",
-        "interrupt": "Click_Select_Equipment"
+        "post_delay": 1000,
+        "interrupt": "Click_Select_Equipment",
+        "next": [
+            "OpenEquipmentStovePage_Next"
+        ]
     },
     "AddLowLevelEquipment": {
         "recognition": "TemplateMatch",
@@ -329,8 +369,7 @@
             64
         ],
         "action": "Click",
-        "threshold": 0.8,
-        "post_delay": 500,
+        "post_delay": 1000,
         "timeout": 3000,
         "target": [
             91,

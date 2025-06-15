@@ -415,6 +415,7 @@ class Find_Stove_Sequence_Test(CustomAction):
             zero_counts (list): 包含开头零、非零间零和结尾零的列表，如 [0]
             non_zero_values (list): 非零值列表，如 [5,3]
         """
+
         zero_counts = []
         non_zero_values = []
         current_index = 0
@@ -503,21 +504,46 @@ class Find_Stove_Sequence_Test(CustomAction):
 
         return find_equipment_detail
 
-    def add_low_level_equipment(self, context: Context, num: int, page: int = 2):
+    def add_low_level_equipment(
+        self, context: Context, num: int, page: int = 2, auto_melt: int = 0
+    ):
+        if num == 0:
+            logger.info("个数为0, 无需填入低星装备")
+            return
         context.run_task("Bag_ToLeftestPage")
         for _ in range(page):
             context.run_task("Bag_ToNextPage")
 
         time.sleep(1)
+        if auto_melt == 3:
+            taskdetail = context.run_task("CheckFirstEquipmentLevel")
+            if taskdetail.nodes:
+                # 说明出现了第一格出现了4星装备,根据情况提前结束
+                return False
+        elif auto_melt == 6:
+            taskdetail = context.run_task(
+                "CheckFirstEquipmentLevel",
+                pipeline_override={
+                    "recognition": "TemplateMatch",
+                    "template": [
+                        "fight/divineForgeLand/empty_box.png",
+                    ],
+                    "roi": [57, 630, 131, 142],
+                    "action": "DoNothing",
+                    "timeout": 1500,
+                },
+            )
+            if taskdetail.nodes:
+                # 说明出现了第一格出现了空格，说明所有装备都熔完了,根据情况提前结束
+                return False
+
         for _ in range(num):
 
             context.run_task("AddLowLevelEquipment")
-            checkpoint1 = context.run_task("Click_Select_Equipment")
-            checkpoint2 = context.run_task("Click_Smelt_Equipment")
-            context.run_task("OpenEquipmentStovePage_Next")
-            if not checkpoint1.nodes and checkpoint2.nodes:
-                return CustomAction.RunResult(success=False)
+            context.run_task("Click_Select_Equipment")
+
         logger.info(f"填入低星装备{num}个成功")
+        return True
 
     def get_base_stove_sequence(self, context: Context, stove_sequence: list = None):
         assert len(stove_sequence) == 101
@@ -532,17 +558,23 @@ class Find_Stove_Sequence_Test(CustomAction):
             if atk_detail.nodes:
                 before_atk = atk_detail.nodes[0].recognition.best_result.text
                 logger.info(f"当前攻击{before_atk}")
+            else:
+                # 异常退出
+                logger.warning("未找到攻击, 停止测序")
+                return []
             find_equipment_detail = self.find_and_click_equipment_from_right(context, 6)
             if find_equipment_detail.nodes:
                 # 找到装备并且点击，进入后续操作，点击选择--点击熔炼装备--判断是否出现天下布武
                 context.run_task("Click_Select_Equipment")
-                context.run_task("Click_Smelt_Equipment")
-                context.run_task("OpenEquipmentStovePage_Next")
 
                 atk_detail = context.run_task("GetCurrentAtk")
                 if atk_detail.nodes:
                     after_atk = atk_detail.nodes[0].recognition.best_result.text
                     logger.info(f"熔炼装备之后 攻击{after_atk}")
+                else:
+                    # 异常退出
+                    logger.warning("未找到攻击, 停止测序")
+                    return []
                 if after_atk != before_atk:
                     logger.info(f"第{i}次攻击变动")
                     stove_sequence[i] = 6
@@ -561,19 +593,25 @@ class Find_Stove_Sequence_Test(CustomAction):
                 if atk_detail.nodes:
                     before_atk = atk_detail.nodes[0].recognition.best_result.text
                     logger.info(f"当前攻击{before_atk}")
+                else:
+                    # 异常退出
+                    logger.warning("未找到攻击, 停止测序")
+                    return []
                 find_equipment_detail = self.find_and_click_equipment_from_right(
                     context, 6
                 )
                 if find_equipment_detail.nodes:
                     # 找到装备并且点击，进入后续操作，点击选择--点击熔炼装备--判断是否出现天下布武
                     context.run_task("Click_Select_Equipment")
-                    context.run_task("Click_Smelt_Equipment")
-                    context.run_task("OpenEquipmentStovePage_Next")
 
                     atk_detail = context.run_task("GetCurrentAtk")
                     if atk_detail.nodes:
                         after_atk = atk_detail.nodes[0].recognition.best_result.text
                         logger.info(f"熔炼装备之后 攻击{after_atk}")
+                    else:
+                        # 异常退出
+                        logger.warning("未找到攻击, 停止测序")
+                        return []
                     if after_atk != before_atk:
                         logger.info(f"第{i}次攻击变动")
                         stove_sequence[i] = 6
@@ -587,8 +625,8 @@ class Find_Stove_Sequence_Test(CustomAction):
         return stove_sequence
 
     def upgrade_stove_sequence(self, context: Context, stove_sequence: list = None):
+        assert len(stove_sequence) == 101
         stove_sequence_copy = stove_sequence.copy()
-
         for star in range(1, 4):
             low_star_num = 0
             context.run_task("ConfirmPutonArmor")
@@ -596,7 +634,7 @@ class Find_Stove_Sequence_Test(CustomAction):
             for i in range(len(stove_sequence)):
                 if context.tasker.stopping:
                     logger.info("测序被停止")
-                    return [], []
+                    return []
                 if stove_sequence[i] == 0:
                     # 如果当前序列为0，跳过
                     low_star_num += 1
@@ -611,6 +649,10 @@ class Find_Stove_Sequence_Test(CustomAction):
                     if atk_detail.nodes:
                         before_atk = atk_detail.nodes[0].recognition.best_result.text
                         logger.info(f"当前攻击{before_atk}")
+                    else:
+                        # 异常退出
+                        logger.warning("未找到攻击, 停止测序")
+                        return []
 
                     # 进入后续操作，点击选择--点击熔炼装备--判断是否出现天下布武
                     find_equipment_detail = self.find_and_click_equipment_from_right(
@@ -618,13 +660,15 @@ class Find_Stove_Sequence_Test(CustomAction):
                     )
                     if find_equipment_detail.nodes:
                         context.run_task("Click_Select_Equipment")
-                        context.run_task("Click_Smelt_Equipment")
-                        context.run_task("OpenEquipmentStovePage_Next")
 
                         atk_detail = context.run_task("GetCurrentAtk")
                         if atk_detail.nodes:
                             after_atk = atk_detail.nodes[0].recognition.best_result.text
                             logger.info(f"熔炼装备之后 攻击{after_atk}")
+                        else:
+                            # 异常退出
+                            logger.warning("未找到攻击, 停止测序")
+                            return []
                         if after_atk != before_atk:
                             logger.info(f"第{i}次攻击变动")
 
@@ -648,6 +692,10 @@ class Find_Stove_Sequence_Test(CustomAction):
                                 0
                             ].recognition.best_result.text
                             logger.info(f"当前攻击{before_atk}")
+                        else:
+                            # 异常退出
+                            logger.warning("未找到攻击, 停止测序")
+                            return []
                         find_equipment_detail = (
                             self.find_and_click_equipment_from_right(
                                 context, stove_sequence[i] - star
@@ -655,8 +703,6 @@ class Find_Stove_Sequence_Test(CustomAction):
                         )
                         if find_equipment_detail.nodes:
                             context.run_task("Click_Select_Equipment")
-                            context.run_task("Click_Smelt_Equipment")
-                            context.run_task("OpenEquipmentStovePage_Next")
 
                             atk_detail = context.run_task("GetCurrentAtk")
                             if atk_detail.nodes:
@@ -664,6 +710,10 @@ class Find_Stove_Sequence_Test(CustomAction):
                                     0
                                 ].recognition.best_result.text
                                 logger.info(f"熔炼装备之后 攻击{after_atk}")
+                            else:
+                                # 异常退出
+                                logger.warning("未找到攻击, 停止测序")
+                                return []
                             if after_atk != before_atk:
                                 logger.info(f"第{i}次攻击变动")
                                 logger.info(
@@ -681,14 +731,106 @@ class Find_Stove_Sequence_Test(CustomAction):
 
         return stove_sequence_copy
 
+    def get_sunlightImprint_from_sequence(
+        self,
+        context: Context,
+        stove_sequence: list = None,
+        auto_melt: int = None,
+    ):
+        assert len(stove_sequence) == 101
+
+        low_star_num = 0
+        context.run_task("ConfirmPutonArmor")
+        context.run_task("OpenEquipmentStovePage")
+        while True:
+            for i in range(len(stove_sequence)):
+                if context.tasker.stopping:
+                    logger.info("测序被停止")
+                    # 正常退出
+                    return 0
+                if stove_sequence[i] == 0:
+                    # 如果当前序列为0，跳过
+                    low_star_num += 1
+
+                    if i == 100:
+                        logger.info("到了序列末尾")
+                        # 填入低星装备
+                        flag = self.add_low_level_equipment(
+                            context, low_star_num, auto_melt=auto_melt
+                        )
+                        # 正常退出
+                        if flag == False:
+                            return 0
+                        low_star_num = 0
+
+                else:
+                    # 如果当前序列不为0，说明需要放入对应星级的装备
+                    logger.info(f"第{i}次尝试")
+                    # 填入低星装备
+                    flag = self.add_low_level_equipment(
+                        context, low_star_num, auto_melt=auto_melt
+                    )
+                    low_star_num = 0
+                    # 正常退出
+                    if flag == False:
+                        return 0
+                        # 进入后续操作，点击选择--点击熔炼装备
+                    atk_detail = context.run_task("GetCurrentAtk")
+                    if atk_detail.nodes:
+                        before_atk = atk_detail.nodes[0].recognition.best_result.text
+                        logger.info(f"当前攻击{before_atk}")
+                    else:
+                        # 异常退出
+                        logger.warning("未找到攻击, 停止熔炼")
+                        return -1
+                    find_equipment_detail = self.find_and_click_equipment_from_right(
+                        context, stove_sequence[i]
+                    )
+                    if find_equipment_detail.nodes:
+                        context.run_task("Click_Select_Equipment")
+
+                    else:
+                        number = 1
+                        while not find_equipment_detail.nodes:
+                            if stove_sequence[i] + number <= 6:
+                                find_equipment_detail = (
+                                    self.find_and_click_equipment_from_right(
+                                        context, stove_sequence[i] + number
+                                    )
+                                )
+                            else:
+                                # 异常退出
+                                logger.warning(
+                                    f"未找到{stove_sequence[i] + number}星级装备"
+                                )
+                                return -1
+                            number += 1
+                        context.run_task("Click_Select_Equipment")
+
+                    atk_detail = context.run_task("GetCurrentAtk")
+                    if atk_detail.nodes:
+                        after_atk = atk_detail.nodes[0].recognition.best_result.text
+                        logger.info(f"熔炼装备之后 攻击{after_atk}")
+                    else:
+                        logger.warning("未找到攻击, 停止测序")
+                        # 异常退出
+                        return -1
+                    if after_atk != before_atk:
+                        logger.info(f"第{i}次攻击变动")
+                    else:
+                        logger.warning(f"第{i}次攻击未变动")
+                        # 异常退出
+                        return -1
+
     # 执行函数
     def run(
         self,
         context: Context,
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
-        # 这里确定是否要星光
+        # 这里确定目标日光数
         target_sunlight_para = json.loads(argv.custom_action_param)["target_sunlight"]
+        auto_melt_para = json.loads(argv.custom_action_param)["auto_melt"]
 
         base_stove_sequence = [0 for _ in range(101)]
         stove_sequence = self.get_base_stove_sequence(context, base_stove_sequence)
@@ -705,6 +847,11 @@ class Find_Stove_Sequence_Test(CustomAction):
             after_update_stove_sequence = self.upgrade_stove_sequence(
                 context, stove_sequence
             )
+            if after_update_stove_sequence == []:
+                logger.warning(
+                    "迭代后的101序列为空, 出现异常情况, 请检查锻火刻印是否已熔"
+                )
+                return CustomAction.RunResult(success=False)
             logger.info(f"迭代后的101序列为: {after_update_stove_sequence}")
             # 格式化
             low_star_list, sun_list = self.split_zero_sequence_advanced(
@@ -715,4 +862,14 @@ class Find_Stove_Sequence_Test(CustomAction):
         else:
             logger.info("本次101序列不满足目标日光要求")
             return CustomAction.RunResult(success=False)
+
+        if auto_melt_para != 0:
+            checkdetail = self.get_sunlightImprint_from_sequence(
+                context, after_update_stove_sequence, auto_melt=auto_melt_para
+            )
+            if checkdetail == 0:
+                return CustomAction.RunResult(success=True)
+            elif checkdetail == -1:
+                logger.warning("自动熔炼失败, 出现异常情况, 请检查锻火刻印是否已熔")
+                return CustomAction.RunResult(success=False)
         return CustomAction.RunResult(success=True)
