@@ -125,12 +125,12 @@
             "doc": "黑水池,浸泡铠甲期望增加攻击,要求佩戴骨戒,通过释放治疗术,冰盾,死波和吸能术来推序。默认循环30轮"
         },
         {
-            "name": "神锻测序",
+            "name": "神锻测序(测试)",
             "entry": "Find_Stove_Sequence",
             "option": [
-                "目标日光数"
+                "目标日光数及自动熔设定"
             ],
-            "doc": "测序, 最好穿上铠甲之后使用, 低星装备为装备背包第3页的第一个装备, 确保超过101件的低星装备。如果6星序列中日光数满足要求那么则完整测序, 否则停止。"
+            "doc": "测序, 最好穿上铠甲之后使用, 低星装备为装备背包第3页的第一个格子中的, 请确保它是装备另外在它之后不要有非装备的物品, 比如风箱。 确保超过101件的低星装备。如果6星序列中日光数满足要求那么则完整测序, 否则停止。自动熔如果找不到日光装备会用更高星级的装备代替, 退出条件为用完所有3星/6星装备或者由于异常原因导致的日光位置不出日光。请自行检查日光是否符合预期。"
         }
     ],
     "option": {
@@ -296,35 +296,104 @@
                 }
             ]
         },
-        "目标日光数": {
-            "default_case": "18",
+        "目标日光数及自动熔设定": {
+            "default_case": "18日光/自动熔至3星用完",
             "cases": [
                 {
-                    "name": "15",
+                    "name": "15日光/不自动熔",
                     "pipeline_override": {
                         "Find_Stove_Sequence": {
                             "custom_action_param": {
-                                "target_sunlight": 15
+                                "target_sunlight": 15,
+                                "auto_melt": 0
                             }
                         }
                     }
                 },
                 {
-                    "name": "18",
+                    "name": "18日光/不自动熔",
                     "pipeline_override": {
                         "Find_Stove_Sequence": {
                             "custom_action_param": {
-                                "target_sunlight": 18
+                                "target_sunlight": 18,
+                                "auto_melt": 0
                             }
                         }
                     }
                 },
                 {
-                    "name": "21",
+                    "name": "21日光/不自动熔",
                     "pipeline_override": {
                         "Find_Stove_Sequence": {
                             "custom_action_param": {
-                                "target_sunlight": 21
+                                "target_sunlight": 21,
+                                "auto_melt": 0
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "15日光/自动熔至3星用完",
+                    "pipeline_override": {
+                        "Find_Stove_Sequence": {
+                            "custom_action_param": {
+                                "target_sunlight": 15,
+                                "auto_melt": 3
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "18日光/自动熔至3星用完",
+                    "pipeline_override": {
+                        "Find_Stove_Sequence": {
+                            "custom_action_param": {
+                                "target_sunlight": 18,
+                                "auto_melt": 3
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "21日光/自动熔至3星用完",
+                    "pipeline_override": {
+                        "Find_Stove_Sequence": {
+                            "custom_action_param": {
+                                "target_sunlight": 21,
+                                "auto_melt": 3
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "15日光/自动熔至6星用完",
+                    "pipeline_override": {
+                        "Find_Stove_Sequence": {
+                            "custom_action_param": {
+                                "target_sunlight": 15,
+                                "auto_melt": 6
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "18日光/自动熔至6星用完",
+                    "pipeline_override": {
+                        "Find_Stove_Sequence": {
+                            "custom_action_param": {
+                                "target_sunlight": 18,
+                                "auto_melt": 6
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "21日光/自动熔至6星用完",
+                    "pipeline_override": {
+                        "Find_Stove_Sequence": {
+                            "custom_action_param": {
+                                "target_sunlight": 21,
+                                "auto_melt": 6
                             }
                         }
                     }

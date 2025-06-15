@@ -368,7 +368,7 @@
     },
     "Fight_LongPress": {
         "recognition": "DirectHit",
-        "action": "LongPress",
+        "action": "Click",
         "target": [
             297,
             623,
