@@ -415,6 +415,7 @@ class Find_Stove_Sequence_Test(CustomAction):
             zero_counts (list): 包含开头零、非零间零和结尾零的列表，如 [0]
             non_zero_values (list): 非零值列表，如 [5,3]
         """
+
         zero_counts = []
         non_zero_values = []
         current_index = 0
@@ -558,6 +559,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                 before_atk = atk_detail.nodes[0].recognition.best_result.text
                 logger.info(f"当前攻击{before_atk}")
             else:
+                # 异常退出
                 logger.warning("未找到攻击, 停止测序")
                 return []
             find_equipment_detail = self.find_and_click_equipment_from_right(context, 6)
@@ -570,6 +572,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                     after_atk = atk_detail.nodes[0].recognition.best_result.text
                     logger.info(f"熔炼装备之后 攻击{after_atk}")
                 else:
+                    # 异常退出
                     logger.warning("未找到攻击, 停止测序")
                     return []
                 if after_atk != before_atk:
@@ -591,6 +594,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                     before_atk = atk_detail.nodes[0].recognition.best_result.text
                     logger.info(f"当前攻击{before_atk}")
                 else:
+                    # 异常退出
                     logger.warning("未找到攻击, 停止测序")
                     return []
                 find_equipment_detail = self.find_and_click_equipment_from_right(
@@ -605,6 +609,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                         after_atk = atk_detail.nodes[0].recognition.best_result.text
                         logger.info(f"熔炼装备之后 攻击{after_atk}")
                     else:
+                        # 异常退出
                         logger.warning("未找到攻击, 停止测序")
                         return []
                     if after_atk != before_atk:
@@ -645,6 +650,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                         before_atk = atk_detail.nodes[0].recognition.best_result.text
                         logger.info(f"当前攻击{before_atk}")
                     else:
+                        # 异常退出
                         logger.warning("未找到攻击, 停止测序")
                         return []
 
@@ -660,6 +666,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                             after_atk = atk_detail.nodes[0].recognition.best_result.text
                             logger.info(f"熔炼装备之后 攻击{after_atk}")
                         else:
+                            # 异常退出
                             logger.warning("未找到攻击, 停止测序")
                             return []
                         if after_atk != before_atk:
@@ -686,6 +693,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                             ].recognition.best_result.text
                             logger.info(f"当前攻击{before_atk}")
                         else:
+                            # 异常退出
                             logger.warning("未找到攻击, 停止测序")
                             return []
                         find_equipment_detail = (
@@ -703,6 +711,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                                 ].recognition.best_result.text
                                 logger.info(f"熔炼装备之后 攻击{after_atk}")
                             else:
+                                # 异常退出
                                 logger.warning("未找到攻击, 停止测序")
                                 return []
                             if after_atk != before_atk:
@@ -737,7 +746,8 @@ class Find_Stove_Sequence_Test(CustomAction):
             for i in range(len(stove_sequence)):
                 if context.tasker.stopping:
                     logger.info("测序被停止")
-                    return []
+                    # 正常退出
+                    return 0
                 if stove_sequence[i] == 0:
                     # 如果当前序列为0，跳过
                     low_star_num += 1
@@ -748,8 +758,9 @@ class Find_Stove_Sequence_Test(CustomAction):
                         flag = self.add_low_level_equipment(
                             context, low_star_num, auto_melt=auto_melt
                         )
+                        # 正常退出
                         if flag == False:
-                            return []
+                            return 0
                         low_star_num = 0
 
                 else:
@@ -760,16 +771,18 @@ class Find_Stove_Sequence_Test(CustomAction):
                         context, low_star_num, auto_melt=auto_melt
                     )
                     low_star_num = 0
+                    # 正常退出
                     if flag == False:
-                        return []
+                        return 0
                         # 进入后续操作，点击选择--点击熔炼装备
                     atk_detail = context.run_task("GetCurrentAtk")
                     if atk_detail.nodes:
                         before_atk = atk_detail.nodes[0].recognition.best_result.text
                         logger.info(f"当前攻击{before_atk}")
                     else:
+                        # 异常退出
                         logger.warning("未找到攻击, 停止熔炼")
-                        return []
+                        return -1
                     find_equipment_detail = self.find_and_click_equipment_from_right(
                         context, stove_sequence[i]
                     )
@@ -786,10 +799,11 @@ class Find_Stove_Sequence_Test(CustomAction):
                                     )
                                 )
                             else:
-                                logger.info(
+                                # 异常退出
+                                logger.warning(
                                     f"未找到{stove_sequence[i] + number}星级装备"
                                 )
-                                return []
+                                return -1
                             number += 1
                         context.run_task("Click_Select_Equipment")
 
@@ -799,12 +813,14 @@ class Find_Stove_Sequence_Test(CustomAction):
                         logger.info(f"熔炼装备之后 攻击{after_atk}")
                     else:
                         logger.warning("未找到攻击, 停止测序")
-                        return []
+                        # 异常退出
+                        return -1
                     if after_atk != before_atk:
                         logger.info(f"第{i}次攻击变动")
                     else:
-                        logger.info(f"第{i}次攻击未变动")
-                        return []
+                        logger.warning(f"第{i}次攻击未变动")
+                        # 异常退出
+                        return -1
 
     # 执行函数
     def run(
@@ -815,139 +831,45 @@ class Find_Stove_Sequence_Test(CustomAction):
         # 这里确定目标日光数
         target_sunlight_para = json.loads(argv.custom_action_param)["target_sunlight"]
         auto_melt_para = json.loads(argv.custom_action_param)["auto_melt"]
-        logger.info(f"target_sunlight_para: {target_sunlight_para}")
-        logger.info(f"auto_melt_para: {auto_melt_para}")
 
-        # base_stove_sequence = [0 for _ in range(101)]
-        # stove_sequence = self.get_base_stove_sequence(context, base_stove_sequence)
-        # if stove_sequence == []:
-        #     return CustomAction.RunResult(success=False)
+        base_stove_sequence = [0 for _ in range(101)]
+        stove_sequence = self.get_base_stove_sequence(context, base_stove_sequence)
+        if stove_sequence == []:
+            return CustomAction.RunResult(success=False)
 
-        # logger.info(stove_sequence)
-        # count = len([x for x in stove_sequence if x != 0])
-        # logger.info(
-        #     f"本次101序列中共有{count}个日光, 目标为{target_sunlight_para}个日光"
-        # )
-        # if count >= target_sunlight_para:
-        #     logger.info("本次101序列满足目标日光要求")
-        #     after_update_stove_sequence = self.upgrade_stove_sequence(
-        #         context, stove_sequence
-        #     )
-        #     logger.info(f"迭代后的101序列为: {after_update_stove_sequence}")
-        #     # 格式化
-        #     low_star_list, sun_list = self.split_zero_sequence_advanced(
-        #         after_update_stove_sequence
-        #     )
-        #     logger.info(f"垫子序列为: {low_star_list}")
-        #     logger.info(f"日光装备等级序列为: {sun_list}")
-        # else:
-        #     logger.info("本次101序列不满足目标日光要求")
-        #     return CustomAction.RunResult(success=False)
-        after_update_stove_sequence = [
-            3,
-            0,
-            0,
-            0,
-            0,
-            3,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            3,
-            0,
-            0,
-            5,
-            0,
-            0,
-            0,
-            0,
-            0,
-            6,
-            0,
-            0,
-            0,
-            0,
-            5,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            4,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            6,
-            0,
-            0,
-            0,
-            3,
-            5,
-            0,
-            3,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            4,
-            0,
-            5,
-            0,
-            6,
-            0,
-            0,
-            4,
-            0,
-            0,
-            6,
-            3,
-            4,
-            6,
-            0,
-            0,
-            0,
-            3,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-        ]
+        logger.info(stove_sequence)
+        count = len([x for x in stove_sequence if x != 0])
+        logger.info(
+            f"本次101序列中共有{count}个日光, 目标为{target_sunlight_para}个日光"
+        )
+        if count >= target_sunlight_para:
+            logger.info("本次101序列满足目标日光要求")
+            after_update_stove_sequence = self.upgrade_stove_sequence(
+                context, stove_sequence
+            )
+            if after_update_stove_sequence == []:
+                logger.warning(
+                    "迭代后的101序列为空, 出现异常情况, 请检查锻火刻印是否已熔"
+                )
+                return CustomAction.RunResult(success=False)
+            logger.info(f"迭代后的101序列为: {after_update_stove_sequence}")
+            # 格式化
+            low_star_list, sun_list = self.split_zero_sequence_advanced(
+                after_update_stove_sequence
+            )
+            logger.info(f"垫子序列为: {low_star_list}")
+            logger.info(f"日光装备等级序列为: {sun_list}")
+        else:
+            logger.info("本次101序列不满足目标日光要求")
+            return CustomAction.RunResult(success=False)
+
         if auto_melt_para != 0:
-            self.get_sunlightImprint_from_sequence(
+            checkdetail = self.get_sunlightImprint_from_sequence(
                 context, after_update_stove_sequence, auto_melt=auto_melt_para
             )
+            if checkdetail == 0:
+                return CustomAction.RunResult(success=True)
+            elif checkdetail == -1:
+                logger.warning("自动熔炼失败, 出现异常情况, 请检查锻火刻印是否已熔")
+                return CustomAction.RunResult(success=False)
         return CustomAction.RunResult(success=True)
