@@ -62,7 +62,7 @@ class CountTask(CustomAction):
         target_count: 目标次数
         next_node: 达到目标次数后执行的节点
         
-        "CounTask_RunNode"节点：通过interface.json中的override来控制run_task使用的节点内容
+        "CountTask_RunNode"节点：通过interface.json中的override来控制run_task使用的节点内容
         '''
         argv: dict = json.loads(argv.custom_action_param)
         logger.info(argv)
@@ -75,7 +75,7 @@ class CountTask(CustomAction):
         logger.info(f"count = {count}, target_count = {target_count}")
         while count < target_count:
             logger.info(f"excute {count}")
-            context.run_task("CounTask_RunNode")
+            context.run_task("CountTask_RunNode")
             count += 1
 
         for i in argv.get("next_node"):
