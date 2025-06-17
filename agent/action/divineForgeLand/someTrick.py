@@ -153,10 +153,11 @@ class PoolTrick_Test(CustomAction):
         recoDetail = context.run_task("OCRArmorATK")
         if recoDetail.nodes:
             armorATK = recoDetail.nodes[0].recognition.best_result.text
+            armorATK = int(armorATK.replace(" ", ""))
             logger.info(f"检测当前攻击力数值: {armorATK}")
 
         context.run_task("BackText")
-        return int(armorATK)
+        return armorATK
 
     # 这里检查火神
     def checkFiregod(self, context: Context):
@@ -261,8 +262,8 @@ class PoolTrick_Test(CustomAction):
 class SunlightTrick_Test(CustomAction):
     def getImprintNumber(self, context: Context) -> list:
         # Init
-        sunlightimprintnumber = 0
-        starlightimprintnumber = 0
+        sunlightimprintnumber = [0]
+        starlightimprintnumber = [0]
 
         # 打开刻印背包
         context.run_task("OpenArmorPage")
