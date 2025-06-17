@@ -69,6 +69,35 @@ class JJC101(CustomAction):
             context.run_task("JJC_Fight_ClearCurrentLayer")
 
         context.run_task("Fight_OpenedDoor")
+    
+    def handle_layers_event(self, context: Context, layers: int):
+        if layers == 1:
+            fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
+        # 自动叫狗事件
+        if layers == 29:
+            context.run_task("JJC_CallDog_Test")
+
+        # 打开自然之力攻击
+        if layers == 55:
+            context.run_task("JJC_OpenForceOfNature")
+
+        if layers == 65:
+            # 冒险系称号
+            fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
+            fightUtils.title_learn("冒险", 2, "探险家", 1, context)
+            fightUtils.title_learn("冒险", 3, "暗行者", 1, context)
+            fightUtils.title_learn("冒险", 4, "魔盗", 1, context)
+            fightUtils.title_learn("冒险", 5, "异界游侠", 1, context)
+
+            fightUtils.title_learn_branch("冒险", 5, "生命强化", 3, context)
+            fightUtils.title_learn_branch("冒险", 5, "攻击强化", 3, context)
+            fightUtils.title_learn_branch("冒险", 5, "魔力强化", 3, context)
+
+            fightUtils.title_learn_branch("魔法", 5, "魔力强化", 3, context)
+            fightUtils.title_learn_branch("魔法", 5, "魔法强化", 3, context)
+        
+        # *5层的角斗场事件
+        self.handle_abattoir_event(context, layers)
 
     # 执行函数
     def run(
@@ -108,32 +137,8 @@ class JJC101(CustomAction):
                 continue
             logger.info(f"Start Explore {layers} layer.")
 
-            # 自动叫狗事件
-            if layers == 29:
-                context.run_task("JJC_CallDog_Test")
-
-            # 打开自然之力攻击
-            if layers == 55:
-                context.run_task("JJC_OpenForceOfNature")
-
-            # 65自动点称号
-            if layers == 65:
-                # 冒险系称号
-                fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
-                fightUtils.title_learn("冒险", 2, "探险家", 1, context)
-                fightUtils.title_learn("冒险", 3, "暗行者", 1, context)
-                fightUtils.title_learn("冒险", 4, "魔盗", 1, context)
-                fightUtils.title_learn("冒险", 5, "异界游侠", 1, context)
-
-                fightUtils.title_learn_branch("冒险", 5, "生命强化", 3, context)
-                fightUtils.title_learn_branch("冒险", 5, "攻击强化", 3, context)
-                fightUtils.title_learn_branch("冒险", 5, "魔力强化", 3, context)
-
-                fightUtils.title_learn_branch("魔法", 5, "魔力强化", 3, context)
-                fightUtils.title_learn_branch("魔法", 5, "魔法强化", 3, context)
-
-            # 角斗场事件
-            self.handle_abattoir_event(context, layers)
+            # 检测是否触发层数事件
+            self.handle_layers_event(context, layers)
 
             # Boos层开始探索
             if layers >= 30 and layers % 10 == 0:
