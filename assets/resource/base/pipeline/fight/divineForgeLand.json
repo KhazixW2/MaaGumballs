@@ -369,7 +369,7 @@
             64
         ],
         "action": "Click",
-        "post_delay": 1000,
+        "post_delay": 1250,
         "timeout": 3000,
         "target": [
             91,

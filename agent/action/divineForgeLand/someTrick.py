@@ -502,7 +502,7 @@ class Find_Stove_Sequence_Test(CustomAction):
                 # 如果找不到装备又没有上一页按钮则说明需要SL
                 if not previous_page_button_detail.nodes:
                     return find_equipment_detail
-
+        time.sleep(1)
         return find_equipment_detail
 
     def add_low_level_equipment(
