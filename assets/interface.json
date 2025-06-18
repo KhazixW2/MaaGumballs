@@ -77,7 +77,7 @@
             "name": "启动游戏",
             "entry": "Start_Up",
             "doc": [
-                "#新版本可以来github下载最新的资源包,[MaaGumballs](https://github.com/KhazixW2/MaaGumballs)",
+                "## 新版本可以来github下载最新的资源包,[MaaGumballs](https://github.com/KhazixW2/MaaGumballs)",
                 "## 自动化黑盒测试工具用户许可协议",
                 "",
                 "### 第一条 定义",
@@ -130,7 +130,7 @@
             "name": "刷竞技场",
             "entry": "JJC",
             "doc": [
-                "# MaaGB全自动竞技场说明\n",
+                "## MaaGB全自动竞技场说明\n",
                 "### 自动执行功能说明\n",
                 "1. **竞技场与阵容**  ",
                 "   - 自动进入竞技场  ",
