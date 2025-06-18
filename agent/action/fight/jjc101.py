@@ -43,26 +43,27 @@ class JJC101(CustomAction):
             if OpenDetail.nodes:
                 if not fightUtils.checkEquipment("宝物", 6, "土系魔法书", context):
                     fightUtils.findEquipment(6, "土系魔法书", True, context)
-                
+
                 if not fightUtils.checkEquipment("鞋子", 6, "次元鞋", context):
                     fightUtils.findEquipment(6, "次元鞋", True, context)
-                
+
                 if not fightUtils.checkEquipment("盔甲", 6, "执政官铠甲", context):
                     fightUtils.findEquipment(6, "执政官铠甲", True, context)
-                    
+
                 if not fightUtils.checkEquipment("头盔", 7, "斯巴达头盔", context):
                     fightUtils.findEquipment(7, "斯巴达头盔", True, context)
-                    
+
                 if not fightUtils.checkEquipment("项链", 6, "星月教项链", context):
                     fightUtils.findEquipment(6, "星月教项链", True, context)
-                    
+
                 context.run_task("BackText")
             else:
                 logger.info("背包打开失败")
                 return False
-        
+
         logger.info(f"current layers{layers},装备检查完成")
         return True
+
     def Check_DefaultTitle(self, context: Context, layers: int):
         """
         检查默认称号
@@ -125,7 +126,7 @@ class JJC101(CustomAction):
                 fightUtils.cast_magic_special("天眼", context)
             elif fightUtils.cast_magic("光", "祝福术", context):
                 pass
-            else :
+            else:
                 logger.error("召唤狼人失败")
                 return False
 
@@ -413,7 +414,9 @@ class JJC_Fight_ClearCurrentLayer(CustomAction):
             logger.info("识别到 Fight_ClosedDoor")
             for r in range(rows):
                 for c in range(cols):
-                    if fightUtils.is_roi_in_or_mostly_in(recoDetail.box, roi_matrix[r][c]):
+                    if fightUtils.is_roi_in_or_mostly_in(
+                        recoDetail.box, roi_matrix[r][c]
+                    ):
                         logger.info(f"识别到 ClosedDoor 位于 {r+1},{c+1}")
                         return r, c
         return 0, 0
@@ -548,5 +551,19 @@ class Fight_TestAction(CustomAction):
         context: Context,
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
+
+        return CustomAction.RunResult(success=True)
+
+
+@AgentServer.custom_action("JJC_DragonWishTest")
+class JJC_DragonWishTest(CustomAction):
+
+    # 执行函数
+    def run(
+        self,
+        context: Context,
+        argv: CustomAction.RunArg,
+    ) -> CustomAction.RunResult:
+        fightUtils.dragonwish("工资", context)
 
         return CustomAction.RunResult(success=True)

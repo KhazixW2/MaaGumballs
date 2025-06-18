@@ -1,5 +1,6 @@
 from maa.context import Context
 from utils import logger
+from typing import Literal
 
 import re
 import time
@@ -28,6 +29,7 @@ EquipmentType: dict = {
     "鞋子": [536, 491, 122, 123],
     "宝物": [411, 477, 131, 141],
 }
+
 
 # 从字符串中识别并返回第一个数字
 def extract_numbers(input_string):
@@ -70,6 +72,7 @@ def is_roi_in_or_mostly_in(roi1, roi2):
         # 判断交集面积是否超过 roi1 面积的一半
         return intersection_area / roi1_area >= 0.5
     return False
+
 
 def cast_magic(Type: str, MagicName: str, context: Context):
     """施放指定类型的魔法
@@ -367,3 +370,168 @@ def findItem(
             return False
 
     return True
+
+
+def dragonwish(targetWish: Literal["工资", "神锻", "测试"], context: Context):
+    if targetWish == "工资":
+        wishlist = [
+            "我要获得钻石",
+            "我要变得富有",
+            "我想获得巨龙之力",
+            "我想学习龙语魔法",
+            "我要最凶残的装备",
+            "我要你的收藏品",
+            "我要您的碎片",
+            "我要大量的矿石",
+            "我要更多的伙伴",
+            "我要变得更强",
+            "我要神奇的果实",
+        ]
+    elif targetWish == "神锻":
+        wishlist = [
+            "我想获得巨龙之力",
+            "我想学习龙语魔法",
+            "我要变得更强",
+            "我要神奇的果实",
+            "我要获得钻石",
+            "我要最凶残的装备",
+            "我要你的收藏品",
+            "我要变得富有",
+            "我要您的碎片",
+            "我要更多的伙伴",
+            "我要大量的矿石",
+        ]
+    elif targetWish == "测试":
+        wishlist = [
+            "我要变得更强",
+            "我要变得富有",
+            "我要最凶残的装备",
+            "我要您的碎片",
+            "我要更多的伙伴",
+            "我要神奇的果实",
+            "我要你的收藏品",
+            "我要获得钻石",
+            "我想学习龙语魔法",
+            "我要大量的矿石",
+            "我想获得巨龙之力",
+        ]
+    else:
+        logger.error("请输入[工资, 神锻, 测试]中的一个")
+    # 神龙许愿list = ["我要获得钻石", "我要神奇的果实", "我想获得巨龙之力", "我要学习龙语魔法", "我要变得更强","我要最凶残的装备", "我要变得富有", "我要大量的矿石", "我要你的收藏品", "我要您的碎片", "我要更多的伙伴"]
+
+    # 等待5秒，确保界面加载完毕，可以考虑移除
+    time.sleep(5)
+    Itemdetail = context.run_task("Fight_FindItem")
+
+    if Itemdetail.nodes:
+        # 集齐七个龙珠并进入到许愿界面
+        textdetail = context.run_task("Fight_FindText")
+        min_index = 999
+        min_index_wish = None
+        min_index_wish_pos = None
+        if textdetail.nodes:
+            for result in textdetail.nodes[0].recognition.filterd_results:
+                if result.text.endswith("！"):
+                    result.text = result.text[:-1]
+                cuurent_wish_index = wishlist.index(result.text)
+                logger.info(f"当前许愿: {result.text}")
+                if cuurent_wish_index < min_index:
+                    min_index = cuurent_wish_index
+                    min_index_wish = result.text
+                    min_index_wish_pos = result.box
+            if min_index_wish_pos:
+                center_x, center_y = (
+                    min_index_wish_pos[0] + min_index_wish_pos[2] // 2,
+                    min_index_wish_pos[1] + min_index_wish_pos[3] // 2,
+                )
+                context.tasker.controller.post_click(center_x, center_y).wait()
+                time.sleep(2)
+
+            logger.info(f"已点击愿望: {min_index_wish}")
+            status = True
+            while status:
+                image = context.tasker.controller.post_screencap().wait().get()
+                TextRecoDetail = context.run_recognition(
+                    "Fight_FindText",
+                    image,
+                    pipeline_override={
+                        "Fight_FindText": {
+                            "expected": "神龙冈布奥",
+                        }
+                    },
+                )
+                status = TextRecoDetail
+                if TextRecoDetail:
+                    center_x, center_y = (
+                        TextRecoDetail.box[0] + TextRecoDetail.box[2] // 2,
+                        TextRecoDetail.box[1] + TextRecoDetail.box[3] // 2,
+                    )
+                    context.tasker.controller.post_click(center_x, center_y).wait()
+                    time.sleep(1)
+            # 已点击愿望，等待界面加载
+            if min_index_wish in [
+                "我要你的收藏品",
+                "我想学习龙语魔法",
+                "我想获得巨龙之力",
+                "我要最凶残的装备",
+                "我要您的碎片",
+            ]:
+                pass
+
+            elif min_index_wish in ["我要更多的伙伴", "我要变得富有"]:
+                # 等待地图加载
+                time.sleep(10)
+                for _ in range(3):
+                    cast_magic("暗", "死亡波纹", context)
+                # 拾取全部
+                context.run_task(
+                    "Fight_LongPress",
+                    pipeline_override={
+                        "Fight_LongPress": {
+                            "target": [286, 465, 140, 129],
+                        }
+                    },
+                )
+                context.run_task("Fight_FindMidlevelExit")
+
+            elif min_index_wish in ["我要获得钻石"]:
+                # 等待地图加载
+                time.sleep(10)
+
+                for _ in range(110):
+                    time.sleep(0.1)
+                    context.tasker.controller.post_click(356, 407).wait()
+                    context.tasker.controller.post_click(214, 681).wait()
+                    context.tasker.controller.post_click(493, 684).wait()
+
+                context.run_task("Fight_FindMidlevelExit")
+            elif min_index_wish in ["我要大量的矿石"]:
+                # 等待地图加载
+                time.sleep(10)
+                for _ in range(2):
+                    for _ in range(12):
+                        time.sleep(0.1)
+                        context.tasker.controller.post_click(365, 535).wait()
+                        context.tasker.controller.post_click(219, 813).wait()
+                        context.tasker.controller.post_click(505, 805).wait()
+                    time.sleep(1)
+                    # 拾取全部
+                    context.run_task(
+                        "Fight_LongPress",
+                        pipeline_override={
+                            "Fight_LongPress": {
+                                "target": [33, 595, 103, 108],
+                            }
+                        },
+                    )
+                context.run_task("Fight_FindMidlevelExit")
+            elif min_index_wish in ["我要变得更强", "我要神奇的果实"]:
+                # TODO: 调用boss层
+
+                if targetWish == "神锻":
+                    pass
+                pass
+        else:
+            # 没有出现目标，不进行后续处理
+            pass
+    return min_index_wish

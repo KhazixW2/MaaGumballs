@@ -426,5 +426,59 @@
         "post_delay": 500,
         "next": "Fight_BossEntry",
         "timeout": 2000
+    },
+    "Fight_FindMidlevelExit": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/MidLevelExit_time_stop.png",
+            "fight/MidLevelExit.png"
+        ],
+        "roi": [
+            3,
+            742,
+            716,
+            233
+        ],
+        "target_offset": [
+            0,
+            30,
+            0,
+            0
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 3000
+    },
+    "Fight_FindItem": {
+        "recognition": "TemplateMatch",
+        "template": "items/神龙的愿望.png",
+        "roi": [
+            21,
+            217,
+            682,
+            762
+        ],
+        "action": "DoNothing",
+        "post_delay": 1000,
+        "threshold": 0.8,
+        "timeout": 2000
+    },
+    "Fight_FindText": {
+        "recognition": "OCR",
+        "expected": "(我想|我要).*",
+        "roi": [
+            21,
+            217,
+            682,
+            762
+        ],
+        "action": "DoNothing",
+        "post_delay": 1000,
+        "threshold": 0.8,
+        "timeout": 2000
+    },
+    "dragonwish_test": {
+        "action": "Custom",
+        "custom_action": "JJC_DragonWishTest"
     }
 }
