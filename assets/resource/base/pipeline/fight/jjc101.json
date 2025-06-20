@@ -1,7 +1,8 @@
 {
     "JJC": {
         "next": [
-            "JJC_Start"
+            "JJC_Start",
+            "JJC_Fighting"
         ],
         "interrupt": [
             "MapSwipeDownToUp"
@@ -150,7 +151,6 @@
         "recognition": "OCR",
         "expected": [
             "翻找",
-            "进入",
             "查看",
             "离开",
             "刻上名字"

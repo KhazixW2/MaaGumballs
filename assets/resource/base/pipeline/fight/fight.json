@@ -500,6 +500,21 @@
         "next": "Fight_BossEntry",
         "timeout": 2000
     },
+    "Fight_CheckDragonBall": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight\\UniversalUI\\DragonBall_6.png"
+        ],
+        "roi": [
+            262,
+            0,
+            216,
+            157
+        ],
+        "action": "DoNothing",
+        "post_delay": 200,
+        "timeout": 2000
+    },
     "Fight_FindDragon": {
         "recognition": "TemplateMatch",
         "template": [

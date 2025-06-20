@@ -285,9 +285,13 @@ def findEquipment(
     equipment_path = f"equipments/{equipmentLevel}level/{equipmentName}.png"
 
     # 初始化背包
-    image = context.tasker.controller.post_screencap().wait().get()
-    if context.run_recognition("Bag_ToLeftestPage", image):
-        context.run_task("Bag_ToLeftestPage")
+    while BagRecoDetail := context.run_recognition(
+        "Bag_ToPrevPage", context.tasker.controller.post_screencap().wait().get()
+    ):
+        box = BagRecoDetail.best_result.box
+        center_x, center_y = box[0] + box[2] // 2, box[1] + box[3] // 2
+        context.tasker.controller.post_click(center_x, center_y).wait()
+        time.sleep(0.5)
 
     # 开始寻找背包
     while True:
@@ -314,10 +318,7 @@ def findEquipment(
                 time.sleep(1)
                 context.run_task("Bag_LoadItem")
             break
-        elif context.run_recognition(
-            "Bag_ToNextPage",
-            context.tasker.controller.post_screencap().wait().get(),
-        ):
+        elif context.run_recognition("Bag_ToNextPage", image):
             context.run_task("Bag_ToNextPage")
         else:
             logger.info(f"背包未找到: {equipmentName}")
@@ -335,9 +336,13 @@ def findItem(
     equipment_path = f"items/{equipmentName}.png"
 
     # 初始化背包
-    image = context.tasker.controller.post_screencap().wait().get()
-    if context.run_recognition("Bag_ToLeftestPage", image):
-        context.run_task("Bag_ToLeftestPage")
+    while BagRecoDetail := context.run_recognition(
+        "Bag_ToPrevPage", context.tasker.controller.post_screencap().wait().get()
+    ):
+        box = BagRecoDetail.best_result.box
+        center_x, center_y = box[0] + box[2] // 2, box[1] + box[3] // 2
+        context.tasker.controller.post_click(center_x, center_y).wait()
+        time.sleep(0.5)
 
     # 开始寻找
     while True:
@@ -372,10 +377,7 @@ def findItem(
                     logger.info(f"使用物品 {equipmentName}, at {dst_x},{dst_y}")
                     context.tasker.controller.post_click(dst_x, dst_y).wait()
             break
-        elif context.run_recognition(
-            "Bag_ToNextPage",
-            context.tasker.controller.post_screencap().wait().get(),
-        ):
+        elif context.run_recognition("Bag_ToNextPage", image):
             context.run_task("Bag_ToNextPage")
         else:
             logger.info(f"背包未找到: {equipmentName}")
@@ -607,12 +609,10 @@ def dragonwish(targetWish: str, context: Context):
                     },
                 )
                 for _ in range(3):
-                    cast_magic_detail = cast_magic("暗", "死亡波纹", context)
-                    if not cast_magic_detail:
-                        logger.info("没有死波，尝试使用地刺")
-                        cast_magic_detail = cast_magic(
-                            "土", "地刺术", context, (350, 400)
-                        )
+                    if not cast_magic("暗", "死亡波纹", context):
+                        if not cast_magic("土", "地刺术", context, (350, 400)):
+                            cast_magic("火", "流星雨", context, (350, 400))
+
                 # cast_magic_special("天眼", context)
                 logger.info("没有死波没有地刺,试试天眼吧！")
 
