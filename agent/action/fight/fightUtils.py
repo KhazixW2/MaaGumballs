@@ -74,12 +74,13 @@ def is_roi_in_or_mostly_in(roi1, roi2):
     return False
 
 
-def cast_magic(Type: str, MagicName: str, context: Context):
+def cast_magic(Type: str, MagicName: str, context: Context, Target_pos: tuple = None):
     """施放指定类型的魔法
 
     Args:
         Type: 魔法的类型，如 '火', '土', '气' 等
         MagicName: 具体的魔法名称，如 '祝福术', '石肤术' 等
+        Target_pos: 目标位置，如 (x, y)
         context: 游戏上下文对象，包含当前状态信息
 
     Returns:
@@ -110,11 +111,15 @@ def cast_magic(Type: str, MagicName: str, context: Context):
         image,
         pipeline_override={"Fight_Magic_Cast": {"expected": MagicName}},
     ):
-        context.run_task(
-            "Fight_Magic_Cast",
-            pipeline_override={"Fight_Magic_Cast": {"expected": MagicName}},
-        )
-        logger.info(f"施放魔法:{MagicName}")
+        if not Target_pos:
+            context.run_task(
+                "Fight_Magic_Cast",
+                pipeline_override={"Fight_Magic_Cast": {"expected": MagicName}},
+            )
+            logger.info(f"施放魔法:{MagicName}")
+        else:
+            context.tasker.controller.post_click(Target_pos[0], Target_pos[1]).wait()
+            logger.info(f"施放魔法:{MagicName}在{Target_pos[0], Target_pos[1]}")
     else:
         logger.info(f"没有找到对应的魔法:{MagicName}")
         context.run_task("BackText")
@@ -598,9 +603,16 @@ def dragonwish(targetWish: str, context: Context):
                         }
                     },
                 )
-
                 for _ in range(3):
-                    cast_magic("暗", "死亡波纹", context)
+                    cast_magic_detail = cast_magic("暗", "死亡波纹", context)
+                    if not cast_magic_detail:
+                        logger.info("没有死波，尝试使用地刺")
+                        cast_magic_detail = cast_magic(
+                            "土", "地刺术", context, (350, 400)
+                        )
+                # cast_magic_special("天眼", context)
+                logger.info("没有死波没有地刺,试试天眼吧！")
+
                 # 拾取全部
                 context.run_task(
                     "Fight_LongPress",
