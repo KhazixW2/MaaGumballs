@@ -368,10 +368,12 @@ def findItem(
                 )
                 context.tasker.controller.post_click(center_x, center_y).wait()
                 time.sleep(1)
-                LoadItemdetail = context.run_task("Bag_LoadItem")
+
+                if context.run_recognition("Bag_LoadItem"):
+                    context.run_task("Bag_LoadItem")
                 # 使用所有
-                if not LoadItemdetail:
-                    LoadItemdetail = context.run_task("Bag_LoadAllItem")
+                else:
+                    context.run_task("Bag_LoadAllItem")
 
                 if (dst_x != 0) or (dst_y != 0):
                     logger.info(f"使用物品 {equipmentName}, at {dst_x},{dst_y}")
