@@ -16,13 +16,39 @@ boss_x, boss_y = 360, 800
 
 @AgentServer.custom_action("JJC101")
 class JJC101(CustomAction):
+    def __init__(self):
+        super().__init__()
+        self.isHaveSpartanHat = False
+        self.isHaveDog = False
+        self.layers = 1  # 原layers变量
 
-    def Check_DefaultEquipment(self, context: Context, layers: int):
+    def initialize(self, context: Context):
+        # 检查当前层数
+        RunResult = context.run_task("Fight_CheckLayer")
+        if RunResult.nodes:
+            self.layers = fightUtils.extract_numbers(
+                RunResult.nodes[0].recognition.best_result.text
+            )
+
+        # 进入地图初始化
+        logger.info(f"当前层数: {self.layers}, 进入地图初始化")
+        context.run_task("Bag_Open")
+        if not fightUtils.checkEquipment("头盔", 7, "斯巴达的头盔", context):
+            if fightUtils.findEquipment(7, "斯巴达的头盔", True, context):
+                self.isHaveSpartanHat = True
+
+        if not fightUtils.findItem("东方剪纸", False, context):
+            logger.info("未找到东方剪纸, 已经叫过狗了")
+            self.isHaveDog = True
+
+        context.run_task("Fight_ReturnMainWindow")
+
+    def Check_DefaultEquipment(self, context: Context):
         """
         检查默认装备
         1. 检查第1层和第27层的装备
         """
-        if layers == 1 or layers == 27 or layers == 64:
+        if self.layers == 1 or self.layers == 27 or self.layers == 64:
             OpenDetail = context.run_task("Bag_Open")
             if OpenDetail.nodes:
                 if not fightUtils.checkEquipment("腰带", 1, "贵族丝带", context):
@@ -38,7 +64,7 @@ class JJC101(CustomAction):
             else:
                 logger.info("背包打开失败")
                 return False
-        elif layers >= 30 and layers % 10 == 1:  # 装备土系魔法书
+        elif self.layers >= 30 and self.layers % 10 == 1:  # 装备土系魔法书
             OpenDetail = context.run_task("Bag_Open")
             if OpenDetail.nodes:
                 if not fightUtils.checkEquipment("宝物", 6, "土系魔法书", context):
@@ -63,19 +89,19 @@ class JJC101(CustomAction):
         else:
             return True
 
-        logger.info(f"current layers {layers},装备检查完成")
+        logger.info(f"current layers {self.layers},装备检查完成")
         return True
 
-    def Check_DefaultTitle(self, context: Context, layers: int):
+    def Check_DefaultTitle(self, context: Context):
         """
         检查默认称号
         1. 检查1、29和64层的称号
         """
-        if layers == 1:
+        if self.layers == 1:
             fightUtils.title_learn("魔法", 1, "魔法学徒", 3, context)
             fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
             context.run_task("Fight_ReturnMainWindow")
-        elif layers == 27:
+        elif self.layers == 27:
             fightUtils.title_learn("战斗", 1, "见习战士", 1, context)
             fightUtils.title_learn("战斗", 2, "战士", 3, context)
             fightUtils.title_learn("战斗", 3, "剑舞者", 1, context)
@@ -95,8 +121,7 @@ class JJC101(CustomAction):
 
             context.run_task("Fight_ReturnMainWindow")
             context.run_task("Save_Status")
-        elif layers == 64:
-
+        elif self.layers == 64:
             fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
             fightUtils.title_learn("冒险", 2, "探险家", 1, context)
             fightUtils.title_learn("冒险", 3, "暗行者", 1, context)
@@ -110,87 +135,17 @@ class JJC101(CustomAction):
 
             fightUtils.title_learn_branch("魔法", 5, "魔力强化", 3, context)
             fightUtils.title_learn_branch("魔法", 5, "魔法强化", 3, context)
-
             context.run_task("Fight_ReturnMainWindow")
 
-    def handle_abattoir_event(self, context: Context, layers: int):
-        image = context.tasker.controller.post_screencap().wait().get()
-        if layers % 10 == 5 and context.run_recognition(
-            "JJC_Find_Abattoir",
-            image,
+        return True
+
+    def Check_DefaultStatus(self, context: Context):
+        # boos战前和战后操作
+        if (
+            self.layers >= 69
+            and self.layers <= 90
+            and (self.layers % 10 == 9 or self.layers % 10 == 1)
         ):
-            logger.info(f"current layers {layers} 开始进入角斗场战斗！！！")
-            context.run_task("JJC_Find_Abattoir")
-            if layers <= 25:
-                fightUtils.cast_magic("光", "祝福术", context)
-                for _ in range(3):
-                    fightUtils.cast_magic_special("天眼", context)
-            elif layers <= 55:
-                for _ in range(5):
-                    context.tasker.controller.post_click(boss_x, boss_y).wait()
-                    time.sleep(0.3)
-            else:
-                # 打开背包
-                time.sleep(3)
-                context.run_task("Bag_Open")
-                fightUtils.findItem("异域的灯芯", True, context, 360, 810)
-                context.run_task("Bag_Open")
-                fightUtils.findItem("异域的灯芯", True, context, 360, 810)
-
-            time.sleep(1)
-            context.run_task("Fight_Victory")
-            context.run_task("JJC_Abattoir_Chest")
-            context.run_task("Fight_OpenedDoor")
-
-    def handle_boos_event(self, context: Context, layers: int):
-        if layers <= 60:
-            fightUtils.cast_magic("光", "祝福术", context)
-            for _ in range(5):
-                context.tasker.controller.post_click(boss_x, boss_y).wait()
-                time.sleep(0.1)
-
-        elif layers <= 70:
-            fightUtils.cast_magic("水", "冰锥术", context)
-            for _ in range(4):
-                context.tasker.controller.post_click(boss_x, boss_y).wait()
-                time.sleep(0.1)
-            fightUtils.cast_magic("土", "石肤术", context)
-            fightUtils.cast_magic("水", "治疗术", context)
-
-        elif layers <= 90:
-            fightUtils.cast_magic("火", "失明术", context)
-            fightUtils.cast_magic("气", "静电场", context)
-            if not fightUtils.cast_magic("水", "冰锥术", context):
-                if not fightUtils.cast_magic("暗", "变形术", context):
-                    fightUtils.cast_magic("土", "石肤术", context)
-            fightUtils.cast_magic("水", "寒冰护盾", context)
-            fightUtils.cast_magic("水", "寒冰护盾", context)
-            fightUtils.cast_magic("土", "石肤术", context)
-            fightUtils.cast_magic("光", "神恩术", context)
-            for _ in range(3):
-                context.tasker.controller.post_click(boss_x, boss_y).wait()
-            time.sleep(3)
-
-        elif layers == 100:
-            fightUtils.cast_magic("气", "时间停止", context)
-            fightUtils.cast_magic("气", "瓦解射线", context)
-            for _ in range(7):
-                context.tasker.controller.post_click(boss_x, boss_y).wait()
-                time.sleep(0.1)
-
-        # 捡东西
-        time.sleep(2)
-        context.run_task("Fight_OpenedDoor")
-
-    def handle_layers_event(self, context: Context, layers: int):
-        self.Check_DefaultEquipment(context, layers)
-        self.Check_DefaultTitle(context, layers)
-
-        # 打开自然之力攻击
-        if layers >= 69 and layers <= 90 and layers % 10 == 1:
-            context.run_task("JJC_OpenForceOfNature")
-
-        if layers >= 69 and layers <= 90 and layers % 10 == 9:
             context.run_task("JJC_OpenForceOfNature")
             StatusDetail: dict = fightUtils.checkGumballsStatusV2(context)
             if (
@@ -206,8 +161,100 @@ class JJC101(CustomAction):
             else:
                 logger.info("当前生命值大于70%，不使用治疗")
 
-        # *5层的角斗场事件
-        self.handle_abattoir_event(context, layers)
+        # 保命
+        if self.layers == 89:
+            fightUtils.cast_magic("光", "神圣重生", context)
+
+        return True
+
+    def handle_abattoir_event(self, context: Context):
+        image = context.tasker.controller.post_screencap().wait().get()
+        if self.layers % 10 == 5 and context.run_recognition(
+            "JJC_Find_Abattoir",
+            image,
+        ):
+            logger.info(f"current layers {self.layers} 开始进入角斗场战斗！！！")
+            context.run_task("JJC_Find_Abattoir")
+            if self.layers <= 25:
+                fightUtils.cast_magic("光", "祝福术", context)
+                for _ in range(3):
+                    fightUtils.cast_magic_special("天眼", context)
+            elif self.layers <= 55:
+                for _ in range(5):
+                    context.tasker.controller.post_click(boss_x, boss_y).wait()
+                    time.sleep(0.3)
+            else:
+                # 打开背包
+                time.sleep(3)
+                context.run_task("Bag_Open")
+                fightUtils.findItem("异域的灯芯", True, context, 360, 810)
+                context.run_task("Bag_Open")
+                fightUtils.findItem("异域的灯芯", True, context, 360, 810)
+
+            time.sleep(1)
+            context.run_task("Fight_Victory")
+            context.run_task("JJC_Abattoir_Chest")
+            context.run_task("Fight_OpenedDoor")
+        return True
+
+    def handle_boos_event(self, context: Context):
+        if self.layers <= 60:
+            fightUtils.cast_magic("光", "祝福术", context)
+            for _ in range(5):
+                context.tasker.controller.post_click(boss_x, boss_y).wait()
+                time.sleep(0.1)
+
+        elif self.layers <= 70:
+            fightUtils.cast_magic("水", "冰锥术", context)
+            for _ in range(4):
+                context.tasker.controller.post_click(boss_x, boss_y).wait()
+                time.sleep(0.1)
+            fightUtils.cast_magic("土", "石肤术", context)
+            fightUtils.cast_magic("水", "治疗术", context)
+
+        elif self.layers <= 80:
+            fightUtils.cast_magic("火", "失明术", context)
+            fightUtils.cast_magic("气", "静电场", context)
+            if not fightUtils.cast_magic("水", "冰锥术", context):
+                if not fightUtils.cast_magic("暗", "变形术", context):
+                    fightUtils.cast_magic("土", "石肤术", context)
+            fightUtils.cast_magic("水", "寒冰护盾", context)
+            fightUtils.cast_magic("水", "寒冰护盾", context)
+            fightUtils.cast_magic("土", "石肤术", context)
+            fightUtils.cast_magic("光", "神恩术", context)
+            for _ in range(3):
+                context.tasker.controller.post_click(boss_x, boss_y).wait()
+            time.sleep(3)
+
+        elif self.layers == 100:
+            fightUtils.cast_magic("气", "时间停止", context)
+            fightUtils.cast_magic("气", "瓦解射线", context)
+            for _ in range(7):
+                context.tasker.controller.post_click(boss_x, boss_y).wait()
+                time.sleep(0.1)
+
+        # 捡东西
+        time.sleep(2)
+        context.run_task("Fight_OpenedDoor")
+        return True
+
+    def handle_dog_event(self, context: Context):
+        # 自动叫狗事件
+        if self.layers >= 27 and self.layers <= 29 and self.isHaveDog != True:
+            if fightUtils.Auto_CallDog(context):
+                self.isHaveDog = True
+            elif self.layers == 29:
+                logger.error("29层未触发毁灭, 自动叫狗失败, 太黑了吧, 用户来接管吧")
+                return False
+        return True
+
+    def handle_layers_event(self, context: Context):
+        self.Check_DefaultEquipment(context)
+        self.Check_DefaultTitle(context)
+        self.Check_DefaultStatus(context)
+        self.handle_dog_event(context)
+        self.handle_abattoir_event(context)
+        return True
 
     # 执行函数
     def run(
@@ -215,33 +262,11 @@ class JJC101(CustomAction):
         context: Context,
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
-        # init param
-        layers = 1
-        isHaveSpartanHat = False
-        isHaveDog = False
 
-        # 检查当前层数
-        RunResult = context.run_task("Fight_CheckLayer")
-        if RunResult.nodes:
-            layers = fightUtils.extract_numbers(
-                RunResult.nodes[0].recognition.best_result.text
-            )
+        # initialize
+        self.initialize(context)
 
-        # 进入地图初始化
-        logger.info(f"当前层数: {layers}, 进入地图初始化")
-        context.run_task("Bag_Open")
-        if not fightUtils.checkEquipment("头盔", 7, "斯巴达的头盔", context):
-            if fightUtils.findEquipment(7, "斯巴达的头盔", True, context):
-                isHaveSpartanHat = True
-
-        if not fightUtils.findItem("东方剪纸", False, context):
-            logger.info("未找到东方剪纸, 已经叫过狗了")
-            isHaveDog = True
-
-        context.run_task("Fight_ReturnMainWindow")
-
-        # 检查当前层数是否小于29层
-        while layers < 101:
+        while self.layers < 101:
             # 检查是否停止任务
             if context.tasker.stopping:
                 logger.info("检测到停止任务, 开始退出agent")
@@ -250,32 +275,24 @@ class JJC101(CustomAction):
             # 检查当前层数
             RunResult = context.run_task("Fight_CheckLayer")
             if RunResult.nodes:
-                layers = fightUtils.extract_numbers(
+                self.layers = fightUtils.extract_numbers(
                     RunResult.nodes[0].recognition.best_result.text
                 )
 
             # 检查是否到达100层
-            if layers == 96:
-                logger.info(f"current layers {layers}, 开始退出agent")
+            if self.layers == 96:
+                logger.info(f"current layers {self.layers}, 开始退出agent")
                 break
-            logger.info(f"Start Explore {layers} layer.")
+            logger.info(f"Start Explore {self.layers} layer.")
 
             # 检测是否触发层数事件
-            self.handle_layers_event(context, layers)
-
-            # 自动叫狗事件
-            if layers >= 27 and layers <= 29 and isHaveDog != True:
-                if fightUtils.Auto_CallDog(context):
-                    isHaveDog = True
-                elif layers == 29:
-                    logger.error("29层未触发毁灭, 自动叫狗失败, 太黑了吧, 用户来接管吧")
-                    return CustomAction.RunResult(success=False)
+            self.handle_layers_event(context)
 
             # Boos层开始探索
-            if layers >= 30 and layers % 10 == 0:
+            if self.layers >= 30 and self.layers % 10 == 0:
                 # boss召唤动作
                 time.sleep(6)
-                self.handle_boos_event(context, layers)
+                self.handle_boos_event(context)
                 # 检测神龙
                 time.sleep(1)
                 img = context.tasker.controller.post_screencap().wait().get()
@@ -288,7 +305,7 @@ class JJC101(CustomAction):
 
             # 小怪层探索
             else:
-                if layers >= 90 and fightUtils.cast_magic("土", "地震术", context):
+                if self.layers >= 90 and fightUtils.cast_magic("土", "地震术", context):
                     pass
                 else:
                     context.run_task("JJC_Fight_ClearCurrentLayer")
@@ -320,15 +337,15 @@ class JJC101(CustomAction):
                 continue
 
             # 胜利者石柱
-            if layers <= 30:
+            if self.layers <= 30:
                 context.run_task("JJC_StoneChest")
 
             # 寻找斯巴达头盔
-            if isHaveSpartanHat != True:
+            if self.isHaveSpartanHat != True:
                 img = context.tasker.controller.post_screencap().wait().get()
                 if context.run_recognition("JJC_Find_Body", img):
                     context.run_task("JJC_Find_Body")
-                    isHaveSpartanHat = True
+                    self.isHaveSpartanHat = True
                     logger.info("已有斯巴达头盔，或找到斯巴达头盔了！！")
 
             # 该层探索结束
@@ -342,7 +359,7 @@ class JJC101(CustomAction):
                     time.sleep(60)
                     return CustomAction.RunResult(success=False)
 
-        logger.info(f"竞技场探索结束，当前到达{layers}层")
+        logger.info(f"竞技场探索结束，当前到达{self.layers}层")
         context.run_task("Fight_LeaveMaze")
         return CustomAction.RunResult(success=True)
 
