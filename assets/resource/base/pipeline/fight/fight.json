@@ -446,7 +446,6 @@
             614,
             230
         ],
-        "order_by": "Vertical",
         "post_delay": 200,
         "timeout": 2000
     },
@@ -517,6 +516,22 @@
         "post_delay": 500,
         "threshold": 0.8,
         "timeout": 2000
+    },
+    "Fight_FindDragon_Next": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/UniversalUI/DragonWish2.png"
+        ],
+        "roi": [
+            164,
+            116,
+            377,
+            342
+        ],
+        "action": "DoNothing",
+        "post_delay": 500,
+        "threshold": 0.8,
+        "timeout": 10000
     },
     "Fight_FindText": {
         "recognition": "OCR",

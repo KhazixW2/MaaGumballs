@@ -113,7 +113,6 @@ class JJC101(CustomAction):
 
             context.run_task("Fight_ReturnMainWindow")
 
-    # 处理角斗场事件
     def handle_abattoir_event(self, context: Context, layers: int):
         image = context.tasker.controller.post_screencap().wait().get()
         if layers % 10 == 5 and context.run_recognition(
@@ -143,19 +142,20 @@ class JJC101(CustomAction):
             context.run_task("JJC_Abattoir_Chest")
             context.run_task("Fight_OpenedDoor")
 
-    # 处理boos层事件
     def handle_boos_event(self, context: Context, layers: int):
-        if layers <= 70:
+        if layers <= 60:
             fightUtils.cast_magic("光", "祝福术", context)
             for _ in range(5):
                 context.tasker.controller.post_click(boss_x, boss_y).wait()
                 time.sleep(0.1)
 
-        elif layers <= 80:
+        elif layers <= 70:
             fightUtils.cast_magic("水", "冰锥术", context)
-            for _ in range(5):
+            for _ in range(4):
                 context.tasker.controller.post_click(boss_x, boss_y).wait()
                 time.sleep(0.1)
+            fightUtils.cast_magic("土", "石肤术", context)
+            fightUtils.cast_magic("水", "治疗术", context)
 
         elif layers <= 90:
             fightUtils.cast_magic("火", "失明术", context)
@@ -192,9 +192,19 @@ class JJC101(CustomAction):
 
         if layers >= 69 and layers <= 90 and layers % 10 == 9:
             context.run_task("JJC_OpenForceOfNature")
+            StatusDetail: dict = fightUtils.checkGumballsStatusV2(context)
+            if (
+                float(StatusDetail["当前生命值"]) / float(StatusDetail["最大生命值"])
+                <= 0.7
+            ):
+                logger.info("当前生命值小于70%，使用治疗")
 
-        # 检测血量，是否需要补充
-        # if
+                fightUtils.cast_magic("气", "静电术", context)
+                for _ in range(5):
+                    if not fightUtils.cast_magic("光", "神恩术", context):
+                        fightUtils.cast_magic("水", "治疗术", context)
+            else:
+                logger.info("当前生命值大于70%，不使用治疗")
 
         # *5层的角斗场事件
         self.handle_abattoir_event(context, layers)
@@ -543,7 +553,7 @@ class Fight_TestAction(CustomAction):
         context: Context,
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
-        fightUtils.checkGumballsStatus(context)
+        fightUtils.checkGumballsStatusV2(context)
         return CustomAction.RunResult(success=True)
 
 

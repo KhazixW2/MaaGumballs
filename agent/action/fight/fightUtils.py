@@ -1,6 +1,7 @@
 from maa.context import Context
 from utils import logger
 
+import math
 import re
 import time
 
@@ -375,6 +376,72 @@ def findItem(
     return True
 
 
+def pair_by_distance(detections, max_distance=200):
+    """
+    根据距离进行智能配对，返回字典格式
+    """
+    if not detections:
+        return {}
+
+    status = {}
+    used_indices = set()
+
+    for i, det1 in enumerate(detections):
+        if i in used_indices:
+            continue
+
+        # 计算det1的中心点
+        x1, y1, w1, h1 = det1.box
+        center1_x = x1 + w1 / 2
+        center1_y = y1 + h1 / 2
+
+        best_match = None
+        best_distance = float("inf")
+        best_index = -1
+
+        # 寻找最近的未配对框
+        for j, det2 in enumerate(detections):
+            if j <= i or j in used_indices:
+                continue
+
+            x2, y2, w2, h2 = det2.box
+            center2_x = x2 + w2 / 2
+            center2_y = y2 + h2 / 2
+
+            # 计算距离
+            distance = math.sqrt(
+                (center1_x - center2_x) ** 2 + (center1_y - center2_y) ** 2
+            )
+
+            # 同行判断
+            y_diff = abs(center1_y - center2_y)
+            if y_diff < 30 and distance < best_distance and distance <= max_distance:
+                best_distance = distance
+                best_match = det2
+                best_index = j
+
+        # 记录配对结果（移到循环外面）
+        if best_match:
+            if det1.text in ["生命值", "魔法值"]:
+                values = best_match.text.split("/")
+                if len(values) == 2:
+                    current_value = values[0]
+                    max_value = values[1]
+                    status[f"当前{det1.text}"] = current_value
+                    status[f"最大{det1.text}"] = max_value
+                else:
+                    status[f"{det1.text}"] = best_match.text
+            else:
+                status[f"{det1.text}"] = best_match.text
+            used_indices.add(i)
+            used_indices.add(best_index)
+        else:
+            status[f"{det1.text}"] = "空"
+            used_indices.add(i)
+
+    return status
+
+
 def checkGumballsStatusV2(context: Context):
     """检查当前战斗中的Gumball角色状态信息
 
@@ -399,41 +466,15 @@ def checkGumballsStatusV2(context: Context):
     image = context.tasker.controller.post_screencap().wait().get()
     reco_detail = context.run_recognition("Fight_CheckStatusText", image)
 
-    status_dict = {}
+    # 给node进行排序优先从左到右，从上到下进行排序。
     nodes = reco_detail.all_results
-
-    for i in range(0, len(nodes) - 1, 2):
-        key = nodes[i].text.strip()
-        value = nodes[i + 1].text.strip()
-
-        if key in ["生命值", "魔法值"]:
-            # 修改2：增加异常处理
-            try:
-                current, max = value.split("/", 1)
-                current = float(current.strip())
-                max_val = float(max.strip())
-
-                if max_val > 0:
-                    percentage = round((current / max_val) * 100, 2)
-                    status_dict[f"{key}百分比"] = percentage  # 改为直接存储数值
-
-                status_dict[f"当前{key}"] = int(current)
-                status_dict[f"最大{key}"] = int(max_val)
-            except ValueError:
-                logger.error(f"无效的{key}格式: {value}")
-                continue
-
-        elif key in ["攻击", "魔力"]:
-            status_dict[f"{key}"] = int(value)
-
-        else:
-            status_dict[key] = value
+    status = pair_by_distance(nodes, max_distance=200)
 
     # 输出状态字典
-    logger.info(status_dict)
+    logger.info(status)
 
     context.run_task("Fight_ReturnMainWindow")
-    return status_dict
+    return status
 
 
 def dragonwish(targetWish: str, context: Context):
@@ -489,7 +530,7 @@ def dragonwish(targetWish: str, context: Context):
 
     # # 等待5秒，确保界面加载完毕，可以考虑移除
     time.sleep(5)
-    Itemdetail = context.run_task("Fight_FindDragon")
+    Itemdetail = context.run_task("Fight_FindDragon_Next")
     if Itemdetail.nodes:
         # 集齐七个龙珠并进入到许愿界面
         textdetail = context.run_task("Fight_FindText")
