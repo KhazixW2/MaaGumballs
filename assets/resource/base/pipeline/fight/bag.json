@@ -113,13 +113,35 @@
         "recognition": "TemplateMatch",
         "template": [
             "fight/UniversalUI/LoadEquipButton.png",
-            "fight/UniversalUI/useButton.png"
+            "fight/UniversalUI/UseButton.png"
         ],
         "roi": [
             53,
             428,
             625,
             590
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "threshold": 0.8,
+        "timeout": 2000
+    },
+    "Bag_LoadAllItem": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/UniversalUI/UseOnceButton.png"
+        ],
+        "roi": [
+            53,
+            428,
+            625,
+            590
+        ],
+        "target_offset": [
+            -280,
+            0,
+            0,
+            0
         ],
         "action": "Click",
         "post_delay": 1000,
