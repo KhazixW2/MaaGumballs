@@ -634,34 +634,12 @@ def dragonwish(targetWish: str, context: Context):
             elif min_index_wish in ["我要更多的伙伴", "我要变得富有"]:
                 # 等待地图加载
                 time.sleep(10)
-                # # 关闭自动拾取
-                # context.run_task(
-                #     "Fight_LongPress",
-                #     pipeline_override={
-                #         "Fight_LongPress": {
-                #             "target": [170, 897, 89, 54],
-                #             "duration": 5000,
-                #         }
-                #     },
-                # )
+
                 for _ in range(3):
                     if not cast_magic("暗", "死亡波纹", context):
                         if not cast_magic("土", "地刺术", context, (350, 400)):
                             cast_magic("火", "流星雨", context, (350, 400))
-
-                # cast_magic_special("天眼", context)
-                logger.info("没有死波没有地刺,试试天眼吧！")
-
-                # # 拾取全部
-                # context.run_task(
-                #     "Fight_LongPress",
-                #     pipeline_override={
-                #         "Fight_LongPress": {
-                #             "target": [170, 897, 89, 54],
-                #             "duration": 5000,
-                #         }
-                #     },
-                # )
+                            logger.info("没有死波没有地刺,流星雨不会也没有吧！")
 
                 # 除变强以外的夹层的出口一定在右下角
                 # 等待拾取结束
@@ -686,22 +664,12 @@ def dragonwish(targetWish: str, context: Context):
             elif min_index_wish in ["我要大量的矿石"]:
                 # 等待地图加载
                 time.sleep(10)
-                for _ in range(2):
-                    for _ in range(12):
-                        time.sleep(0.1)
-                        context.tasker.controller.post_click(365, 535).wait()
-                        context.tasker.controller.post_click(219, 813).wait()
-                        context.tasker.controller.post_click(505, 805).wait()
+                for _ in range(13):
+                    time.sleep(0.5)
+                    context.tasker.controller.post_click(365, 535).wait()
+                    context.tasker.controller.post_click(219, 813).wait()
+                    context.tasker.controller.post_click(505, 805).wait()
                     time.sleep(1)
-                    # # 拾取全部
-                    # context.run_task(
-                    #     "Fight_LongPress",
-                    #     pipeline_override={
-                    #         "Fight_LongPress": {
-                    #             "target": [33, 595, 103, 108],
-                    #         }
-                    #     },
-                    # )
 
                 # 除变强以外的夹层的出口一定在右下角
                 # 等待拾取结束

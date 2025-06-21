@@ -1,4 +1,3 @@
-from cv2.dnn import Layer
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
@@ -143,7 +142,7 @@ class JJC101(CustomAction):
     def Check_DefaultStatus(self, context: Context):
         # boos战前和战后操作
         if (
-            self.layers >= 69
+            self.layers >= 51
             and self.layers <= 90
             and (self.layers % 10 == 9 or self.layers % 10 == 1)
         ):
