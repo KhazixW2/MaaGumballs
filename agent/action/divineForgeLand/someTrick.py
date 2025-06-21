@@ -517,25 +517,29 @@ class Find_Stove_Sequence_Test(CustomAction):
 
         time.sleep(1)
         if auto_melt == 3:
-            taskdetail = context.run_task("CheckFirstEquipmentLevel")
-            if taskdetail.nodes:
+            image = context.tasker.controller.post_screencap().wait().get()
+            if context.run_recognition("CheckFirstEquipmentLevel", image):
                 # 说明出现了第一格出现了4星装备,根据情况提前结束
+                logger.info("第一格出现了4星装备,提前结束")
                 return False
         elif auto_melt == 6:
-            taskdetail = context.run_task(
+            image = context.tasker.controller.post_screencap().wait().get()
+            if context.run_recognition(
                 "CheckFirstEquipmentLevel",
+                image,
                 pipeline_override={
-                    "recognition": "TemplateMatch",
-                    "template": [
-                        "fight/divineForgeLand/empty_box.png",
-                    ],
-                    "roi": [57, 630, 131, 142],
-                    "action": "DoNothing",
-                    "timeout": 1500,
+                    "CheckFirstEquipmentLevel": {
+                        "recognition": "TemplateMatch",
+                        "template": "fight/divineForgeLand/empty_box.png",
+                        "roi": [57, 630, 131, 142],
+                        "action": "DoNothing",
+                        "timeout": 1500,
+                    }
                 },
-            )
-            if taskdetail.nodes:
+            ):
+
                 # 说明出现了第一格出现了空格，说明所有装备都熔完了,根据情况提前结束
+                logger.info("所有装备熔炼完毕")
                 return False
 
         for _ in range(num):
@@ -736,7 +740,7 @@ class Find_Stove_Sequence_Test(CustomAction):
         self,
         context: Context,
         stove_sequence: list = None,
-        auto_melt: int = None,
+        auto_melt: int = 0,
     ):
         assert len(stove_sequence) == 101
 
