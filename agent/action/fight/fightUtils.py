@@ -110,6 +110,12 @@ def cast_magic(Type: str, MagicName: str, context: Context, Target_pos: tuple = 
             )
             logger.info(f"施放魔法:{MagicName}")
         else:
+            context.run_task(
+                "Fight_Magic_Cast",
+                pipeline_override={
+                    "Fight_Magic_Cast": {"expected": MagicName, "next": []}
+                },
+            )
             context.tasker.controller.post_click(Target_pos[0], Target_pos[1]).wait()
             logger.info(f"施放魔法:{MagicName}在{Target_pos[0], Target_pos[1]}")
     else:
@@ -645,11 +651,11 @@ def dragonwish(targetWish: str, context: Context):
                                 logger.info("没有死波没有地刺,流星雨不会也没有吧！")
 
                 # 除变强以外的夹层的出口一定在右下角
-                time.sleep(5)
+                context.run_task("Fight_ReturnMainWindow")
                 context.tasker.controller.post_click(646, 939).wait()
                 # 等待拾取结束
             elif min_index_wish in ["我要更多的伙伴"]:
-                time.sleep(5)
+                context.run_task("Fight_ReturnMainWindow")
                 context.tasker.controller.post_click(646, 939).wait()
                 pass
                 # todo 清理当前层的逻辑
@@ -665,7 +671,7 @@ def dragonwish(targetWish: str, context: Context):
 
                 # 除变强以外的夹层的出口一定在右下角
                 # 等待拾取结束
-                time.sleep(5)
+                context.run_task("Fight_ReturnMainWindow")
                 context.tasker.controller.post_click(646, 939).wait()
 
             elif min_index_wish in ["我要大量的矿石"]:
@@ -680,7 +686,7 @@ def dragonwish(targetWish: str, context: Context):
 
                 # 除变强以外的夹层的出口一定在右下角
                 # 等待拾取结束
-                time.sleep(5)
+                context.run_task("Fight_ReturnMainWindow")
                 context.tasker.controller.post_click(646, 939).wait()
 
             elif min_index_wish in ["我要变得更强", "我要神奇的果实"]:
