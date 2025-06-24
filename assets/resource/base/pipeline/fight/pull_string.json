@@ -1,9 +1,19 @@
 {
-    "FindKeyHole":{
+    "FindKeyHole": {
         "recognition": "TemplateMatch",
-        "template": ["utils/KeyHole.png", "utils/KeyHole_2.png", "utils/KeyHole_3.png"],
+        "template": [
+            "utils/KeyHole.png",
+            "utils/KeyHole_1.png",
+            "utils/KeyHole_2.png",
+            "utils/KeyHole_3.png"
+        ],
         "action": "Click",
-        "roi":[15,233,690,741],
+        "roi": [
+            15,
+            233,
+            690,
+            741
+        ],
         "post_delay": 1000,
         "on_error": "PushOne"
     },
@@ -14,23 +24,33 @@
         "custom_action": "GetKeyFromHole_Test",
         "post_delay": 1000
     },
-    "FindLeftString":{
+    "FindLeftString": {
         "recognition": "TemplateMatch",
-        "template": ["utils/LeftString_2.png"],
+        "template": [
+            "utils/LeftString_2.png"
+        ],
         "action": "DoNothing",
         "pre_delay": 200,
         "order_by": "Horizontal",
-        "threshold":0.7,
-        "roi" : [64,576,593,22],
+        "threshold": 0.7,
+        "roi": [
+            64,
+            576,
+            593,
+            22
+        ],
         "post_delay": 200
     },
-
-    "ClickConfirmForKey":{
+    "ClickConfirmForKey": {
         "recognition": "TemplateMatch",
         "template": "utils/ConfirmForKey.png",
         "action": "Click",
-        "roi": [94,842,523,144],
+        "roi": [
+            94,
+            842,
+            523,
+            144
+        ],
         "post_delay": 1000
     }
-
 }

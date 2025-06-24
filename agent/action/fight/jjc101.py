@@ -107,8 +107,7 @@ class JJC101(CustomAction):
         """
         if (self.layers == 1 or self.layers == 2) and self.isTitle_L1 == False:
             fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
-            fightUtils.title_learn("魔法", 1, "魔法学徒", 3, context)
-            fightUtils.title_learn("冒险", 2, "探险家", 2, context)
+            fightUtils.title_learn("冒险", 2, "探险家", 3, context)
             context.run_task("Fight_ReturnMainWindow")
             self.isTitle_L1 = True
         elif (self.layers == 27 or self.layers == 28) and self.isTitle_L27 == False:
@@ -137,7 +136,7 @@ class JJC101(CustomAction):
             self.isTitle_L27 = True
         elif (self.layers == 63 or self.layers == 64) and self.isTitle_L63 == False:
 
-            fightUtils.title_learn("冒险", 1, "寻宝者", 4, context)
+            fightUtils.title_learn("冒险", 1, "寻宝者", 1, context)
             fightUtils.title_learn("冒险", 2, "探险家", 1, context)
             fightUtils.title_learn("冒险", 3, "暗行者", 1, context)
             fightUtils.title_learn("冒险", 4, "魔盗", 1, context)
@@ -151,13 +150,6 @@ class JJC101(CustomAction):
             fightUtils.title_learn_branch("魔法", 5, "魔力强化", 3, context)
             fightUtils.title_learn_branch("魔法", 5, "魔法强化", 3, context)
             self.isTitle_L63 = True
-            context.run_task("Fight_ReturnMainWindow")
-        elif self.layers == 89:
-            fightUtils.title_learn("魔法", 1, "魔法学徒", 3, context)
-            fightUtils.title_learn("魔法", 2, "白袍法师", 3, context)
-            fightUtils.title_learn("魔法", 4, "气系大师", 3, context)
-            fightUtils.title_learn_branch("魔法", 5, "生命强化", 3, context)
-
             context.run_task("Fight_ReturnMainWindow")
         return True
 
@@ -180,16 +172,16 @@ class JJC101(CustomAction):
                             if not fightUtils.cast_magic("水", "治愈术", context):
                                 logger.info("没有任何治疗方法了= =")
                                 break
-                    time.sleep(0.4)
-                    image = context.tasker.controller.post_screencap().wait().get()
-                    if HPDetail := context.run_recognition("Fight_GetHP", image):
-                        CurrentHP = fightUtils.extract_num(HPDetail.best_result.text)
+                    context.run_task("Fight_ReturnMainWindow")
+                    StatusDetail: dict = fightUtils.checkGumballsStatusV2(context)
+                    CurrentHP = float(StatusDetail["当前生命值"])
+                    MaxHp = float(StatusDetail["最大生命值"])
                     HPStatus = CurrentHP / MaxHp
                     logger.info(f"current hp is {CurrentHP}, HPStatus is {HPStatus}")
             else:
                 logger.info("当前生命值大于80%，不使用治疗")
 
-        if self.layers >= 61 and tempNum == 9:
+        if tempNum == 9 and self.layers >= 61 and self.layers <= 90:
             context.run_task(
                 "JJC_OpenForceOfNature",
                 pipeline_override={
@@ -199,7 +191,7 @@ class JJC101(CustomAction):
                 },
             )
             logger.info("开启自然之力")
-        elif self.layers >= 61 and tempNum == 1:
+        elif tempNum == 1 and self.layers >= 61 and self.layers <= 90:
             context.run_task(
                 "JJC_OpenForceOfNature",
                 pipeline_override={
@@ -388,7 +380,7 @@ class JJC101(CustomAction):
             else:
                 if (
                     self.layers >= 85
-                    and self.layers % 2 == 0
+                    and self.layers % 2 == 1
                     and fightUtils.cast_magic("土", "地震术", context)
                 ):
                     pass
@@ -453,7 +445,6 @@ class JJC101(CustomAction):
                     time.sleep(3)
 
                 logger.info("冒险者大人已找到钥匙捏，继续探索")
-                time.sleep(2)
                 context.run_task("Fight_OpenedDoor")
 
         logger.info(f"竞技场探索结束，当前到达{self.layers}层")
@@ -488,6 +479,7 @@ class JJC_Fight_ClearCurrentLayer(CustomAction):
                             x + w // 2, y + h // 2
                         ).wait()
                         time.sleep(0.1)
+                    time.sleep(0.1)
         return True
 
     def CheckClosedDoor(self, context: Context):
@@ -576,7 +568,7 @@ class JJC_Fight_ClearCurrentLayer(CustomAction):
                         ).wait()
                         visited[r][c] += 1
                         checkGridCnt += 1
-                        time.sleep(0.05)
+                        time.sleep(0.1)
 
             # 检测怪物并进行攻击
             if not self.CheckMonsterCnt(context):
