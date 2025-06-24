@@ -238,3 +238,35 @@ class Shopping(CustomAction):
 
         logger.info("购物完成，返回大地图")
         return CustomAction.RunResult(success=True)
+
+
+@AgentServer.custom_action("SkillShop_Shopping")
+class SkillShop_Shopping(CustomAction):
+    def run(
+        self, context: Context, argv: CustomAction.RunArg
+    ) -> CustomAction.RunResult:
+        # 技能商店开始购物
+        if recoDetail := context.run_recognition(
+            "SkillShop_Reco",
+            context.tasker.controller.post_screencap().wait().get(),
+            pipeline_override={
+                "SkillShop_Reco": {
+                    "recognition": "TemplateMatch",
+                    "template": "items/scroll/",
+                    "roi": [65, 334, 610, 686],
+                    "threshold": 0.8,
+                }
+            },
+        ):
+            logger.info(f"找到商品{len(recoDetail.all_results)}个, 开始购物")
+            for result in recoDetail.all_results:
+                if result.score < 0.8:
+                    continue
+                box = result.box
+                context.tasker.controller.post_click(
+                    box[0] + box[2] // 2, box[1] + box[3] // 2
+                )
+                time.sleep(0.5)
+                context.run_task("ConfirmButton_500ms")
+        context.run_task("Fight_ReturnMainWindow")
+        return CustomAction.RunResult(success=True)
