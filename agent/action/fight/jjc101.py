@@ -108,6 +108,7 @@ class JJC101(CustomAction):
         if (self.layers == 1 or self.layers == 2) and self.isTitle_L1 == False:
             fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
             fightUtils.title_learn("冒险", 2, "探险家", 3, context)
+            fightUtils.title_learn("魔法", 1, "魔法学徒", 1, context)
             context.run_task("Fight_ReturnMainWindow")
             self.isTitle_L1 = True
         elif (self.layers == 27 or self.layers == 28) and self.isTitle_L27 == False:
@@ -145,7 +146,6 @@ class JJC101(CustomAction):
             context.run_task("Fight_ReturnMainWindow")
             fightUtils.title_learn_branch("冒险", 5, "生命强化", 3, context)
             fightUtils.title_learn_branch("冒险", 5, "攻击强化", 3, context)
-            fightUtils.title_learn_branch("冒险", 5, "魔力强化", 3, context)
 
             fightUtils.title_learn_branch("魔法", 5, "魔力强化", 3, context)
             fightUtils.title_learn_branch("魔法", 5, "魔法强化", 3, context)
@@ -238,21 +238,15 @@ class JJC101(CustomAction):
                             fightUtils.cast_magic("土", "石肤术", context)
 
             elif self.layers <= 75:
-                while not context.run_recognition(
-                    "Fight_Victory",
-                    context.tasker.controller.post_screencap().wait().get(),
-                ):
+                for _ in range(2):
                     context.run_task("Bag_Open")
                     fightUtils.findItem("异域的灯芯", True, context, boss_x, boss_y)
                 for _ in range(3):
-                    if not fightUtils.cast_magic("光", "祝福术", context):
+                    if not fightUtils.cast_magic("水", "寒冰护盾", context):
                         if not fightUtils.cast_magic("水", "治疗术", context):
                             fightUtils.cast_magic("土", "石肤术", context)
             else:
-                while not context.run_recognition(
-                    "Fight_Victory",
-                    context.tasker.controller.post_screencap().wait().get(),
-                ):
+                for _ in range(2):
                     context.run_task("Bag_Open")
                     fightUtils.findItem("异域的灯芯", True, context, boss_x, boss_y)
 
@@ -519,7 +513,7 @@ class JJC_Fight_ClearCurrentLayer(CustomAction):
             isCheckDragon = False
 
         # 开始清理当前层
-        cnt = 15
+        cnt = 18
         while cnt > 0:
             if context.tasker.stopping:
                 logger.info("JJC_Fight_ClearCurrentLayer 被停止")

@@ -151,7 +151,7 @@
             172
         ]
     },
-    "Fight_EquipmentStore": {
+    "Fight_EquipmentShop": {
         "recognition": "TemplateMatch",
         "template": "fight/UniversalUI/宝物商店.png",
         "roi": [
@@ -165,7 +165,7 @@
         "timeout": 2000,
         "next": []
     },
-    "Fight_SkillStore": {
+    "Fight_SkillShop": {
         "recognition": "TemplateMatch",
         "template": "fight/UniversalUI/技能商店.png",
         "roi": [
@@ -175,9 +175,25 @@
             947
         ],
         "action": "Click",
-        "post_delay": 1000,
+        "post_delay": 500,
         "timeout": 2000,
-        "next": []
+        "next": [
+            "Fight_SkillShop_Shopping"
+        ]
+    },
+    "Fight_SkillShop_Shopping": {
+        "recognition": "OCR",
+        "expected": "卷轴商店",
+        "roi": [
+            190,
+            346,
+            327,
+            137
+        ],
+        "action": "Custom",
+        "custom_action": "SkillShop_Shopping",
+        "post_delay": 200,
+        "timeout": 2000
     },
     "Fight_SkillPack_Open": {
         "recognition": "TemplateMatch",
