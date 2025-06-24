@@ -203,7 +203,7 @@ class PoolTrick_Test(CustomAction):
         searchDetail = context.run_task("SearchPool")
         while not (searchDetail.nodes or checkCount <= 0):
             checkCount -= 1
-            context.run_task("PushOne")
+            fightUtils.PushOne(context)
             searchDetail = context.run_task("SearchPool")
         if searchDetail.nodes:
             logger.info("找到泉水位置")
@@ -227,7 +227,7 @@ class PoolTrick_Test(CustomAction):
             logger.info(f"黑泉水第{i}次尝试")
 
             if not firegod:
-                context.run_task("PushOne")
+                fightUtils.PushOne(context)
             context.run_task("Save_Status")
 
             # 每次暂离之后，执行点击泉水的操作
@@ -340,7 +340,7 @@ class SunlightTrick_Test(CustomAction):
         searchDetail = context.run_task("SearchBody")
         while not (searchDetail.nodes or checkCount <= 0):
             checkCount -= 1
-            context.run_task("PushOne")
+            fightUtils.PushOne(context)
             searchDetail = context.run_task("SearchBody")
         if searchDetail.nodes:
             searchbodypos = searchDetail.nodes[0].recognition.best_result.box
@@ -362,7 +362,7 @@ class SunlightTrick_Test(CustomAction):
 
             logger.info(f"黑日光第{i}次尝试")
             if not firegod:
-                context.run_task("PushOne")
+                fightUtils.PushOne(context)
             context.run_task("Save_Status")
 
             # 每次暂离之后，执行点击尸体的操作

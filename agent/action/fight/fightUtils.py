@@ -814,3 +814,15 @@ def rgb_pixel_count(
         return 0
     else:
         return 0
+
+
+def PushOne(context: Context):
+    context.run_task("Fight_ReturnMainWindow")
+    if not cast_magic("水", "治疗术", context):
+        if not cast_magic("水", "寒冰护盾", context):
+            if not cast_magic("暗", "死亡波纹", context):
+                if cast_magic("暗", "吸能术", context):
+                    return True
+                else:
+                    logger.info("没有治疗术、寒冰护盾、吸能术，死亡波纹, 无法推序！")
+                    return False
