@@ -672,11 +672,21 @@ def dragonwish(targetWish: str, context: Context):
 
                 # 除变强以外的夹层的出口一定在右下角
                 context.run_task("Fight_ReturnMainWindow")
+                time.sleep(2)
                 context.tasker.controller.post_click(646, 939).wait()
+                time.sleep(2)
+                image = context.tasker.controller.post_screencap().wait().get()
+                if context.run_recognition("ConfirmButton_500ms", image):
+                    context.run_task("ConfirmButton_500ms")
                 # 等待拾取结束
             elif min_index_wish in ["我要更多的伙伴"]:
                 context.run_task("Fight_ReturnMainWindow")
+                time.sleep(2)
                 context.tasker.controller.post_click(646, 939).wait()
+                time.sleep(2)
+                image = context.tasker.controller.post_screencap().wait().get()
+                if context.run_recognition("ConfirmButton_500ms", image):
+                    context.run_task("ConfirmButton_500ms")
                 pass
                 # todo 清理当前层的逻辑
             elif min_index_wish in ["我要获得钻石"]:
@@ -692,7 +702,12 @@ def dragonwish(targetWish: str, context: Context):
                 # 除变强以外的夹层的出口一定在右下角
                 # 等待拾取结束
                 context.run_task("Fight_ReturnMainWindow")
+                time.sleep(2)
                 context.tasker.controller.post_click(646, 939).wait()
+                time.sleep(2)
+                image = context.tasker.controller.post_screencap().wait().get()
+                if context.run_recognition("ConfirmButton_500ms", image):
+                    context.run_task("ConfirmButton_500ms")
 
             elif min_index_wish in ["我要大量的矿石"]:
                 # 等待地图加载
@@ -706,7 +721,12 @@ def dragonwish(targetWish: str, context: Context):
                 # 除变强以外的夹层的出口一定在右下角
                 # 等待拾取结束
                 context.run_task("Fight_ReturnMainWindow")
+                time.sleep(2)
                 context.tasker.controller.post_click(646, 939).wait()
+                time.sleep(2)
+                image = context.tasker.controller.post_screencap().wait().get()
+                if context.run_recognition("ConfirmButton_500ms", image):
+                    context.run_task("ConfirmButton_500ms")
 
             elif min_index_wish in ["我要变得更强", "我要神奇的果实"]:
                 # TODO: 调用boss层
