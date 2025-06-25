@@ -846,3 +846,4 @@ def PushOne(context: Context):
                 else:
                     logger.info("没有治疗术、寒冰护盾、吸能术，死亡波纹, 无法推序！")
                     return False
+    return True
