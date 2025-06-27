@@ -235,8 +235,7 @@
             1183,
             124,
             59
-        ],
-        "post_delay": 1000
+        ]
     },
     "GoToTheRightestPage": {
         "recognition": "TemplateMatch",
@@ -328,24 +327,19 @@
         "timeout": 1500
     },
     "Click_Select_Equipment": {
-        "recognition": "OCR",
-        "expected": "选择",
+        "recognition": "TemplateMatch",
+        "template": "fight/divineForgeLand/SelectEquipment.png",
         "roi": [
             33,
             625,
             656,
             402
         ],
-        "action": "Click",
-        "post_delay": 1000,
-        "timeout": 5000,
-        "next": [
-            "Click_Smelt_Equipment"
-        ]
+        "action": "Click"
     },
     "Click_Smelt_Equipment": {
-        "recognition": "OCR",
-        "expected": "熔炼装备",
+        "recognition": "TemplateMatch",
+        "template": "fight/divineForgeLand/SmeltEquipment.png",
         "roi": [
             36,
             763,
@@ -353,8 +347,6 @@
             221
         ],
         "action": "Click",
-        "post_delay": 1000,
-        "interrupt": "Click_Select_Equipment",
         "next": [
             "OpenEquipmentStovePage_Next"
         ]
@@ -369,7 +361,6 @@
             64
         ],
         "action": "Click",
-        "post_delay": 1250,
         "timeout": 3000,
         "target": [
             91,
@@ -405,7 +396,6 @@
             400
         ],
         "action": "Click",
-        "post_delay": 1000,
         "threshold": 0.8,
         "timeout": 1500
     },
@@ -438,7 +428,6 @@
             400
         ],
         "action": "Click",
-        "post_delay": 1000,
         "threshold": 0.8,
         "timeout": 1500
     },
@@ -471,7 +460,6 @@
             400
         ],
         "action": "Click",
-        "post_delay": 1000,
         "threshold": 0.8,
         "timeout": 1500
     },
@@ -504,7 +492,6 @@
             400
         ],
         "action": "Click",
-        "post_delay": 1000,
         "threshold": 0.8,
         "timeout": 1500
     },

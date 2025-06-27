@@ -477,33 +477,100 @@ class Find_Stove_Sequence_Test(CustomAction):
     # 这里是填入高星装备,从最右边找到最左边
     def find_and_click_equipment_from_right(
         self, context: Context, equipment_level: int
-    ):
-        equipment_level_to_action_name = {
+    ) -> RecognitionDetail | None:
+        """从背包最右侧开始查找并点击指定等级的装备
+
+        Args:
+            context: 任务上下文
+            equipment_level: 装备等级
+
+        Returns:
+            RecognitionDetail | None: 找到并点击成功则返回识别结果，否则返回 None
+        """
+        equipment_action = {
             6: "Find_and_Click_level6_Equipmnet",
             5: "Find_and_Click_level5_Equipmnet",
             4: "Find_and_Click_level4_Equipmnet",
             3: "Find_and_Click_level3_Equipmnet",
-        }
-        # 首先在当前页查找目标等级装备
-        find_equipment_detail = context.run_task(
-            equipment_level_to_action_name[equipment_level]
-        )
-        if not find_equipment_detail.nodes:
-            context.run_task("Bag_ToRightestPage")
+        }.get(equipment_level)
 
-        # 当前页找不到就往右往左找
-        while not find_equipment_detail.nodes:
+        if not equipment_action:
+            logger.warning(f"不支持的装备等级: {equipment_level}")
+            return None
 
-            find_equipment_detail = context.run_task(
-                equipment_level_to_action_name[equipment_level]
-            )
-            if not find_equipment_detail.nodes:
-                previous_page_button_detail = context.run_task("Bag_ToPrevPage")
-                # 如果找不到装备又没有上一页按钮则说明需要SL
-                if not previous_page_button_detail.nodes:
+        logger.info("首先在当前页面查找装备...")
+        image = context.tasker.controller.post_screencap().wait().get()
+        if context.run_recognition(equipment_action, image):
+            logger.info(f"在当前页识别到 {equipment_level} 星装备，正在点击...")
+            find_equipment_detail = context.run_task(equipment_action)
+            if find_equipment_detail.nodes:
+                logger.info(f"已在当前页找到并点击 {equipment_level} 星装备")
+                time.sleep(1)
+                return find_equipment_detail
+
+        logger.info("当前页未找到，将从最右侧页面开始查找...")
+        context.run_task("Bag_ToRightestPage")
+        time.sleep(0.5)
+
+        for _ in range(10):
+            image = context.tasker.controller.post_screencap().wait().get()
+            if context.run_recognition(equipment_action, image):
+                logger.info(f"识别到 {equipment_level} 星装备，正在点击...")
+                find_equipment_detail = context.run_task(equipment_action)
+                if find_equipment_detail.nodes:
+                    logger.info(f"已找到并点击 {equipment_level} 星装备")
+                    time.sleep(1)
                     return find_equipment_detail
-        time.sleep(1)
-        return find_equipment_detail
+
+            logger.info("当前页未找到，尝试翻到上一页")
+            prev_page_detail = context.run_task("Bag_ToPrevPage")
+            time.sleep(1)
+
+            if not prev_page_detail.nodes:
+                logger.info("已到达背包最左侧页面，停止查找")
+                break
+
+        logger.warning(f"未在背包中找到 {equipment_level} 星装备")
+        return None
+
+    def wait_and_click_select_equipment(self, context: Context, pre_waiting=1):
+        """等待并点击装备选择按钮并且熔炼装备,确保成功熔炼
+        Args:
+            context: 任务上下文
+            pre_waiting: 前置等待时间
+        """
+        time.sleep(pre_waiting)
+        image = context.tasker.controller.post_screencap().wait().get()
+        while not context.run_recognition("Click_Select_Equipment", image):
+            time.sleep(0.5)
+            image = context.tasker.controller.post_screencap().wait().get()
+        image = context.tasker.controller.post_screencap().wait().get()
+        while not context.run_recognition("Click_Smelt_Equipment", image):
+            time.sleep(0.5)
+            image = context.tasker.controller.post_screencap().wait().get()
+            context.run_task("Click_Smelt_Equipment")
+        logger.info("成功熔炼")
+
+    def _get_current_atk(self, context: Context) -> str | None:
+        """获取当前攻击力，如果超过4位数字，只返回最后4位"""
+        for _ in range(3):
+            atk_detail = context.run_task("GetCurrentAtk")
+            if atk_detail.nodes:
+                atk = atk_detail.nodes[0].recognition.best_result.text
+                # 移除空格并确保是数字
+                atk = atk.replace(" ", "")
+                # 如果提取到的攻击力超过4位数字，只保留最后4位
+                if atk.isdigit() and len(atk) > 4:
+                    original_atk = atk
+                    atk = atk[-4:]
+                    logger.info(f"当前攻击: {original_atk}，截取后: {atk}")
+                else:
+                    logger.info(f"当前攻击: {atk}")
+                return atk
+            logger.warning("未找到攻击力，1秒后重试")
+            time.sleep(1)
+        logger.error("重试3次后仍未找到攻击力")
+        return None
 
     def add_low_level_equipment(
         self, context: Context, num: int, page: int = 2, auto_melt: int = 0
@@ -525,10 +592,10 @@ class Find_Stove_Sequence_Test(CustomAction):
         elif auto_melt == 6:
             image = context.tasker.controller.post_screencap().wait().get()
             if context.run_recognition(
-                "CheckFirstEquipmentLevel",
+                "CheckFirstEquipmentLevel_empty_box",
                 image,
                 pipeline_override={
-                    "CheckFirstEquipmentLevel": {
+                    "CheckFirstEquipmentLevel_empty_box": {
                         "recognition": "TemplateMatch",
                         "template": "fight/divineForgeLand/empty_box.png",
                         "roi": [57, 630, 131, 142],
@@ -545,8 +612,7 @@ class Find_Stove_Sequence_Test(CustomAction):
         for _ in range(num):
 
             context.run_task("AddLowLevelEquipment")
-            context.run_task("Click_Select_Equipment")
-
+            self.wait_and_click_select_equipment(context)
         logger.info(f"填入低星装备{num}个成功")
         return True
 
@@ -559,26 +625,18 @@ class Find_Stove_Sequence_Test(CustomAction):
                 logger.info("测序被停止")
                 return []
 
-            atk_detail = context.run_task("GetCurrentAtk")
-            if atk_detail.nodes:
-                before_atk = atk_detail.nodes[0].recognition.best_result.text
-                logger.info(f"当前攻击{before_atk}")
-            else:
-                # 异常退出
-                logger.warning("未找到攻击, 停止测序")
+            before_atk = self._get_current_atk(context)
+            if not before_atk:
+                logger.error("未获取到当前攻击, 停止测序")
                 return []
             find_equipment_detail = self.find_and_click_equipment_from_right(context, 6)
-            if find_equipment_detail.nodes:
+            if find_equipment_detail:
                 # 找到装备并且点击，进入后续操作，点击选择--点击熔炼装备--判断是否出现天下布武
-                context.run_task("Click_Select_Equipment")
+                self.wait_and_click_select_equipment(context)
 
-                atk_detail = context.run_task("GetCurrentAtk")
-                if atk_detail.nodes:
-                    after_atk = atk_detail.nodes[0].recognition.best_result.text
-                    logger.info(f"熔炼装备之后 攻击{after_atk}")
-                else:
-                    # 异常退出
-                    logger.warning("未找到攻击, 停止测序")
+                after_atk = self._get_current_atk(context)
+                if not after_atk:
+                    logger.error("未获取到当前攻击, 停止测序")
                     return []
                 if after_atk != before_atk:
                     logger.info(f"第{i}次攻击变动")
@@ -594,28 +652,19 @@ class Find_Stove_Sequence_Test(CustomAction):
                 context.run_task("OpenEquipmentStovePage")
                 # 这里要填入i次低星装备，填入低星装备之后正常填入高星装备
                 self.add_low_level_equipment(context, i)
-                atk_detail = context.run_task("GetCurrentAtk")
-                if atk_detail.nodes:
-                    before_atk = atk_detail.nodes[0].recognition.best_result.text
-                    logger.info(f"当前攻击{before_atk}")
-                else:
-                    # 异常退出
-                    logger.warning("未找到攻击, 停止测序")
+                before_atk = self._get_current_atk(context)
+                if not before_atk:
+                    logger.error("未获取到当前攻击, 停止测序")
                     return []
                 find_equipment_detail = self.find_and_click_equipment_from_right(
                     context, 6
                 )
-                if find_equipment_detail.nodes:
+                if find_equipment_detail:
                     # 找到装备并且点击，进入后续操作，点击选择--点击熔炼装备--判断是否出现天下布武
-                    context.run_task("Click_Select_Equipment")
-
-                    atk_detail = context.run_task("GetCurrentAtk")
-                    if atk_detail.nodes:
-                        after_atk = atk_detail.nodes[0].recognition.best_result.text
-                        logger.info(f"熔炼装备之后 攻击{after_atk}")
-                    else:
-                        # 异常退出
-                        logger.warning("未找到攻击, 停止测序")
+                    self.wait_and_click_select_equipment(context)
+                    after_atk = self._get_current_atk(context)
+                    if not after_atk:
+                        logger.error("未获取到当前攻击, 停止测序")
                         return []
                     if after_atk != before_atk:
                         logger.info(f"第{i}次攻击变动")
@@ -650,29 +699,21 @@ class Find_Stove_Sequence_Test(CustomAction):
                     # 填入低星装备
                     self.add_low_level_equipment(context, low_star_num)
                     low_star_num = 0
-                    atk_detail = context.run_task("GetCurrentAtk")
-                    if atk_detail.nodes:
-                        before_atk = atk_detail.nodes[0].recognition.best_result.text
-                        logger.info(f"当前攻击{before_atk}")
-                    else:
-                        # 异常退出
-                        logger.warning("未找到攻击, 停止测序")
+                    before_atk = self._get_current_atk(context)
+                    if not before_atk:
+                        logger.error("未获取到当前攻击, 停止测序")
                         return []
 
                     # 进入后续操作，点击选择--点击熔炼装备--判断是否出现天下布武
                     find_equipment_detail = self.find_and_click_equipment_from_right(
                         context, stove_sequence[i] - star
                     )
-                    if find_equipment_detail.nodes:
-                        context.run_task("Click_Select_Equipment")
+                    if find_equipment_detail:
+                        self.wait_and_click_select_equipment(context)
 
-                        atk_detail = context.run_task("GetCurrentAtk")
-                        if atk_detail.nodes:
-                            after_atk = atk_detail.nodes[0].recognition.best_result.text
-                            logger.info(f"熔炼装备之后 攻击{after_atk}")
-                        else:
-                            # 异常退出
-                            logger.warning("未找到攻击, 停止测序")
+                        after_atk = self._get_current_atk(context)
+                        if not after_atk:
+                            logger.error("未获取到当前攻击, 停止测序")
                             return []
                         if after_atk != before_atk:
                             logger.info(f"第{i}次攻击变动")
@@ -691,33 +732,23 @@ class Find_Stove_Sequence_Test(CustomAction):
 
                         self.add_low_level_equipment(context, i)
                         low_star_num = 0
-                        atk_detail = context.run_task("GetCurrentAtk")
-                        if atk_detail.nodes:
-                            before_atk = atk_detail.nodes[
-                                0
-                            ].recognition.best_result.text
-                            logger.info(f"当前攻击{before_atk}")
-                        else:
-                            # 异常退出
-                            logger.warning("未找到攻击, 停止测序")
+                        before_atk = self._get_current_atk(context)
+
+                        if not before_atk:
+                            logger.error("未获取到当前攻击, 停止测序")
                             return []
                         find_equipment_detail = (
                             self.find_and_click_equipment_from_right(
                                 context, stove_sequence[i] - star
                             )
                         )
-                        if find_equipment_detail.nodes:
-                            context.run_task("Click_Select_Equipment")
+                        if find_equipment_detail:
+                            self.wait_and_click_select_equipment(context)
 
-                            atk_detail = context.run_task("GetCurrentAtk")
-                            if atk_detail.nodes:
-                                after_atk = atk_detail.nodes[
-                                    0
-                                ].recognition.best_result.text
-                                logger.info(f"熔炼装备之后 攻击{after_atk}")
-                            else:
-                                # 异常退出
-                                logger.warning("未找到攻击, 停止测序")
+                            after_atk = self._get_current_atk(context)
+
+                            if not before_atk:
+                                logger.error("未获取到当前攻击, 停止测序")
                                 return []
                             if after_atk != before_atk:
                                 logger.info(f"第{i}次攻击变动")
@@ -780,23 +811,18 @@ class Find_Stove_Sequence_Test(CustomAction):
                     if flag == False:
                         return 0
                         # 进入后续操作，点击选择--点击熔炼装备
-                    atk_detail = context.run_task("GetCurrentAtk")
-                    if atk_detail.nodes:
-                        before_atk = atk_detail.nodes[0].recognition.best_result.text
-                        logger.info(f"当前攻击{before_atk}")
-                    else:
-                        # 异常退出
-                        logger.warning("未找到攻击, 停止熔炼")
+                    before_atk = self._get_current_atk(context)
+                    if not before_atk:
                         return -1
                     find_equipment_detail = self.find_and_click_equipment_from_right(
                         context, stove_sequence[i]
                     )
-                    if find_equipment_detail.nodes:
-                        context.run_task("Click_Select_Equipment")
+                    if find_equipment_detail:
+                        self.wait_and_click_select_equipment(context)
 
                     else:
                         number = 1
-                        while not find_equipment_detail.nodes:
+                        while not find_equipment_detail:
                             if stove_sequence[i] + number <= 6:
                                 find_equipment_detail = (
                                     self.find_and_click_equipment_from_right(
@@ -810,15 +836,11 @@ class Find_Stove_Sequence_Test(CustomAction):
                                 )
                                 return -1
                             number += 1
-                        context.run_task("Click_Select_Equipment")
+                        self.wait_and_click_select_equipment(context)
 
-                    atk_detail = context.run_task("GetCurrentAtk")
-                    if atk_detail.nodes:
-                        after_atk = atk_detail.nodes[0].recognition.best_result.text
-                        logger.info(f"熔炼装备之后 攻击{after_atk}")
-                    else:
-                        logger.warning("未找到攻击, 停止测序")
-                        # 异常退出
+                    after_atk = self._get_current_atk(context)
+                    if not after_atk:
+                        logger.error("未获取到当前攻击, 停止测序")
                         return -1
                     if after_atk != before_atk:
                         logger.info(f"第{i}次攻击变动")
