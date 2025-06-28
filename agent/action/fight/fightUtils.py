@@ -414,7 +414,6 @@ def disassembleEquipment(
 
             logger.info(f"{equipmentName}已分解")
             time.sleep(1)
-            continue
         elif context.run_recognition("Bag_ToNextPage", image):
             context.run_task("Bag_ToNextPage")
         else:
