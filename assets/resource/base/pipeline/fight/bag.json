@@ -181,5 +181,27 @@
         "post_delay": 1000,
         "threshold": 0.8,
         "timeout": 2000
+    },
+    "Bag_DisassembleAllItem": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/UniversalUI/DisassembleOnceButton.png"
+        ],
+        "roi": [
+            53,
+            428,
+            625,
+            590
+        ],
+        "target_offset": [
+            -280,
+            0,
+            0,
+            0
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "threshold": 0.8,
+        "timeout": 2000
     }
 }

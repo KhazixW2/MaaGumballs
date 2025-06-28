@@ -641,6 +641,27 @@ class Fight_TestAction(CustomAction):
         fightUtils.title_learn("魔法", 2, "白袍法师", 3, context)
         fightUtils.title_learn("魔法", 3, "祭司", 3, context)
         fightUtils.title_learn("魔法", 4, "气系大师", 3, context)
+
+        # fightUtils.disassembleEquipment(
+        #     6,
+        #     [
+        #         "土系魔法书",
+        #         "气系魔法书",
+        #         "火系魔法书",
+        #         "水系魔法书",
+        #         "光系魔法书",
+        #         "暗系魔法书",
+        #         "执政官铠甲",
+        #         "骨灰指轮",
+        #         "次元靴",
+        #         "大德鲁伊斗篷",
+        #         "法老面具",
+        #         "格斗大师拳套",
+        #         "圣者的日记",
+        #         "伊斯坦丁",
+        #     ],
+        #     context,
+        # )
         return CustomAction.RunResult(success=True)
 
 

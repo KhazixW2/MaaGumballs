@@ -365,6 +365,63 @@ def findEquipment(
     return True
 
 
+def disassembleEquipment(
+    equipmentLevel: int, equipmentNameList: list[str], context: Context
+):
+    """分解所有目标装备"""
+
+    # 初始化背包
+    while BagRecoDetail := context.run_recognition(
+        "Bag_ToPrevPage", context.tasker.controller.post_screencap().wait().get()
+    ):
+        box = BagRecoDetail.best_result.box
+        center_x, center_y = box[0] + box[2] // 2, box[1] + box[3] // 2
+        context.tasker.controller.post_click(center_x, center_y).wait()
+        time.sleep(0.5)
+
+    # 开始寻找背包
+    for equipmentName in equipmentNameList:
+        equipment_path = f"equipments/{equipmentLevel}level/{equipmentName}.png"
+        image = context.tasker.controller.post_screencap().wait().get()
+        ItemRecoDetail = context.run_recognition(
+            "Bag_FindItem",
+            image,
+            pipeline_override={
+                "Bag_FindItem": {
+                    "template": equipment_path,
+                },
+            },
+        )
+
+        # 输出目标装备是否存在
+        if ItemRecoDetail:
+            logger.info(f"已找到: {equipmentName}")
+            center_x, center_y = (
+                ItemRecoDetail.box[0] + ItemRecoDetail.box[2] // 2,
+                ItemRecoDetail.box[1] + ItemRecoDetail.box[3] // 2,
+            )
+            context.tasker.controller.post_click(center_x, center_y).wait()
+            time.sleep(1)
+            context.run_task("Bag_DisassembleItem")
+            # 点击分解按钮之后有两种情况，如果只有一件装备那么只需要点击确定，如果超过一件装备那么需要点击分解x次
+            image = context.tasker.controller.post_screencap().wait().get()
+            if context.run_recognition("ConfirmButton_500ms", image):
+                context.run_task("ConfirmButton_500ms")
+            elif context.run_recognition("Bag_DisassembleAllItem", image):
+                context.run_task("Bag_DisassembleAllItem")
+            time.sleep(1)
+            context.run_task("ConfirmButton_500ms")
+
+            logger.info(f"{equipmentName}已分解")
+            time.sleep(1)
+            continue
+        elif context.run_recognition("Bag_ToNextPage", image):
+            context.run_task("Bag_ToNextPage")
+        else:
+            logger.info(f"背包未找到: {equipmentName}")
+    return True
+
+
 def findItem(
     equipmentName: str, isUse: bool, context: Context, dst_x: int = 0, dst_y: int = 0
 ):
