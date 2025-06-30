@@ -861,6 +861,7 @@ def Auto_CallDog(context: Context):
     return True
 
 
+
 def rgb_pixel_count(
     image,
     lower,
@@ -923,6 +924,24 @@ def PushOne(context: Context):
                 else:
                     logger.info("没有治疗术、寒冰护盾、吸能术，死亡波纹, 无法推序！")
                     return False
+                  
+def Saveyourlife(context: Context):
+    image = context.tasker.controller.post_screencap().wait().get()
+    TextRecoDetail = context.run_recognition(
+        "Fight_FindRespawn",
+        image,
+        pipeline_override={
+            "Fight_FindRespawn": {
+                "roi": [66, 563, 583, 446],
+                "expected": "复活",
+            }
+        },
+    )
+    logger.info("夭寿啦！！！检测到冈布奥倒下啦！")
+    if TextRecoDetail:
+        # 小SL, 保住狗命
+        context.run_task("LogoutGame")
+        context.run_task("ReturnMaze")
     return True
 
 
