@@ -1,4 +1,5 @@
 from action.fight import jjc101
+from action.fight import mars101
 from action.fight import getKeyFromHole
 from action.fight import timeSpaceDomain
 from action.activity import kairo_maze1
