@@ -1,0 +1,134 @@
+{
+    "go_home": {
+        "recognition": "TemplateMatch",
+        "template": "fight/Kairo_link_maze/home.png",
+        "roi": [
+            47,
+            883,
+            68,
+            94
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 1500,
+        "next": [
+            "go_inn"
+        ],
+        "interrupt": [
+            "click_enter"
+        ]
+    },
+    "click_enter": {
+        "recognition": "OCR",
+        "expected": "进入",
+        "roi": [
+            224,
+            720,
+            290,
+            210
+        ],
+        "action": "Click",
+        "post_delay": 3000,
+        "timeout": 5000
+    },
+    "go_inn": {
+        "recognition": "TemplateMatch",
+        "template": "fight/Kairo_link_maze/inn.png",
+        "roi": [
+            599,
+            503,
+            91,
+            94
+        ],
+        "action": "Click",
+        "post_delay": 2000,
+        "timeout": 1500,
+        "next": [
+            "go_dungeon_1"
+        ],
+        "interrupt": [
+            "click_save",
+            "go_door"
+        ]
+    },
+    "click_save": {
+        "recognition": "OCR",
+        "expected": "住宿并保存",
+        "roi": [
+            247,
+            869,
+            230,
+            75
+        ],
+        "action": "Click",
+        "post_delay": 4000,
+        "timeout": 5000
+    },
+    "go_door": {
+        "recognition": "TemplateMatch",
+        "template": "fight/Kairo_link_maze/door.png",
+        "roi": [
+            601,
+            901,
+            87,
+            87
+        ],
+        "action": "Click",
+        "post_delay": 2000,
+        "timeout": 3000
+    },
+    "go_dungeon_1": {
+        "recognition": "TemplateMatch",
+        "template": "fight/Kairo_link_maze/dungeon_1.png",
+        "roi": [
+            29,
+            238,
+            680,
+            738
+        ],
+        "action": "Click",
+        "post_delay": 2000,
+        "timeout": 300,
+        "next": [
+            "click_bell"
+        ],
+        "interrupt": [
+            "click_enter"
+        ]
+    },
+    "click_bell": {
+        "recognition": "TemplateMatch",
+        "template": "fight/Kairo_link_maze/bell.png",
+        "roi": [
+            347,
+            659,
+            35,
+            39
+        ],
+        "action": "Click",
+        "post_delay": 8000,
+        "timeout": 3000,
+        "next": [
+            "click_yes"
+        ],
+        "interrupt": [
+            "go_door"
+        ]
+    },
+    "click_yes": {
+        "recognition": "OCR",
+        "expected": "确定",
+        "roi": [
+            153,
+            707,
+            119,
+            70
+        ],
+        "action": "Click",
+        "post_delay": 3000,
+        "timeout": 5000,
+        "next": [
+            "go_home"
+        ]
+    }
+}
