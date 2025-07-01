@@ -1,4 +1,5 @@
 from action.fight import jjc101
+from action.fight import mars101
 from action.fight import getKeyFromHole
 
 from action import count
