@@ -1,5 +1,6 @@
 from action.fight import jjc101
 from action.fight import getKeyFromHole
+from action.fight import timeSpaceDomain
 
 from action import count
 from action import dailyTask
