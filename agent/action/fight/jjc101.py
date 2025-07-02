@@ -645,6 +645,9 @@ class Fight_TestAction(CustomAction):
         #     ],
         #     context,
         # )
+        fightUtils.title_learn_branch("魔法", 5, "攻击强化", 3, context)
+        fightUtils.title_learn_branch("魔法", 5, "魔力强化", 3, context)
+        fightUtils.title_learn_branch("魔法", 5, "生命强化", 3, context)
         return CustomAction.RunResult(success=True)
 
 

@@ -261,12 +261,32 @@
         "action": "Click",
         "timeout": 2000,
         "next": [
-            "mars_Statue_Open_Next"
+            "mars_Statue_Open_Next1",
+            "mars_Statue_Open_Next2"
         ]
     },
-    "mars_Statue_Open_Next": {
+    "mars_Statue_Open_Next1": {
         "recognition": "OCR",
-        "expected": "稀有",
+        "expected": [
+            "至高"
+        ],
+        "roi": [
+            33,
+            916,
+            375,
+            124
+        ],
+        "action": "Click",
+        "timeout": 2000,
+        "next": [
+            "mars_Statue_OpenBagCheck"
+        ]
+    },
+    "mars_Statue_Open_Next2": {
+        "recognition": "OCR",
+        "expected": [
+            "稀有"
+        ],
         "roi": [
             33,
             916,
@@ -281,7 +301,10 @@
     },
     "mars_Statue_OpenBagCheck": {
         "recognition": "OCR",
-        "expected": "稀有",
+        "expected": [
+            "稀有",
+            "至高"
+        ],
         "roi": [
             201,
             398,
@@ -320,5 +343,37 @@
         ],
         "action": "Click",
         "timeout": 2000
+    },
+    "mars_GotoSpecialLayer": {
+        "recognition": "TemplateMatch",
+        "template": "fight/mars/marsSpecialLayer.png",
+        "roi": [
+            4,
+            182,
+            705,
+            839
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "mars_GotoSpecialLayer_Next"
+        ]
+    },
+    "mars_GotoSpecialLayer_Next": {
+        "recognition": "TemplateMatch",
+        "template": "fight/mars/marsSpecialLayer_Next.png",
+        "roi": [
+            31,
+            686,
+            665,
+            270
+        ],
+        "action": "Click",
+        "timeout": 2000,
+        "next": [
+            "Fight_DownStaris_Loading",
+            "GameLoading"
+        ]
     }
 }
