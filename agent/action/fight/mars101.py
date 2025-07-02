@@ -4,13 +4,10 @@ from maa.context import Context
 from utils import logger
 
 from action.fight import fightUtils
+from action.fight import fightProcessor
 
 import time
 
-cols, rows = 5, 6
-roi_list = fightUtils.calRoiList()
-roi_matrix = [roi_list[i * cols : (i + 1) * cols] for i in range(rows)]
-visited = [[0] * cols for _ in range(rows)]
 boss_x, boss_y = 360, 800
 
 
@@ -18,16 +15,18 @@ boss_x, boss_y = 360, 800
 class mars101(CustomAction):
     def __init__(self):
         super().__init__()
-        # self.isHaveSpartanHat = False
-        # self.isHaveDog = False
         self.isTitle_L1 = False
-        self.isTitle_L49 = False
-        # self.isTitle_L63 = False
+        self.isTitle_L49_first = False
+        self.isTitle_L49_second = False
+        self.isTitle_L59 = False
+        self.useEarth = 0
+        self.isSepcialExchange = False
+        self.isSpecialBuff = False
         self.layers = 1
 
     def initialize(self, context: Context):
         self.__init__()
-        logger.info("JJC101初始化完成")
+        logger.info("马尔斯101初始化完成")
         # 检查当前层数
         context.run_task("Fight_ReturnMainWindow")
         RunResult = context.run_task("Fight_CheckLayer")
@@ -66,38 +65,63 @@ class mars101(CustomAction):
     def Check_DefaultTitle(self, context: Context):
         """
         检查默认称号
-        1. 检查49层的称号
+        1. 检查49层的称号: 位面点满即可
+        2. 检查59层的称号: 位面，武器大师，大剑师都点满
         """
         if (self.layers == 1 or self.layers == 2) and self.isTitle_L1 == False:
             fightUtils.title_learn("冒险", 1, "寻宝者", 1, context)
             context.run_task("Fight_ReturnMainWindow")
             self.isTitle_L1 = True
-        elif (self.layers == 48 or self.layers == 49) and self.isTitle_L49 == False:
+        elif self.layers == 48 or self.layers == 49:
+            if self.isTitle_L49_first == False:
 
+                fightUtils.title_learn("魔法", 1, "魔法学徒", 3, context)
+                fightUtils.title_learn("魔法", 2, "黑袍法师", 1, context)
+                fightUtils.title_learn("魔法", 3, "咒术师", 1, context)
+                fightUtils.title_learn("魔法", 4, "土系大师", 1, context)
+                fightUtils.title_learn("魔法", 5, "位面先知", 1, context)
+
+                context.run_task("Fight_ReturnMainWindow")
+                fightUtils.title_learn_branch("魔法", 5, "魔力强化", 3, context)
+                fightUtils.title_learn_branch("魔法", 5, "生命强化", 3, context)
+                fightUtils.title_learn_branch("魔法", 5, "魔法强化", 3, context)
+
+                context.run_task("Fight_ReturnMainWindow")
+                context.run_task("Save_Status")
+                context.run_task("Fight_ReturnMainWindow")
+                self.isTitle_L49_first = True
+
+            elif self.isTitle_L49_second == False:
+                fightUtils.title_learn_branch("魔法", 5, "魔力强化", 3, context)
+                fightUtils.title_learn_branch("魔法", 5, "生命强化", 3, context)
+                fightUtils.title_learn_branch("魔法", 5, "魔法强化", 3, context)
+
+                context.run_task("Fight_ReturnMainWindow")
+                context.run_task("Save_Status")
+                context.run_task("Fight_ReturnMainWindow")
+                self.isTitle_L49_second = True
+
+        elif self.layers == 58 or self.layers == 59 and self.isTitle_L59 == False:
+            fightUtils.title_learn("战斗", 1, "见习战士", 3, context)
+            fightUtils.title_learn("战斗", 2, "战士", 3, context)
+            fightUtils.title_learn("战斗", 3, "剑舞者", 3, context)
+            fightUtils.title_learn("战斗", 4, "大剑师", 3, context)
             context.run_task("Fight_ReturnMainWindow")
-            fightUtils.title_learn("魔法", 1, "魔法学徒", 3, context)
-            fightUtils.title_learn("魔法", 2, "黑袍法师", 1, context)
-            fightUtils.title_learn("魔法", 3, "咒术师", 1, context)
-            fightUtils.title_learn("魔法", 4, "土系大师", 1, context)
-            fightUtils.title_learn("魔法", 5, "位面先知", 1, context)
 
-            context.run_task("Fight_ReturnMainWindow")
-            fightUtils.title_learn_branch("魔法", 5, "魔力强化", 3, context)
-            fightUtils.title_learn_branch("魔法", 5, "生命强化", 3, context)
-            fightUtils.title_learn_branch("魔法", 5, "魔法强化", 3, context)
-
+            fightUtils.title_learn("冒险", 1, "寻宝者", 1, context)
+            fightUtils.title_learn("冒险", 2, "勘探家", 3, context)
+            fightUtils.title_learn("冒险", 3, "锻造师", 3, context)
+            fightUtils.title_learn("冒险", 4, "武器大师", 3, context)
             context.run_task("Fight_ReturnMainWindow")
             context.run_task("Save_Status")
             context.run_task("Fight_ReturnMainWindow")
-            self.isTitle_L49 = True
+            self.isTitle_L59 = True
 
     def Check_DefaultStatus(self, context: Context):
 
         # 检查冈布奥状态
         tempNum = self.layers % 10
-        if (self.layers >= 55 and (tempNum == 1 or tempNum == 5 or tempNum == 9)) or (
-            self.layers >= 90 and tempNum == 4
-        ):
+        if self.layers >= 55 and (tempNum == 1 or tempNum == 5 or tempNum == 9):
             StatusDetail: dict = fightUtils.checkGumballsStatusV2(context)
             CurrentHP = float(StatusDetail["当前生命值"])
             MaxHp = float(StatusDetail["最大生命值"])
@@ -119,80 +143,95 @@ class mars101(CustomAction):
             else:
                 logger.info("当前生命值大于80%，不使用治疗")
 
-        # 保命
-        if self.layers == 89 and not fightUtils.checkBuffStatus("神圣重生", context):
-            fightUtils.cast_magic("光", "神圣重生", context)
-
         return True
 
-    def handle_boos_80_event(self, context: Context):
-        fightUtils.cast_magic("火", "失明术", context)
-        fightUtils.cast_magic("气", "静电场", context)
-        if not fightUtils.cast_magic("水", "冰锥术", context):
-            if not fightUtils.cast_magic("暗", "变形术", context):
-                fightUtils.cast_magic("土", "石肤术", context)
-        fightUtils.cast_magic("水", "寒冰护盾", context)
-        fightUtils.cast_magic("水", "寒冰护盾", context)
-        fightUtils.cast_magic("土", "石肤术", context)
-        fightUtils.cast_magic("光", "神恩术", context)
-        for _ in range(3):
-            context.tasker.controller.post_click(boss_x, boss_y).wait()
+    def handle_boss_event(self, context: Context):
+        if context.run_recognition(
+            "Fight_OpenedDoor", context.tasker.controller.post_screencap().wait().get()
+        ):
+            context.run_task("Fight_OpenedDoor")
 
-    def handle_boos_100_event(self, context: Context):
-        fightUtils.cast_magic("气", "静电场", context)
-        fightUtils.cast_magic("火", "毁灭之刃", context)
-        fightUtils.cast_magic("气", "瓦解射线", context)
-        for _ in range(6):
-            context.tasker.controller.post_click(boss_x, boss_y).wait()
-            time.sleep(0.3)
+        else:
 
-    def handle_boos_100Dragon_event(self, context: Context):
-        fightUtils.cast_magic("火", "失明术", context)
-        for _ in range(2):
-            context.tasker.controller.post_click(boss_x, boss_y).wait()
-        fightUtils.cast_magic("特殊", "龙威", context)
-        for _ in range(2):
-            context.tasker.controller.post_click(boss_x, boss_y).wait()
-        fightUtils.cast_magic("火", "失明术", context)
-        for _ in range(2):
-            context.tasker.controller.post_click(boss_x, boss_y).wait()
-
-    def handle_boos_event(self, context: Context):
-        if self.layers <= 60:
             for _ in range(3):
-                if not fightUtils.cast_magic_special("生命颂歌", context):
-                    break
+                fightUtils.cast_magic_special("生命颂歌", context)
+
             fightUtils.cast_magic("光", "祝福术", context)
-            for _ in range(5):
+            for _ in range(10):
+                context.tasker.controller.post_click(boss_x, boss_y).wait()
+            # 等待boss转阶段动画
+            time.sleep(5)
+            for _ in range(3):
                 context.tasker.controller.post_click(boss_x, boss_y).wait()
 
-        elif self.layers <= 70:
-            fightUtils.cast_magic("水", "冰锥术", context)
-            for _ in range(4):
-                context.tasker.controller.post_click(boss_x, boss_y).wait()
-                time.sleep(0.1)
-            fightUtils.cast_magic("土", "石肤术", context)
-            fightUtils.cast_magic("水", "治疗术", context)
-
-        elif self.layers <= 80:
-            self.handle_boos_80_event(context)
-
-        elif self.layers <= 100:
-            if fightUtils.cast_magic("气", "时间停止", context):
-                self.handle_boos_100_event(context)
-            else:
-                self.handle_boos_80_event(context)
-
-        # 捡东西
-        time.sleep(2)
-        context.run_task("Fight_OpenedDoor")
+            # 捡东西
+            time.sleep(2)
+            self.handle_marsReward_event(context)
+            context.run_task("Fight_OpenedDoor")
         return True
+
+    def handle_earth_event(self, context: Context):
+        if (self.layers == 56 or self.layers == 57) and self.useEarth < 2:
+            fightUtils.cast_magic("土", "大地之门", context)
+            self.useEarth += 1
+            # 是否检查大地成功
 
     def handle_preLayers_event(self, context: Context):
-        logger.info(f"第{self.layers}层 战前准备")
+        self.handle_earth_event(context)
         self.Check_DefaultEquipment(context)
         self.Check_DefaultTitle(context)
         return True
+
+    def handle_perfect_event(self, context: Context):
+        # 检测完美击败
+        if context.run_recognition(
+            "Fight_Perfect", context.tasker.controller.post_screencap().wait().get()
+        ):
+            logger.info(f"第{self.layers} 完美击败")
+            while context.run_recognition(
+                "Fight_Perfect",
+                context.tasker.controller.post_screencap().wait().get(),
+            ):
+                pass
+
+    def handle_before_leave_maze_event(self, context: Context):
+        for _ in range(3):
+            fightUtils.cast_magic_special("生命颂歌", context)
+
+        context.run_task("mars_GotoSpecialLayer")
+        context.run_task("Fight_ReturnMainWindow")
+        OpenDetail = context.run_task("Bag_Open")
+        if OpenDetail:
+            fightUtils.findItem("电能试剂", True, context)
+
+        context.run_task("Fight_OpenedDoor")
+        context.run_task("Fight_ReturnMainWindow")
+        for _ in range(3):
+            fightUtils.cast_magic_special("生命颂歌", context)
+
+        context.run_task("mars_GotoSpecialLayer")
+        context.run_task("Fight_ReturnMainWindow")
+        OpenDetail = context.run_task("Bag_Open")
+        if OpenDetail:
+            fightUtils.findItem("能量电池", True, context)
+        context.run_task("Fight_OpenedDoor")
+        context.run_task("Fight_ReturnMainWindow")
+        for _ in range(3):
+            fightUtils.cast_magic_special("生命颂歌", context)
+
+        fightUtils.title_learn("战斗", 5, "剑圣", 1, context)
+        context.run_task("Fight_ReturnMainWindow")
+
+        fightUtils.title_learn_branch("战斗", 5, "攻击强化", 3, context)
+        fightUtils.title_learn_branch("战斗", 5, "魔力强化", 3, context)
+        fightUtils.title_learn_branch("战斗", 5, "生命强化", 3, context)
+        context.run_task("Fight_ReturnMainWindow")
+        OpenDetail = context.run_task("Bag_Open")
+        if OpenDetail:
+            fightUtils.findItem("武器大师执照", True, context)
+
+        logger.info("可以出图了")
+        # 到这可以出图了
 
     def handle_downstair_event(self, context: Context):
         recoDetail = context.run_task("Fight_OpenedDoor")
@@ -218,7 +257,7 @@ class mars101(CustomAction):
             context.run_task("mars_RuinsShop")
 
     def handle_marsReward_event(self, context: Context):
-        if context.run_recognition(
+        if self.layers % 2 == 1 or context.run_recognition(
             "mars_Reward", context.tasker.controller.post_screencap().wait().get()
         ):
             context.run_task("mars_Reward")
@@ -239,20 +278,31 @@ class mars101(CustomAction):
         ):
             context.run_task("mars_Stele")
 
+    def handle_marsStatue_event(self, context: Context):
+        if context.run_recognition(
+            "mars_Statue", context.tasker.controller.post_screencap().wait().get()
+        ):
+            context.run_task("mars_Statue")
+
     def handle_postLayers_event(self, context: Context):
-        logger.info(f"第{self.layers}层 战后事件检测中")
+        self.handle_perfect_event(context)
         self.Check_DefaultStatus(context)
         self.handle_marsBody_event(context)
         self.handle_marsStele_event(context)
+        self.handle_marsRuinsShop_event(context)
+        self.handle_marsStatue_event(context)
         self.handle_marsReward_event(context)
-        self.handle_downstair_event(context)
+        if self.layers == 89:
+            self.handle_before_leave_maze_event(context)
+        else:
+            self.handle_downstair_event(context)
 
     def handle_clearCurLayer_event(self, context: Context):
-        # Boos层开始探索
+        # boss层开始探索
         if self.layers >= 30 and self.layers % 10 == 0:
             # boss召唤动作
             time.sleep(6)
-            self.handle_boos_event(context)
+            self.handle_boss_event(context)
             # 检测神龙
             time.sleep(1)
             img = context.tasker.controller.post_screencap().wait().get()
@@ -297,7 +347,7 @@ class mars101(CustomAction):
         # initialize
         self.initialize(context)
 
-        while self.layers < 101:
+        while self.layers <= 101:
             # 检查是否停止任务
             if context.tasker.stopping:
                 logger.info("检测到停止任务, 开始退出agent")
@@ -335,64 +385,24 @@ class mars101(CustomAction):
             # 检查是否触发战后事件
             self.handle_postLayers_event(context)
 
-        logger.info(f"竞技场探索结束，当前到达{self.layers}层")
-        context.run_task("Fight_LeaveMaze")
+            if self.layers == 89:
+                logger.info(f"current layers {self.layers}, 开始退出agent")
+                break
+
+        logger.info(f"马尔斯探索结束，当前到达{self.layers}层")
+        # 这里处理出图逻辑
+        # context.run_task("Fight_LeaveMaze")
         return CustomAction.RunResult(success=True)
 
 
 @AgentServer.custom_action("mars_Fight_ClearCurrentLayer")
 class mars_Fight_ClearCurrentLayer(CustomAction):
 
-    def CheckMonsterCnt(self, context: Context):
-        global visited
-        img = context.tasker.controller.post_screencap().wait().get()
-
-        # 检测是否有怪物并攻击
-        for r in range(rows):
-            for c in range(cols):  # 重试次数
-                if visited[r][c] >= 30:
-                    continue
-                # 计算 ROI 区域
-                x, y, w, h = roi_matrix[r][c]
-                roi_image = img[y : y + h, x : x + w]
-                LeftBottomImg = roi_image[0:60, 0:60].copy()  # 提取左下角 20x20 区域
-                left_detected = fightUtils.rgb_pixel_count(
-                    LeftBottomImg, [190, 35, 35], [235, 65, 65], 20, context
-                )
-                if left_detected:
-                    visited[r][c] += 1
-                    # logger.info(f"检测({r + 1},{c + 1})有怪物: {x}, {y}, {w}, {h}")
-                    for _ in range(3):
-                        context.tasker.controller.post_click(
-                            x + w // 2, y + h // 2
-                        ).wait()
-                        time.sleep(0.1)
-                    time.sleep(0.1)
-        return True
-
-    def CheckClosedDoor(self, context: Context):
-        image = context.tasker.controller.post_screencap().wait().get()
-        if recoDetail := context.run_recognition("Fight_ClosedDoor", image):
-            for r in range(rows):
-                for c in range(cols):
-                    if fightUtils.is_roi_in_or_mostly_in(
-                        recoDetail.box, roi_matrix[r][c]
-                    ):
-                        logger.info(f"识别到 ClosedDoor 位于 {r+1},{c+1}")
-                        return r, c
-        return 0, 0
-
-    def CheckOpenedDoor(self, context: Context):
-        image = context.tasker.controller.post_screencap().wait().get()
-        if recoDetail := context.run_recognition("Fight_OpenedDoor", image):
-            for r in range(rows):
-                for c in range(cols):
-                    if fightUtils.is_roi_in_or_mostly_in(
-                        recoDetail.box, roi_matrix[r][c]
-                    ):
-                        logger.info(f"识别到 ClosedDoor 位于 {r+1},{c+1}")
-                        return r, c
-        return 0, 0
+    def __init__(self):
+        super().__init__()
+        self.fightProcessor = fightProcessor.FightProcessor()
+        # 进行特殊配置以适应mars
+        self.fightProcessor.grid_count = 40
 
     # 执行函数
     def run(
@@ -400,89 +410,5 @@ class mars_Fight_ClearCurrentLayer(CustomAction):
         context: Context,
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
-        # 初始化
-        isCheckDragon = False
-        FailCheckMonsterCnt = 0
-        FailCheckGridCnt = 0
-        checkGridCnt = 0
-        global visited
-        DoorX, DoorY = self.CheckClosedDoor(context)
-        if DoorX == 0 and DoorY == 0:
-            DoorX, DoorY = self.CheckOpenedDoor(context)
-        visited = [[0] * cols for _ in range(rows)]
-        visited[DoorX][DoorY] = 999
-
-        if context.run_recognition(
-            "Fight_CheckDragonBall",
-            context.tasker.controller.post_screencap().wait().get(),
-        ):
-            isCheckDragon = True
-        else:
-            isCheckDragon = False
-
-        # 开始清理当前层
-        cnt = 18
-        while cnt > 0:
-            if context.tasker.stopping:
-                logger.info("JJC_Fight_ClearCurrentLayer 被停止")
-                return CustomAction.RunResult(success=False)
-
-            # 截图
-            img = context.tasker.controller.post_screencap().wait().get()
-
-            # 检测神龙
-            if isCheckDragon and context.run_recognition("Fight_FindDragon", img):
-                logger.info("是神龙,俺,俺们有救了！！！")
-                fightUtils.dragonwish("工资", context)
-                logger.info("神龙带肥家lo~")
-                continue
-
-            # 检测地板
-            cnt -= 1
-            checkGridCnt = 0
-            for r in range(rows):
-                for c in range(cols):  # 重试次数
-                    # 如果已经访问过该格子，并且已经清理过，跳过
-                    if visited[r][c] >= 5:
-                        continue
-
-                    # 计算 ROI 区域
-                    x, y, w, h = roi_matrix[r][c]
-                    roi_image = img[y : y + h, x : x + w]
-                    LeftBottomImg = roi_image[
-                        h - 15 : h, 0:20
-                    ].copy()  # 提取左下角 20x20 区域
-                    RightBottomImg = roi_image[
-                        h - 15 : h, w - 20 : w
-                    ].copy()  # 提取右下角 20x20 区域
-
-                    # OpenCV方式
-                    left_detected = fightUtils.rgb_pixel_count(
-                        LeftBottomImg, [130, 135, 143], [170, 175, 183], 50, context
-                    )
-                    right_detected = fightUtils.rgb_pixel_count(
-                        RightBottomImg, [130, 135, 143], [170, 175, 183], 50, context
-                    )
-
-                    if left_detected or right_detected:
-                        context.tasker.controller.post_click(
-                            x + w // 2, y + h // 2
-                        ).wait()
-                        visited[r][c] += 1
-                        checkGridCnt += 1
-                        time.sleep(0.1)
-
-            # 检测怪物并进行攻击
-            if not self.CheckMonsterCnt(context):
-                FailCheckMonsterCnt += 1
-
-            # 检测grid是否清理完, 几次清理完则退出
-            if not checkGridCnt:
-                FailCheckGridCnt += 1
-
-            # 如果提前清理完该层，那么不需要继续等待，可以提前退出
-            if FailCheckMonsterCnt >= 5 or FailCheckGridCnt >= 3:
-                logger.info("找不到怪物或格子, 检测下一层的门")
-                break
-
+        self.fightProcessor.clearCurrentLayer(context)
         return CustomAction.RunResult(success=True)
