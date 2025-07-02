@@ -69,7 +69,6 @@ class mars101(CustomAction):
         2. 检查59层的称号: 位面，武器大师，大剑师都点满
         """
         if (self.layers == 1 or self.layers == 2) and self.isTitle_L1 == False:
-            fightUtils.title_learn("冒险", 1, "寻宝者", 1, context)
             context.run_task("Fight_ReturnMainWindow")
             self.isTitle_L1 = True
         elif self.layers == 48 or self.layers == 49:
@@ -91,7 +90,7 @@ class mars101(CustomAction):
                 context.run_task("Fight_ReturnMainWindow")
                 self.isTitle_L49_first = True
 
-            elif self.isTitle_L49_second == False:
+            if self.isTitle_L49_second == False and self.useEarth == 1:
                 fightUtils.title_learn_branch("魔法", 5, "魔力强化", 3, context)
                 fightUtils.title_learn_branch("魔法", 5, "生命强化", 3, context)
                 fightUtils.title_learn_branch("魔法", 5, "魔法强化", 3, context)
@@ -108,11 +107,18 @@ class mars101(CustomAction):
             fightUtils.title_learn("战斗", 4, "大剑师", 3, context)
             context.run_task("Fight_ReturnMainWindow")
 
-            fightUtils.title_learn("冒险", 1, "寻宝者", 1, context)
+            fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
             fightUtils.title_learn("冒险", 2, "勘探家", 3, context)
             fightUtils.title_learn("冒险", 3, "锻造师", 3, context)
             fightUtils.title_learn("冒险", 4, "武器大师", 3, context)
+            fightUtils.title_learn("冒险", 5, "大铸剑师", 1, context)
             context.run_task("Fight_ReturnMainWindow")
+
+            fightUtils.title_learn_branch("冒险", 5, "攻击强化", 3, context)
+            fightUtils.title_learn_branch("冒险", 5, "生命强化", 3, context)
+            fightUtils.title_learn_branch("冒险", 5, "魔法强化", 3, context)
+            context.run_task("Fight_ReturnMainWindow")
+
             context.run_task("Save_Status")
             context.run_task("Fight_ReturnMainWindow")
             self.isTitle_L59 = True
@@ -292,7 +298,7 @@ class mars101(CustomAction):
         self.handle_marsRuinsShop_event(context)
         self.handle_marsStatue_event(context)
         self.handle_marsReward_event(context)
-        if self.layers == 89:
+        if self.layers == 79:
             self.handle_before_leave_maze_event(context)
         else:
             self.handle_downstair_event(context)
@@ -385,13 +391,13 @@ class mars101(CustomAction):
             # 检查是否触发战后事件
             self.handle_postLayers_event(context)
 
-            if self.layers == 89:
+            if self.layers == 79:
                 logger.info(f"current layers {self.layers}, 开始退出agent")
                 break
 
         logger.info(f"马尔斯探索结束，当前到达{self.layers}层")
-        # 这里处理出图逻辑
-        # context.run_task("Fight_LeaveMaze")
+
+        context.run_task("Fight_LeaveMaze")
         return CustomAction.RunResult(success=True)
 
 
