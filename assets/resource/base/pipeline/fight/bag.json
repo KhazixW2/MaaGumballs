@@ -162,6 +162,7 @@
             0
         ],
         "action": "Click",
+        "order_by": "Score",
         "post_delay": 1000,
         "threshold": 0.8,
         "timeout": 2000
