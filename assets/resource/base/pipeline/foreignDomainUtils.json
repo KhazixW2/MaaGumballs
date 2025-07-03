@@ -1,0 +1,74 @@
+{
+    "FD_SwipeMapMiddleToTopLeft": {
+        "recognition": "DirectHit",
+        "action": "Swipe",
+        "begin": [
+            273,
+            675,
+            49,
+            49
+        ],
+        "end": [
+            675,
+            1104,
+            44,
+            43
+        ],
+        "duration": 500,
+        "post_delay": 1000
+    },
+    "FD_SwipeMapToRight": {
+        "recognition": "DirectHit",
+        "action": "Swipe",
+        "begin": [
+            412,
+            743,
+            39,
+            35
+        ],
+        "end": [
+            21,
+            743,
+            39,
+            35
+        ],
+        "duration": 500,
+        "post_delay": 1000
+    },
+    "FD_SwipeMapToLeft": {
+        "recognition": "DirectHit",
+        "action": "Swipe",
+        "begin": [
+            412,
+            743,
+            39,
+            35
+        ],
+        "end": [
+            690,
+            743,
+            39,
+            35
+        ],
+        "duration": 500,
+        "post_delay": 1000
+    },
+    "FD_SwipeMapToDown": {
+        "recognition": "DirectHit",
+        "action": "Swipe",
+        "begin": [
+            360,
+            1096,
+            42,
+            40
+        ],
+        "end": [
+            360,
+            743,
+            42,
+            40
+        ],
+        "duration": 500,
+        "post_delay": 1000
+    }
+}
