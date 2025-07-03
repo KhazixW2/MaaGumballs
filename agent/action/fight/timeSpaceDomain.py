@@ -4,18 +4,10 @@ from maa.custom_action import CustomAction
 from maa.define import RecognitionDetail
 
 from utils import logger
+from action.fight import fightUtils
 
 import time
 import re
-
-# 从字符串中识别并返回数字
-def extract_num(input_string):
-    input_string = input_string.replace(",", "")
-    match = re.search(r"(\d+)", input_string)
-    if match:
-        return int(match.group(1))
-    else:
-        return 0
     
 fleetRoiList: dict = {
     "奥鲁维":[130, 199, 60, 51],
@@ -46,7 +38,7 @@ class TSD_explore(CustomAction):
         )
         list = []
         for power in info.filterd_results:
-            nums = extract_num(power.text)
+            nums = fightUtils.extract_num(power.text.replace(",", ""))
             list.append(nums)
         powerList: dict = {
             "奥鲁维": list[0],
@@ -81,7 +73,10 @@ class TSD_explore(CustomAction):
                     }
             }
         )
-        return len(fleetStatus.filterd_results)
+        if fleetStatus and fleetStatus.filterd_results:
+            return len(fleetStatus.filterd_results)
+        else:
+            return 0
     
     # 返回所有舰队
     def returnFleets(self, context: Context) -> bool:
@@ -103,12 +98,21 @@ class TSD_explore(CustomAction):
                 if not status:
                     time.sleep(1)
                     logger.info(f"正在返回{key}舰队")
-                    context.tasker.controller.post_click(
-                        fleetRoiList[key][0] + fleetRoiList[key][2] // 2,
-                        fleetRoiList[key][1] + fleetRoiList[key][3] // 2,
-                    )
-                    context.run_task("TSD_ReturnFleet")
+                    context.run_task("TSD_ClickFleet",
+                        pipeline_override={
+                            "TSD_ClickFleet":{
+                                "target": fleetRoiList[key]
+                            }       
+                    })
+                    context.run_task("TSD_ReturnFleet",
+                        pipeline_override={
+                            "TSD_checkFreeFleet":{
+                                "roi": fleetRoiList[key]
+                            }       
+                    })                    
                     time.sleep(1)
+                else:
+                    logger.info(f"{key}舰队已返回,无需操作")
             if nums := self.checkAllFleetStatus(context) == 4 :
                 logger.info("所有舰队已返回")
                 break;        
@@ -125,19 +129,16 @@ class TSD_explore(CustomAction):
                         "recognition": "TemplateMatch",
                         "template": "fight/timeSpaceDomain/exploreTarget.png",
                         "roi": [12, 268, 693, 872],
-                        "threshold": 0.8,
+                        "threshold": 0.9,
                     }
                 }
         )
-        exploreList2 = []
         if exploreList and exploreList.filterd_results:
-            for explore in exploreList.filterd_results:
-                if explore.score > 0.9:
-                    exploreList2.append(explore)
-            exploreNums = len(exploreList2)
+            exploreNums = len(exploreList.filterd_results)
+            return exploreList.filterd_results
         else: 
             exploreNums = 0
-        return exploreList2
+            return []
     
     # 按列表执行事件
     def runExplore(self, context: Context, exploreList: []) -> bool:
@@ -150,13 +151,19 @@ class TSD_explore(CustomAction):
             time.sleep(2)
             task1 = context.run_task("TSD_Investigate")
             if task1.status.succeeded == False:
-                context.run_task("TSD_BackText")
+                context.run_task("BackText")
                 return False
             exploreNums -= 1
             time.sleep(1)
         return True
     
-    def checkBoundary(self, context: Context, tempPath: str, roi: []) -> bool:
+    def checkBoundary(self, context: Context, direction: str) -> bool:
+        boundaryRoiDict:dict = {
+            "LeftTop":[12, 268, 137, 147],
+            "Right":[597, 272, 96, 871],
+            "Left":[14, 275, 116, 766],
+            "RightBottom":[590, 1052, 117, 102]
+        }
         img = context.tasker.controller.post_screencap().wait().get()
         boundaryList = context.run_recognition(
             "GridCheckTargetBoundary",
@@ -164,30 +171,18 @@ class TSD_explore(CustomAction):
             pipeline_override={
                 "GridCheckTargetBoundary":{
                     "recognition": "TemplateMatch",
-                    "template": tempPath,
-                    "roi": roi,
-                    "threshold": 0.8
+                    "template": f"fight/timeSpaceDomain/boundary{direction}.png",
+                    "roi": boundaryRoiDict[direction],
+                    "threshold": 0.92
                 }
             }
         )
-        flag = False
         if boundaryList and  boundaryList.filterd_results:
-            for b in boundaryList.filterd_results:
-                if b.score > 0.92:
-                    flag = True
-                    break
-            if flag:
-                return True
+            return True
         return False
     # 检测目标是否还存在
     def checkTargetExist(self, context: Context) -> bool:
         global exploreNums 
-        boundaryRoiDict:dict = {
-            "LeftTop":[12,268,137,147],
-            "Right":[597,272,96,871],
-            "Left":[14,275,116,766],
-            "RightBottom":[590,1052,117,102]
-        }
         
         # 先判断当前屏幕有无目标，没有的话再移动至左上角开始检查
         self.GetExploreTargetList(context)
@@ -196,10 +191,10 @@ class TSD_explore(CustomAction):
         else:
             while True: # 将地图移动至左上角
                 tempPath = "fight/timeSpaceDomain/boundaryLeftTop.png"
-                if self.checkBoundary(context, tempPath, boundaryRoiDict["LeftTop"]):
+                if self.checkBoundary(context, "LeftTop"):
                     break
                 else:
-                    context.run_task("TSD_SwipeMapMiddleToTopLeft")
+                    context.run_task("FD_SwipeMapMiddleToTopLeft")
                 time.sleep(1)
             logger.info("地图已移动至左上角")
 
@@ -214,32 +209,30 @@ class TSD_explore(CustomAction):
                 flag = False
             else :
                 logger.info(f"未找到探索目标，将移动地图再次搜索")
-                tempPath = f"fight/timeSpaceDomain/boundary{direction}.png"
-                if self.checkBoundary(context, tempPath, boundaryRoiDict[direction]):
+                if self.checkBoundary(context, direction):
                     logger.info(f"地图{direction}边界")
-                    RightBottom = "fight/timeSpaceDomain/boundaryRightBottom.png"
-                    if self.checkBoundary(context, RightBottom, boundaryRoiDict["RightBottom"]):
+                    if self.checkBoundary(context, "RightBottom"):
                         logger.info("已到达地图边界")
                         flag = False
                         return False
                     elif not isDown: # 未达到右下角，地图下移一次
                         logger.info("地图下移")
-                        context.run_task("TSD_SwipeMapToDown")
+                        context.run_task("FD_SwipeMapToDown")
                         direction = "Left" if direction == "Right" else "Right"
                         isDown = True
                     else: # 已经下移过一次，按direction移动一次
                         logger.info("地图移动")
                         if direction =="Right":
-                            context.run_task("TSD_SwipeMapToRight")
+                            context.run_task("FD_SwipeMapToRight")
                         else :
-                            context.run_task("TSD_SwipeMapToLeft")
+                            context.run_task("FD_SwipeMapToLeft")
                         isDown = False
                 else: # 未达到边界，地图按当前direction继续移动一次
                     logger.info("地图移动")
                     if direction =="Right":
-                        context.run_task("TSD_SwipeMapToRight")
+                        context.run_task("FD_SwipeMapToRight")
                     else :
-                        context.run_task("TSD_SwipeMapToLeft")
+                        context.run_task("FD_SwipeMapToLeft")
                     isDown = False
         return True
 
@@ -252,7 +245,7 @@ class TSD_explore(CustomAction):
                 "checkUnionMsgBox": {
                     "recognition": "TemplateMatch",
                     "template": "fight/timeSpaceDomain/unionMsgOpened.png",
-                    "roi": [91,1042,80,80],
+                    "roi": [91, 1042, 80, 80],
                     "threshold": 0.8
                 }
             },

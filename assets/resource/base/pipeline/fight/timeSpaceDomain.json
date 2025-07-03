@@ -57,78 +57,6 @@
             "TSD_Explore"
         ]
     },
-    "TSD_SwipeMapMiddleToTopLeft": {
-        "recognition": "DirectHit",
-        "action": "Swipe",
-        "begin": [
-            273,
-            675,
-            49,
-            49
-        ],
-        "end": [
-            675,
-            1104,
-            44,
-            43
-        ],
-        "duration": 500,
-        "post_delay": 1000
-    },
-    "TSD_SwipeMapToRight": {
-        "recognition": "DirectHit",
-        "action": "Swipe",
-        "begin": [
-            412,
-            743,
-            39,
-            35
-        ],
-        "end": [
-            21,
-            743,
-            39,
-            35
-        ],
-        "duration": 500,
-        "post_delay": 1000
-    },
-    "TSD_SwipeMapToLeft": {
-        "recognition": "DirectHit",
-        "action": "Swipe",
-        "begin": [
-            412,
-            743,
-            39,
-            35
-        ],
-        "end": [
-            690,
-            743,
-            39,
-            35
-        ],
-        "duration": 500,
-        "post_delay": 1000
-    },
-    "TSD_SwipeMapToDown": {
-        "recognition": "DirectHit",
-        "action": "Swipe",
-        "begin": [
-            360,
-            1096,
-            42,
-            40
-        ],
-        "end": [
-            360,
-            743,
-            42,
-            40
-        ],
-        "duration": 500,
-        "post_delay": 1000
-    },
     "TSD_Explore": {
         "action": "Custom",
         "custom_action": "TSD_explore",
@@ -136,6 +64,43 @@
         "timeout": 2000
     },
     "TSD_ReturnFleet": {
+        "next": [
+            "TSD_checkFreeFleet"
+        ],
+        "post_delay": 100,
+        "timeout": 2000,
+        "interrupt": [
+            "TSD_View",
+            "TSD_WithdrawFleet",
+            "BackText",
+            "TSD_ReturnFleet"
+        ]
+    },
+    "TSD_checkFreeFleet": {
+        "recognition": "TemplateMatch",
+        "template": "fight/timeSpaceDomain/fleetFree.png",
+        "roi": [
+            130,
+            199,
+            60,
+            51
+        ],
+        "threshold": 0.8,
+        "action": "DoNothing"
+    },
+    "TSD_ClickFleet": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            130,
+            199,
+            60,
+            51
+        ],
+        "post_delay": 1000,
+        "timeout": 500
+    },
+    "TSD_View": {
         "recognition": "OCR",
         "expected": [
             "查看"
@@ -150,9 +115,6 @@
         "post_delay": 2000,
         "timeout": 500,
         "next": [
-            "TSD_WithdrawFleet"
-        ],
-        "interrupt": [
             "TSD_EndExploit"
         ]
     },
@@ -168,7 +130,7 @@
             138
         ],
         "action": "Click",
-        "post_delay": 3000,
+        "post_delay": 500,
         "timeout": 500
     },
     "TSD_WithdrawFleet": {
@@ -183,7 +145,7 @@
             56
         ],
         "action": "Click",
-        "post_delay": 2000,
+        "post_delay": 500,
         "timeout": 500
     },
     "TSD_Investigate": {
@@ -198,7 +160,7 @@
             756
         ],
         "action": "Click",
-        "post_delay": 2000,
+        "post_delay": 500,
         "timeout": 500,
         "next": [
             "TSD_SelectFreeFleetInList"
@@ -214,22 +176,7 @@
             77
         ],
         "action": "Click",
-        "post_delay": 2000,
-        "timeout": 500
-    },
-    "TSD_BackText": {
-        "recognition": "OCR",
-        "expected": [
-            "返回"
-        ],
-        "roi": [
-            520,
-            1183,
-            127,
-            58
-        ],
-        "action": "Click",
-        "post_delay": 1000,
+        "post_delay": 500,
         "timeout": 500
     },
     "TSD_closeUnionMsgBox": {
