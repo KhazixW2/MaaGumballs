@@ -100,7 +100,6 @@
             "fight/UniversalUI/Moon_3.png"
         ],
         "action": "DoNothing",
-        "threshold": 0.83,
         "post_delay": 200,
         "timeout": 2000
     },

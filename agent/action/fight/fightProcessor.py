@@ -269,19 +269,6 @@ class FightProcessor:
                         return r, c
         return 0, 0
 
-    def checkOpenedDoor(self, context: Context) -> tuple[int, int]:
-        if recoDetail := context.run_recognition(
-            "Fight_OpenedDoor", context.tasker.controller.post_screencap().wait().get()
-        ):
-            for r in range(self.rows):
-                for c in range(self.cols):
-                    if self.is_roi_mostly_overlapping(
-                        recoDetail.box, self.roi_matrix[r][c]
-                    ):
-                        logger.info(f"识别到 OpenedDoor 位于 {r+1},{c+1}")
-                        return r, c
-        return 0, 0
-
     def checkIsDragonBall(self, context: Context):
         if context.run_recognition(
             "Fight_CheckDragonBall",
@@ -343,8 +330,6 @@ class FightProcessor:
         fail_check_grid_cnt = 0
         fail_check_monster_cnt = 0
         DoorX, DoorY = self.checkClosedDoor(context)
-        if DoorX == 0 and DoorY == 0:  # 没检测到关着的门
-            DoorX, DoorY = self.checkOpenedDoor(context)  # 那就检测开着的门
         self.visited = [[0] * self.cols for _ in range(self.rows)]
         self.visited[DoorX][DoorY] = 999
 

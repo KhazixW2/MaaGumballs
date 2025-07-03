@@ -616,7 +616,7 @@ class Fight_TestAction(CustomAction):
         context: Context,
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
-        # fightUtils.autoOpenPicup(context)
+        fightUtils.autoOpenPicup(context)
         # fightUtils.checkGumballsStatusV2(context)
         # fightUtils.title_learn_branch("魔法", 5, "魔力强化", 1, context)
         # fightUtils.title_learn_branch("魔法", 5, "生命强化", 2, context)
@@ -645,9 +645,6 @@ class Fight_TestAction(CustomAction):
         #     ],
         #     context,
         # )
-        OpenDetail = context.run_task("Bag_Open")
-        if OpenDetail:
-            fightUtils.findItem("武器大师执照", True, context)
         return CustomAction.RunResult(success=True)
 
 

@@ -238,11 +238,6 @@
             "name": "退出游戏",
             "entry": "StopGumballs",
             "doc": "注意: 该node只在完成所有任务后,仅退出游戏"
-        },
-        {
-            "name": "马尔斯",
-            "entry": "mars_Fighting",
-            "doc": "测试"
         }
     ],
     "option": {
