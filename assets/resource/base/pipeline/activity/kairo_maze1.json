@@ -11,7 +11,7 @@
         "action": "Click",
         "post_delay": 1000,
         "next": [
-            "Confirm_OnHome"
+            "Kairo_Confirm_OnHome"
         ],
         "interrupt": [
             "Kairo_Internal_Click"
@@ -43,7 +43,7 @@
         "action": "Click",
         "post_delay": 2000,
         "next": [
-            "Confirm_Onbigmap"
+            "Kairo_Confirm_Onbigmap"
         ],
         "interrupt": [
             "Kairo_Save_Status",
@@ -128,7 +128,7 @@
         "action": "Click",
         "post_delay": 2000,
         "next": [
-            "Confirm_Boss"
+            "Kairo_Confirm_Boss"
         ],
         "interrupt": [
             "Kairo_Internal_Click"
@@ -163,7 +163,7 @@
         "threshold": 0.8,
         "post_delay": 4000,
         "next": [
-            "Confirm_NoBoss"
+            "Kairo_Confirm_NoBoss"
         ],
         "interrupt": "Kairo_Click_Bell_Boss"
     },
@@ -182,7 +182,8 @@
         ],
         "action": "Click",
         "next": [
-            "Confirm_Onbigmap"
+            "Kairo_Confirm_Onbigmap",
+            "Kairo_Confirm_OutsideMap"
         ],
         "interrupt": [
             "Fight_DownStaris_Loading",
@@ -207,7 +208,7 @@
         "next": [],
         "interrupt": []
     },
-    "SearchingMale": {
+    "Kairo_SearchingMale": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/male.png",
         "roi": [
@@ -219,11 +220,11 @@
         "action": "Click",
         "post_delay": 1000,
         "next": [
-            "PurchaseMembers"
+            "Kairo_PurchaseMembers"
         ],
         "interrupt": []
     },
-    "PurchaseMembers": {
+    "Kairo_PurchaseMembers": {
         "recognition": "OCR",
         "expected": "招募",
         "roi": [
@@ -235,15 +236,13 @@
         "action": "Click",
         "post_delay": 3000,
         "next": [
-            "Confirm_OnPub"
+            "Kairo_Confirm_OnPub"
         ],
         "interrupt": [
             "ClickCenter"
         ]
     },
-    "Change_Equipment": {
-        "action": "DoNothing"
-    },
+
     "Kairo_Enter_WeaponStore": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/WeaponStore.png",
@@ -314,7 +313,7 @@
         "next": [],
         "interrupt": []
     },
-    "Choose_WarriorMedal": {
+    "Kairo_Choose_WarriorMedal": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/WarriorMedal.png",
         "roi": [
@@ -326,11 +325,11 @@
         "action": "Click",
         "post_delay": 1000,
         "next": [
-            "PurchaseItem"
+            "Kairo_PurchaseItem"
         ],
         "interrupt": []
     },
-    "Choose_SupportMedal": {
+    "Kairo_Choose_SupportMedal": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/SupportMedal.png",
         "roi": [
@@ -342,11 +341,11 @@
         "action": "Click",
         "post_delay": 1000,
         "next": [
-            "PurchaseItem"
+            "Kairo_PurchaseItem"
         ],
         "interrupt": []
     },
-    "Choose_MonkMedal": {
+    "Kairo_Choose_MonkMedal": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/MonkMedal.png",
         "roi": [
@@ -358,11 +357,11 @@
         "action": "Click",
         "post_delay": 1000,
         "next": [
-            "PurchaseItem"
+            "Kairo_PurchaseItem"
         ],
         "interrupt": []
     },
-    "Choose_Axe": {
+    "Kairo_Choose_Axe": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/Axe.png",
         "roi": [
@@ -375,12 +374,12 @@
         "post_delay": 1000,
         "threshold": 0.3,
         "next": [
-            "PurchaseItem",
-            "EquipItem"
+            "Kairo_PurchaseItem",
+            "Kairo_EquipItem"
         ],
         "interrupt": []
     },
-    "Choose_HolyMace": {
+    "Kairo_Choose_HolyMace": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/HolyMace.png",
         "roi": [
@@ -393,12 +392,12 @@
         "post_delay": 1000,
         "threshold": 0.3,
         "next": [
-            "PurchaseItem",
-            "EquipItem"
+            "Kairo_PurchaseItem",
+            "Kairo_EquipItem"
         ],
         "interrupt": []
     },
-    "Choose_Armor": {
+    "Kairo_Choose_Armor": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/Armor.png",
         "roi": [
@@ -411,12 +410,12 @@
         "post_delay": 1000,
         "threshold": 0.3,
         "next": [
-            "PurchaseItem",
-            "EquipItem"
+            "Kairo_PurchaseItem",
+            "Kairo_EquipItem"
         ],
         "interrupt": []
     },
-    "PurchaseItem": {
+    "Kairo_PurchaseItem": {
         "recognition": "OCR",
         "expected": "确认购买",
         "roi": [
@@ -430,9 +429,9 @@
         "next": [],
         "interrupt": []
     },
-    "ViewTeams": {
+    "Kairo_ViewTeams": {
         "recognition": "TemplateMatch",
-        "template": "fight/Kairo_maze/ViewTeams.png",
+        "template": "fight/Kairo_maze/Kairo_ViewTeams.png",
         "roi": [
             469,
             918,
@@ -442,11 +441,11 @@
         "action": "Click",
         "post_delay": 1000,
         "next": [
-            "ClickCharacter1"
+            "Kairo_ClickCharacter1"
         ],
         "interrupt": []
     },
-    "ClickCharacter1": {
+    "Kairo_ClickCharacter1": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/character.png",
         "roi": [
@@ -461,7 +460,7 @@
         "next": [],
         "interrupt": []
     },
-    "ClickEquipmentBar1": {
+    "Kairo_ClickEquipmentBar1": {
         "recognition": "OCR",
         "expected": [
             "使用道具"
@@ -481,13 +480,13 @@
         ],
         "post_delay": 1000,
         "next": [
-            "Confirm_OnBag"
+            "Kairo_Confirm_OnBag"
         ],
         "interrupt": [
             "ChangeEquipment"
         ]
     },
-    "ClickEquipmentBar2": {
+    "Kairo_ClickEquipmentBar2": {
         "recognition": "OCR",
         "expected": [
             "使用道具"
@@ -507,13 +506,13 @@
         ],
         "post_delay": 1000,
         "next": [
-            "Confirm_OnBag"
+            "Kairo_Confirm_OnBag"
         ],
         "interrupt": [
             "ChangeEquipment"
         ]
     },
-    "ClickChangeCharacter": {
+    "Kairo_ClickChangeCharacter": {
         "recognition": "OCR",
         "expected": [
             "使用道具"
@@ -535,7 +534,7 @@
         "next": [],
         "interrupt": []
     },
-    "ClickPromotionInterface": {
+    "Kairo_ClickPromotionInterface": {
         "recognition": "OCR",
         "expected": [
             "使用道具"
@@ -557,7 +556,7 @@
         "next": [],
         "interrupt": []
     },
-    "Confirm_Onbigmap": {
+    "Kairo_Confirm_Onbigmap": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/cave_01.png",
         "roi": [
@@ -568,7 +567,7 @@
         ],
         "action": "DoNothing"
     },
-    "Confirm_OnPub": {
+    "Kairo_Confirm_OnPub": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/male.png",
         "roi": [
@@ -579,7 +578,7 @@
         ],
         "action": "DoNothing"
     },
-    "Confirm_OnHome": {
+    "Kairo_Confirm_OnHome": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/hotel.png",
         "roi": [
@@ -590,7 +589,7 @@
         ],
         "action": "DoNothing"
     },
-    "Confirm_OnBag": {
+    "Kairo_Confirm_OnBag": {
         "recognition": "OCR",
         "expected": [
             "背包"
@@ -604,7 +603,7 @@
         "action": "DoNothing",
         "post_delay": 500
     },
-    "Confirm_OnRoleInterface": {
+    "Kairo_Confirm_OnRoleInterface": {
         "recognition": "OCR",
         "expected": [
             "使用道具"
@@ -619,40 +618,51 @@
         "next": [],
         "interrupt": []
     },
-    "Confirm_Boss": {
+    "Kairo_Confirm_Boss": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/Boss.png",
         "roi": [
-            282,
-            843,
-            163,
-            30
+            537,
+            461,
+            34,
+            72
         ],
         "next": [
-            "Confirm_NoBoss"
+            "Kairo_Confirm_NoBoss"
         ],
         "interrupt": [
             "Kairo_Click_Bell_Boss"
         ]
     },
-    "Confirm_NoBoss": {
+    "Kairo_Confirm_NoBoss": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/Boss.png",
         "roi": [
-            282,
-            843,
-            163,
-            30
+            537,
+            461,
+            34,
+            72
         ],
         "inverse": true,
         "next": [
             "Kairo_Fight_OpenedDoor"
         ]
     },
-    "StartMySequentialFlow": {
+    "Kairo_Confirm_OutsideMap": {
+        "recognition": "OCR",
+        "expected": "飞艇",
+        "roi": [
+            284,
+            1221,
+            148,
+            58
+        ],
+        "action": "StopTask"
+    },
+    "Kairo_Difficulty3_Start": {
         "recognition": "DirectHit",
         "action": "Custom",
-        "custom_action": "MySequentialTask",
+        "custom_action": "Kairo_Difficulty3_Start",
         "post_delay": 500,
         "timeout": 5000,
         "next": []
@@ -669,7 +679,7 @@
         "action": "Click",
         "post_delay": 500
     },
-    "EquipItem": {
+    "Kairo_EquipItem": {
         "recognition": "OCR",
         "expected": "装备",
         "roi": [
@@ -681,7 +691,7 @@
         "action": "Click",
         "post_delay": 500
     },
-    "PromoteToKnight": {
+    "Kairo_PromoteToKnight": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/Knight.png",
         "roi": [
@@ -693,10 +703,10 @@
         "action": "Click",
         "post_delay": 500,
         "next": [
-            "ClickPromoteButton"
+            "Kairo_ClickPromoteButton"
         ]
     },
-    "PromoteToSwordsman": {
+    "Kairo_PromoteToSwordsman": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/Swordsman.png",
         "roi": [
@@ -708,10 +718,10 @@
         "action": "Click",
         "post_delay": 500,
         "next": [
-            "ClickPromoteButton"
+            "Kairo_ClickPromoteButton"
         ]
     },
-    "PromoteToWhiteQueen": {
+    "Kairo_PromoteToWhiteQueen": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/WhiteQueen.png",
         "roi": [
@@ -723,10 +733,10 @@
         "action": "Click",
         "post_delay": 500,
         "next": [
-            "ClickPromoteButton"
+            "Kairo_ClickPromoteButton"
         ]
     },
-    "PromoteToMonk": {
+    "Kairo_PromoteToMonk": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/Monk.png",
         "roi": [
@@ -738,10 +748,10 @@
         "action": "Click",
         "post_delay": 500,
         "next": [
-            "ClickPromoteButton"
+            "Kairo_ClickPromoteButton"
         ]
     },
-    "ClickSwitchMagic": {
+    "Kairo_ClickSwitchMagic": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/SwitchMagic.png",
         "roi": [
@@ -754,7 +764,7 @@
         "post_delay": 500,
         "next": []
     },
-    "ClickPromoteButton": {
+    "Kairo_ClickPromoteButton": {
         "recognition": "OCR",
         "expected": "转职",
         "roi": [
@@ -766,7 +776,7 @@
         "action": "Click",
         "post_delay": 500,
         "next": [
-            "Confirm_OnRoleInterface"
+            "Kairo_Confirm_OnRoleInterface"
         ],
         "interrupt": [
             "ClickCenter"
