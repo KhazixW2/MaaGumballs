@@ -24,30 +24,56 @@ class TSD_explore(CustomAction):
     
     # 获取舰队战力值
     def getAllFleetPower(self, context: Context) -> dict:
+        fleetPowerRoiList: dict = {
+            "奥鲁维":[62, 123, 139, 28],
+            "卡纳斯":[207, 123, 150, 27],
+            "游荡者":[361, 124, 151, 26],
+            "深渊":[515, 120, 140, 32]
+        }
         global highestFleet
         img = context.tasker.controller.post_screencap().wait().get()
-        info = context.run_recognition(
-            "TSD_info_reco",
-            img,
-            pipeline_override={
-                "TSD_info_reco": {
-                    "recognition": "OCR",
-                    "roi": [56, 113, 613, 44],
-                },
-            },
-        )
-        list = []
-        for power in info.filterd_results:
-            nums = fightUtils.extract_num(power.text.replace(",", ""))
-            list.append(nums)
-        powerList: dict = {
-            "奥鲁维": list[0],
-            "卡纳斯": list[1],
-            "游荡者": list[2],
-            "深渊": list[3]
-        }
+        powerList: dict = {}
+        for key in fleetPowerRoiList:
+            nums = context.run_recognition(
+                "TSD_getPowerNumber",
+                img,
+                pipeline_override = {
+                    "TSD_getPowerNumber":{
+                        "roi": fleetPowerRoiList[key]
+                    }
+                }  
+            )
+            if nums:
+                powerNumber = fightUtils.extract_num(nums.filterd_results[0].text)
+                powerList[key] = powerNumber
+            else:
+                powerList[key] = 0
         highestFleet = self.comparePower(powerList)
         return powerList
+        # img = context.tasker.controller.post_screencap().wait().get()
+        # info = context.run_recognition(
+        #     "TSD_info_reco",
+        #     img,
+        #     pipeline_override={
+        #         "TSD_info_reco": {
+        #             "recognition": "OCR",
+        #             "roi": [56, 113, 613, 44],
+        #             "replace":[",", ""]
+        #         },
+        #     },
+        # )
+        # list = []
+        # for power in info.filterd_results:
+        #     nums = fightUtils.extract_num(power.text)
+        #     list.append(nums)
+        # powerList: dict = {
+        #     "奥鲁维": list[0],
+        #     "卡纳斯": list[1],
+        #     "游荡者": list[2],
+        #     "深渊": list[3]
+        # }
+        # highestFleet = self.comparePower(powerList)
+        # return powerList
     
     # 获取最高战力舰队
     def comparePower(self, powerList: dict) -> str:
@@ -84,14 +110,11 @@ class TSD_explore(CustomAction):
             img = context.tasker.controller.post_screencap().wait().get()
             for key in fleetRoiList:
                 status = context.run_recognition(
-                    "checkFleetStatus",
+                    "TSD_checkFreeFleet",
                     img,
                     pipeline_override={
-                        "checkFleetStatus": {
-                            "recognition": "TemplateMatch",
-                            "template": "fight/timeSpaceDomain/fleetFree.png",
-                            "roi": fleetRoiList[key],
-                            "threshold": 0.8,
+                        "TSD_checkFreeFleet": {
+                            "roi": fleetRoiList[key]
                         }
                     },
                 )
@@ -108,7 +131,13 @@ class TSD_explore(CustomAction):
                         pipeline_override={
                             "TSD_checkFreeFleet":{
                                 "roi": fleetRoiList[key]
-                            }       
+                            },
+                            "TSD_checkTargetFleet":{
+                                "roi": fleetRoiList[key]
+                            },
+                            "TSD_checkTargetFlying":{
+                                "roi": fleetRoiList[key]
+                            }
                     })                    
                     time.sleep(1)
                 else:
@@ -118,7 +147,7 @@ class TSD_explore(CustomAction):
                 break;        
         return True
     # 获取当前屏幕的探索目标
-    def GetExploreTargetList(self, context: Context) -> RecognitionDetail:
+    def GetExploreTargetList(self, context: Context):
         global exploreNums
         img = context.tasker.controller.post_screencap().wait().get()
         exploreList = context.run_recognition(
@@ -129,7 +158,7 @@ class TSD_explore(CustomAction):
                         "recognition": "TemplateMatch",
                         "template": "fight/timeSpaceDomain/exploreTarget.png",
                         "roi": [12, 268, 693, 872],
-                        "threshold": 0.9,
+                        "threshold": 0.91,
                     }
                 }
         )

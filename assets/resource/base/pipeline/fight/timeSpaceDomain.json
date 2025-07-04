@@ -43,7 +43,7 @@
     },
     "TSD_GetInDomain_Confirm": {
         "recognition": "TemplateMatch",
-        "template": "fight/timeSpaceDomain/Wormhole.png",
+        "template": "fight/timeSpaceDomain/wormhole.png",
         "roi": [
             213,
             567,
@@ -70,13 +70,27 @@
         "post_delay": 100,
         "timeout": 2000,
         "interrupt": [
+            "TSD_checkTargetFleet",
             "TSD_View",
+            "TSD_EndExploit",
             "TSD_WithdrawFleet",
-            "BackText",
-            "TSD_ReturnFleet"
+            "TSD_checkTargetFlying",
+            "BackText"
         ]
     },
     "TSD_checkFreeFleet": {
+        "recognition": "TemplateMatch",
+        "template": "fight/timeSpaceDomain/fleetFree.png",
+        "roi": [
+            130,
+            199,
+            60,
+            51
+        ],
+        "threshold": 0.8,
+        "action": "DoNothing"
+    },
+    "TSD_checkTargetFleet": {
         "recognition": "TemplateMatch",
         "template": "fight/timeSpaceDomain/fleetFree.png",
         "roi": [
@@ -113,10 +127,7 @@
         ],
         "action": "Click",
         "post_delay": 2000,
-        "timeout": 500,
-        "next": [
-            "TSD_EndExploit"
-        ]
+        "timeout": 500
     },
     "TSD_EndExploit": {
         "recognition": "OCR",
@@ -179,6 +190,17 @@
         "post_delay": 500,
         "timeout": 500
     },
+    "TSD_checkTargetFlying": {
+        "recognition": "TemplateMatch",
+        "template": "fight/timeSpaceDomain/rocket.png",
+        "roi": [
+            130,
+            199,
+            60,
+            51
+        ],
+        "threshold": 0.8
+    },
     "TSD_closeUnionMsgBox": {
         "recognition": "TemplateMatch",
         "template": "fight/timeSpaceDomain/unionMsgButton.png",
@@ -191,5 +213,18 @@
         "action": "Click",
         "post_delay": 1000,
         "timeout": 500
+    },
+    "TSD_getPowerNumber": {
+        "recognition": "OCR",
+        "roi": [
+            0,
+            0,
+            1920,
+            1080
+        ],
+        "replace": [
+            ",",
+            ""
+        ]
     }
 }
