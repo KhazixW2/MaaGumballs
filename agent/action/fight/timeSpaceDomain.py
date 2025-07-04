@@ -50,30 +50,6 @@ class TSD_explore(CustomAction):
                 powerList[key] = 0
         highestFleet = self.comparePower(powerList)
         return powerList
-        # img = context.tasker.controller.post_screencap().wait().get()
-        # info = context.run_recognition(
-        #     "TSD_info_reco",
-        #     img,
-        #     pipeline_override={
-        #         "TSD_info_reco": {
-        #             "recognition": "OCR",
-        #             "roi": [56, 113, 613, 44],
-        #             "replace":[",", ""]
-        #         },
-        #     },
-        # )
-        # list = []
-        # for power in info.filterd_results:
-        #     nums = fightUtils.extract_num(power.text)
-        #     list.append(nums)
-        # powerList: dict = {
-        #     "奥鲁维": list[0],
-        #     "卡纳斯": list[1],
-        #     "游荡者": list[2],
-        #     "深渊": list[3]
-        # }
-        # highestFleet = self.comparePower(powerList)
-        # return powerList
     
     # 获取最高战力舰队
     def comparePower(self, powerList: dict) -> str:
