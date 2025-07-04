@@ -31,9 +31,9 @@
         "action": "Click",
         "post_delay": 3000
     },
-    "Kairo_Return_hotel": {
+    "Kairo_Return_Hotel": {
         "recognition": "TemplateMatch",
-        "template": "fight/Kairo_maze/hotel.png",
+        "template": "fight/Kairo_maze/Hotel.png",
         "roi": [
             599,
             503,
@@ -113,7 +113,7 @@
             0
         ],
         "next": [
-            "Kairo_Return_hotel"
+            "Kairo_Return_Hotel"
         ],
         "interrupt": [
             "ConfirmButton",
@@ -432,6 +432,22 @@
         ],
         "interrupt": []
     },
+    "Kairo_Choose_MonkMedal_4": {
+        "recognition": "TemplateMatch",
+        "template": "fight/Kairo_maze/MonkMedal_4.png",
+        "roi": [
+            315,
+            568,
+            55,
+            46
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "next": [
+            "Kairo_PurchaseItem"
+        ],
+        "interrupt": []
+    },
     "Kairo_Choose_Axe": {
         "recognition": "TemplateMatch",
         "template": "fight/Kairo_maze/Axe.png",
@@ -651,7 +667,7 @@
     },
     "Kairo_Confirm_OnHome": {
         "recognition": "TemplateMatch",
-        "template": "fight/Kairo_maze/hotel.png",
+        "template": "fight/Kairo_maze/Hotel.png",
         "roi": [
             599,
             503,
@@ -800,6 +816,21 @@
             467,
             293,
             544
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "next": [
+            "Kairo_ClickPromoteButton"
+        ]
+    },
+    "Kairo_PromoteToMonk_0": {
+        "recognition": "TemplateMatch",
+        "template": "fight/Kairo_maze/Monk_0.png",
+        "roi": [
+            362,
+            467,
+            276,
+            536
         ],
         "action": "Click",
         "post_delay": 500,
