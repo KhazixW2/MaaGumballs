@@ -2,6 +2,7 @@ from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
 from utils import logger
+from action.fight import fightUtils
 import time
 
 
@@ -78,6 +79,15 @@ class Kairo_Difficulty3_Start(CustomAction):
         self._run_task("Kairo_Enter_MonkPromotionStore", "买法师5级徽章1个")
         self._run_task("Kairo_Choose_MonkMedal")
         self.context.run_task("Fight_ReturnMainWindow")
+
+        ## 分解不需要的装备
+        self._run_task("Bag_Open")
+        fightUtils.disassembleEquipment(
+            777,
+            ["白刃枪", "短剑", "铁斧", "木杖", "铁剑", "橡木杖", "佣兵之斧"],
+            self.context,
+        )
+        self._run_task("Fight_ReturnMainWindow")
 
         ## 装备5个角色
         for _ in range(5):
