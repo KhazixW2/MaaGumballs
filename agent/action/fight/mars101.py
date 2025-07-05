@@ -273,6 +273,10 @@ class Mars101(CustomAction):
             fightUtils.cast_magic_special("生命颂歌", context)
 
         context.run_task("Mars_GotoSpecialLayer")
+        while not context.run_recognition(
+            "Fight_OpenedDoor", context.tasker.controller.post_screencap().wait().get()
+        ):
+            time.sleep(1)
         context.run_task("Fight_ReturnMainWindow")
         OpenDetail = context.run_task("Bag_Open")
         if OpenDetail:
@@ -285,6 +289,10 @@ class Mars101(CustomAction):
             fightUtils.cast_magic_special("生命颂歌", context)
 
         context.run_task("Mars_GotoSpecialLayer")
+        while not context.run_recognition(
+            "Fight_OpenedDoor", context.tasker.controller.post_screencap().wait().get()
+        ):
+            time.sleep(1)
         context.run_task("Fight_ReturnMainWindow")
         OpenDetail = context.run_task("Bag_Open")
         if OpenDetail:

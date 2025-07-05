@@ -24,28 +24,6 @@
         "post_delay": 500,
         "timeout": 3000
     },
-    "Fight_OpenedDoorCheck": {
-        "recognition": "TemplateMatch",
-        "template": [
-            "fight/openedDoor.png",
-            "fight/openedDoor1.png",
-            "fight/openedDoor1_time_stop.png"
-        ],
-        "roi": [
-            5,
-            122,
-            707,
-            947
-        ],
-        "action": "DoNothing",
-        "threshold": 0.7,
-        "interrupt": [
-            "Fight_DownStaris_Loading",
-            "ConfirmButton"
-        ],
-        "post_delay": 500,
-        "timeout": 3000
-    },
     "Fight_ClosedDoor": {
         "recognition": "TemplateMatch",
         "template": [

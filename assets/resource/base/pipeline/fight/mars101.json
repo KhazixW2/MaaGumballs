@@ -380,10 +380,7 @@
             270
         ],
         "action": "Click",
-        "timeout": 2000,
-        "next": [
-            "Fight_OpenedDoorCheck"
-        ]
+        "timeout": 2000
     },
     "Mars_Android_Skill_Open": {
         "recognition": "TemplateMatch",
