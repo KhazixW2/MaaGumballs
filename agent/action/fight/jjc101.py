@@ -645,9 +645,17 @@ class Fight_TestAction(CustomAction):
         #     ],
         #     context,
         # )
-        OpenDetail = context.run_task("Bag_Open")
-        if OpenDetail:
-            fightUtils.findItem("武器大师执照", True, context)
+
+        # fightUtils.title_learn("魔法", 3, "祭司", 1, context)
+        # fightUtils.title_learn("魔法", 4, "气系大师", 1, context)
+        # fightUtils.title_learn("魔法", 5, " 传奇法师", 1, context)
+        # context.run_task("Fight_ReturnMainWindow")
+        fightUtils.findItem("武器大师执照", True, context)
+        # fightUtils.title_learn_branch("冒险", 5, "魔法强化", 3, context)
+        # fightUtils.title_learn_branch("冒险", 5, "攻击强化", 3, context)
+        # fightUtils.title_learn_branch("冒险", 5, "生命强化", 3, context)
+        # context.run_task("Fight_ReturnMainWindow")
+
         return CustomAction.RunResult(success=True)
 
 

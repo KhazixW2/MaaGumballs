@@ -31,6 +31,7 @@ class FightProcessor:
             self._grid_lower = [130, 135, 143]
             self._grid_upper = [170, 175, 183]
             self._grid_count = 10
+            self._hit_monster_count = 3
             self.max_grid_loop = 18
             self.max_monster_loop_fail = 5
             self.max_grid_loop_fail = 3
@@ -111,6 +112,16 @@ class FightProcessor:
         if not isinstance(value, int) or value <= 0:
             raise ValueError("grid_count must be a positive integer")
         self._grid_count = value
+
+    @property
+    def hit_monster_count(self):
+        return self._hit_monster_count
+
+    @hit_monster_count.setter
+    def hit_monster_count(self, value):
+        if not isinstance(value, int) or value <= 0:
+            raise ValueError("hit_monster_count must be a positive integer")
+        self._hit_monster_count = value
 
     def generate_floor_roi_grid(self) -> List[List[int]]:
         """生成地板网格的ROI区域列表
@@ -247,7 +258,7 @@ class FightProcessor:
                     context,
                 ):
                     self.visited[r][c] += 1
-                    for _ in range(3):
+                    for _ in range(self.hit_monster_count):
                         context.tasker.controller.post_click(
                             x + w // 2, y + h // 2
                         ).wait()

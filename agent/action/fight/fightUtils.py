@@ -18,6 +18,7 @@ MagicType: dict = {
     "暗": "Fight_ClickDarkMagicPage",
 }
 
+
 EquipmentType: dict = {
     "腰带": [56, 262, 138, 120],
     "手套": [67, 150, 122, 117],
@@ -139,23 +140,31 @@ def cast_magic_special(MagicName: str, context: Context):
     """
 
     # run
+    magic_special_type = [(632, 328), (632, 430), (632, 539)]
     context.run_task("Fight_Magic_Special")
-    image = context.tasker.controller.post_screencap().wait().get()
-    if context.run_recognition(
-        "Fight_Magic_Special_Cast",
-        image,
-        pipeline_override={"Fight_Magic_Special_Cast": {"expected": MagicName}},
-    ):
-        context.run_task(
+    # 多尝试几页，来适配更多类型特殊魔法
+    count = 0
+    while count < 3:
+        image = context.tasker.controller.post_screencap().wait().get()
+        if context.run_recognition(
             "Fight_Magic_Special_Cast",
+            image,
             pipeline_override={"Fight_Magic_Special_Cast": {"expected": MagicName}},
-        )
-        logger.info(f"施放魔法:{MagicName}")
-    else:
-        logger.info(f"没有找到对应的魔法:{MagicName}")
-        context.run_task("BackText")
-        return False
-    return True
+        ):
+            context.run_task(
+                "Fight_Magic_Special_Cast",
+                pipeline_override={"Fight_Magic_Special_Cast": {"expected": MagicName}},
+            )
+            logger.info(f"施放魔法:{MagicName}")
+            return True
+        else:
+            x, y = magic_special_type[count]
+            context.tasker.controller.post_click(x, y).wait()
+            time.sleep(1)
+        count += 1
+    logger.info(f"没有找到对应的魔法:{MagicName}")
+    context.run_task("BackText")
+    return False
 
 
 def title_learn(
@@ -200,6 +209,33 @@ def title_learn(
 
     context.run_task("TitlePanel_ReturnPanel")
     return True
+
+
+def title_check(titleType: str, context: Context):
+    """检查是否存在目标称号系列"""
+    context.run_task("Fight_ReturnMainWindow")
+    context.run_task("TitlePanel_Open")
+    time.sleep(1)
+    checkcount = 0
+    while checkcount < 3:
+        if context.run_recognition(
+            "TitlePanel_CurrentPanel_Check",
+            context.tasker.controller.post_screencap().wait().get(),
+            {
+                "TitlePanel_CurrentPanel_Check": {
+                    "recognition": "OCR",
+                    "roi": [40, 986, 435, 108],
+                    "expected": titleType,
+                    "timeout": 2000,
+                }
+            },
+        ):
+            return True
+        else:
+            context.tasker.controller.post_click(433, 1037).wait()
+            checkcount += 1
+            time.sleep(0.5)
+    return False
 
 
 def title_learn_branch(
@@ -389,7 +425,12 @@ def disassembleEquipment(
 
 
 def findItem(
-    equipmentName: str, isUse: bool, context: Context, dst_x: int = 0, dst_y: int = 0
+    equipmentName: str,
+    isUse: bool,
+    context: Context,
+    dst_x: int = 0,
+    dst_y: int = 0,
+    threshold: float = 0.9,
 ):
     """检查是否存在目标装备"""
 
@@ -415,6 +456,7 @@ def findItem(
             pipeline_override={
                 "Bag_FindItem": {
                     "template": equipment_path,
+                    "threshold": threshold,
                 },
             },
         )
