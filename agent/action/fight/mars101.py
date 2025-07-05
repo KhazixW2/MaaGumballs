@@ -139,7 +139,7 @@ class Mars101(CustomAction):
                 context.run_task("Fight_ReturnMainWindow")
 
                 fightUtils.title_learn_branch("巨龙", 5, "生命强化", 3, context)
-                fightUtils.title_learn_branch("巨龙", 5, "攻击强化", 3, context)
+                # fightUtils.title_learn_branch("巨龙", 5, "攻击强化", 3, context)
                 fightUtils.title_learn_branch("巨龙", 5, "攻击强化", 3, context)
 
             context.run_task("Save_Status")
@@ -367,9 +367,9 @@ class Mars101(CustomAction):
             "Mars_Statue", context.tasker.controller.post_screencap().wait().get()
         ):
             context.run_task("Mars_Statue")
-        if self.isShutDownTitan == False and self.layers > 80:
-            if fightUtils.cast_magic_special("泰坦之足", context):
-                self.isShutDownTitan = True
+            if self.isShutDownTitan == False and self.layers > 80:
+                if fightUtils.cast_magic_special("泰坦之足", context):
+                    self.isShutDownTitan = True
 
     def handle_postLayers_event(self, context: Context):
         self.handle_perfect_event(context)
@@ -402,7 +402,7 @@ class Mars101(CustomAction):
             return False
         # 小怪层探索
         else:
-            context.run_task("JJC_Fight_ClearCurrentLayer")
+            context.run_task("Mars_Fight_ClearCurrentLayer")
 
         return True
 
