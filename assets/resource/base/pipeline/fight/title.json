@@ -115,7 +115,8 @@
             "fight/UniversalUI/GreyStar.png",
             "fight/UniversalUI/Title_Learnable.png",
             "fight/UniversalUI/Title_Learnable1.png",
-            "fight/UniversalUI/GreyMoon.png"
+            "fight/UniversalUI/GreyMoon.png",
+            "fight/UniversalUI/GreyMoon1.png"
         ],
         "roi": [
             199,
@@ -123,7 +124,7 @@
             89,
             84
         ],
-        "threshold": 0.85,
+        "threshold": 0.825,
         "order_by": "Score",
         "action": "Click",
         "next": [
