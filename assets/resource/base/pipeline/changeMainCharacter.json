@@ -1,0 +1,151 @@
+{
+    "Change_MainCharacter": {
+        "next": "Select_WorldTree",
+        "interrupt": [
+            "Communicating",
+            "ConfirmButton",
+            "FlipPage",
+            "BackText"
+        ]
+    },
+    "Select_WorldTree": {
+        "recognition": "OCR",
+        "roi": [
+            143,
+            1221,
+            150,
+            59
+        ],
+        "expected": "冈布奥",
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 3000,
+        "next": "Select_CharacterIndex"
+    },
+    "Select_CharacterIndex": {
+        "recognition": "OCR",
+        "roi": [
+            66,
+            1178,
+            148,
+            78
+        ],
+        "expected": "图鉴",
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 3000,
+        "next": [
+            "Select_WorldTree_SearchButton"
+        ]
+    },
+    "Select_WorldTree_SearchButton": {
+        "recognition": "TemplateMatch",
+        "template": "fight/UniversalUI/searchButton.png",
+        "action": "Click",
+        "roi": [
+            536,
+            116,
+            150,
+            140
+        ],
+        "post_delay": 500,
+        "timeout": 2000,
+        "next": [
+            "Select_WorldTree_InputBox_Click"
+        ]
+    },
+    "Select_WorldTree_InputBox_Click": {
+        "recognition": "OCR",
+        "expected": [
+            "输入"
+        ],
+        "roi": [
+            54,
+            308,
+            611,
+            228
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 3000,
+        "next": [
+            "Select_WorldTree_InputBox_Text"
+        ]
+    },
+    "Select_WorldTree_InputBox_Text": {
+        "recognition": "DirectHit",
+        "action": "Text",
+        "input_text": "自然之子",
+        "post_delay": 500,
+        "timeout": 3000,
+        "next": [
+            "Select_WorldTree_Search"
+        ]
+    },
+    "Select_WorldTree_Search": {
+        "recognition": "OCR",
+        "expected": [
+            "搜索"
+        ],
+        "roi": [
+            298,
+            823,
+            123,
+            80
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 3000,
+        "next": [
+            "Select_WorldTree_InputBox_Success",
+            "Select_WorldTree_InputBox_Fail"
+        ]
+    },
+    "Select_WorldTree_InputBox_Success": {
+        "recognition": "OCR",
+        "roi": [
+            98,
+            998,
+            71,
+            46
+        ],
+        "expected": "攻击",
+        "action": "DoNothing",
+        "post_delay": 500,
+        "timeout": 3000,
+        "next": [
+            "Select_Deploy"
+        ]
+    },
+    "Select_WorldTree_InputBox_Fail": {
+        "recognition": "OCR",
+        "expected": [
+            "搜索"
+        ],
+        "roi": [
+            298,
+            823,
+            123,
+            80
+        ],
+        "action": "StopTask",
+        "post_delay": 500,
+        "timeout": 3000
+    },
+    "Select_Deploy": {
+        "recognition": "OCR",
+        "roi": [
+            288,
+            1178,
+            151,
+            70
+        ],
+        "expected": "出战",
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000,
+        "next": [
+            "ReturnBigMap"
+        ]
+    }
+}
