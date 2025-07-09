@@ -89,7 +89,7 @@
     },
     "ConfirmButton_Select": {
         "recognition": "TemplateMatch",
-        "template": "fight\\UniversalUI\\Select_ConfirmButton.png",
+        "template": "fight/UniversalUI/Select_ConfirmButton.png",
         "action": "Click",
         "roi": [
             60,
