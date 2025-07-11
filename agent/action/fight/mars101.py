@@ -264,8 +264,16 @@ class Mars101(CustomAction):
                 fightUtils.cast_magic("气", "静电场", context)
                 if fightUtils.cast_magic("土", "大地之门", context):
                     self.useEarthGate += 1
+                    templayer = self.layers
+                    for _ in range(10):
+                        logger.info(f"等待大地之门特效结束")
+                        self.Check_CurrentLayers(context)
+                        if self.layers != templayer and self.layers != -1:
+                            logger.info(f"大地之门特效结束, 当前层数为{self.layers}")
+                            break
+                        time.sleep(1)
+
                     self.handle_clearCurLayer_event(context)
-                    self.Check_CurrentLayers(context)
                     return True
         return False
 
