@@ -8,6 +8,7 @@ from action.fight import fightUtils
 
 import time
 import re
+import json
     
 fleetRoiList: dict = {
     "奥鲁维":[130, 199, 60, 51],
@@ -123,16 +124,23 @@ class TSD_explore(CustomAction):
                 break;        
         return True
     # 获取当前屏幕的探索目标
-    def GetExploreTargetList(self, context: Context):
+    def GetTaskTargetList(self, context: Context, taskType: str):
         global exploreNums
+        TargetTemplate: dict = {
+            "explore":"exploreTarget",
+            "monster":"monsterTarget",
+            "monster_boss":"monsterBossTarget",
+            "monster_planet":"monsterPlanetTarget",
+            "exploit":"exploitTarget"
+        }
         img = context.tasker.controller.post_screencap().wait().get()
         exploreList = context.run_recognition(
-            "GetExploreTargetList",
+            "GetTaskTargetList",
             img,
             pipeline_override={
-                    "GetExploreTargetList": {
+                    "GetTaskTargetList": {
                         "recognition": "TemplateMatch",
-                        "template": "fight/timeSpaceDomain/exploreTarget.png",
+                        "template": f"fight/timeSpaceDomain/{TargetTemplate[taskType]}.png",
                         "roi": [12, 268, 693, 872],
                         "threshold": 0.91,
                     }
@@ -146,15 +154,47 @@ class TSD_explore(CustomAction):
             return []
     
     # 按列表执行事件
-    def runExplore(self, context: Context, exploreList: []) -> bool:
+    def runTask(self, context: Context, taskType: str, exploreList: []) -> bool:
         global exploreNums
+        taskEntry: dict = {
+            "explore": {
+                "taskName":"TSD_Investigate",
+                "pipeline_override": None
+            },
+            "monster":{
+                "taskName":"TSD_ClearMonster",
+                "pipeline_override": {
+                    "TSD_SelectFreeFleetInList":{
+                        "next": "TSD_ClickAttackButton"
+                    }
+                }
+            },
+            "monster_boss":{
+                "taskName":"TSD_ClearMonster",
+                "pipeline_override": {
+                    "TSD_ClickFleetButton":{
+                        "next": "TSD_SelectHighestFleet"
+                    },
+                    "TSD_SelectHighestFleet":{
+                        "expected":[ highestFleet ]
+                    }
+                }
+            },
+            "monster_planet":"TSD_ClearMonsterPlanet",
+            "exploit":"TSD_ExploitAllFleet"
+        }
         for explore in exploreList:
             box = explore.box
             btn = context.tasker.controller.post_click(
                 box[0] + box[2] // 2, box[1] + box[3] // 2
             )
             time.sleep(2)
-            task1 = context.run_task("TSD_Investigate")
+            task1 = None
+            if taskEntry[taskType]["pipeline_override"]:
+                task1 = context.run_task(taskEntry[taskType]["taskName"],
+                    pipeline_override=taskEntry[taskType]["pipeline_override"])
+            else:
+                task1 = context.run_task(taskEntry[taskType]["taskName"])
             if task1.status.succeeded == False:
                 context.run_task("BackText")
                 return False
@@ -186,11 +226,11 @@ class TSD_explore(CustomAction):
             return True
         return False
     # 检测目标是否还存在
-    def checkTargetExist(self, context: Context) -> bool:
+    def checkTargetExist(self, context: Context, taskType: str) -> bool:
         global exploreNums 
         
         # 先判断当前屏幕有无目标，没有的话再移动至左上角开始检查
-        self.GetExploreTargetList(context)
+        self.GetTaskTargetList(context, taskType)
         if exploreNums > 0 :
             return True
         else:
@@ -208,7 +248,7 @@ class TSD_explore(CustomAction):
         direction = "Right"
         # 检查是否存在目标（从左上角向右检测）
         while flag:
-            self.GetExploreTargetList(context)
+            self.GetTaskTargetList(context, taskType)
             if exploreNums > 0 :
                 logger.info(f"已找到{exploreNums}个探索目标")
                 flag = False
@@ -266,6 +306,16 @@ class TSD_explore(CustomAction):
     ) -> CustomAction.RunResult:
         global exploreNums
         
+        taskList:dict = {
+            "explore": json.loads(argv.custom_action_param)["explore"],
+            "monster": json.loads(argv.custom_action_param)["monster"],
+            "monster_boss": json.loads(argv.custom_action_param)["monster_boss"],
+            # "monster_planet": json.loads(argv.custom_action_param)["monster_planet"],
+            # "exploit": json.loads(argv.custom_action_param)["exploit"]
+        }
+        
+        logger.info(taskList)
+        
         # 先关闭联盟聊天窗口，避免干扰
         self.closeUnionMsgBox(context)
         
@@ -273,14 +323,20 @@ class TSD_explore(CustomAction):
         powerList = self.getAllFleetPower(context)
         logger.info(f"当前探索战力：{powerList}，最高战力舰队：{highestFleet}")
         
+        
         # 所有舰队返回
         self.returnFleets(context)
         
-        # 开始探索
-        while self.checkTargetExist(context) :
-            lists = self.GetExploreTargetList(context)
-            self.runExplore(context, lists)
+        # # 开始探索
+        for key in taskList:
+            if taskList[key] == True:
+                logger.info(f"开始执行{key}任务")
+                while self.checkTargetExist(context, key) :
+                    lists = self.GetTaskTargetList(context, key)
+                    self.runTask(context, key, lists)
+            else:
+                logger.info(f"未开启{key}任务")
+                continue
         
-        
-        logger.info("探索完成！")
+        logger.info("所有任务完成！")
         return CustomAction.RunResult(success=True)

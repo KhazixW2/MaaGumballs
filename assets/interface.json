@@ -370,13 +370,19 @@
         {
             "name": "时空域(测试)",
             "entry": "TSD_Entry",
+            "option": [
+                "是否探索废墟等事件",
+                "是否清理主地图小怪",
+                "是否清理主地图BOSS"
+            ],
             "doc": [
                 "### 介绍",
-                "时空域自动探索,目前仅支持探索废墟类事件",
+                "时空域自动探索,目前支持探索废墟类事件，清理主地图小怪及BOSS",
                 "### 使用前检查",
                 "- 确保已开启外域及时空域,并且大地图右下角按钮是【外域】,且已进入时空域",
+                "- 默认所有舰队能无损战胜所有小怪，最高战力舰队能战胜BOSS",
                 "### 其他",
-                "打怪、特殊事件、空间奇点及星球内部事件,后续提供支持"
+                "特殊事件、空间奇点及星球内部事件,后续提供支持"
             ]
         },
         {
@@ -601,6 +607,81 @@
                             "custom_action_param": {
                                 "target_sunlight": 21,
                                 "auto_melt": 6
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "是否探索废墟等事件": {
+            "default_case": "no",
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "TSD_Explore": {
+                            "custom_action_param": {
+                                "explore": false
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "TSD_Explore": {
+                            "custom_action_param": {
+                                "explore": true
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "是否清理主地图小怪": {
+            "default_case": "no",
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "TSD_Explore": {
+                            "custom_action_param": {
+                                "monster": false
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "TSD_Explore": {
+                            "custom_action_param": {
+                                "monster": true
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "是否清理主地图BOSS": {
+            "default_case": "no",
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "TSD_Explore": {
+                            "custom_action_param": {
+                                "monster_boss": false
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "TSD_Explore": {
+                            "custom_action_param": {
+                                "monster_boss": true
                             }
                         }
                     }

@@ -60,6 +60,9 @@
     "TSD_Explore": {
         "action": "Custom",
         "custom_action": "TSD_explore",
+        "custom_action_param": {
+            "is_explore": true
+        },
         "post_delay": 500,
         "timeout": 2000
     },
@@ -216,6 +219,8 @@
     },
     "TSD_getPowerNumber": {
         "recognition": "OCR",
+        "recognition_doc": "DetectNumberWithRegex",
+        "expected": "\\d+",
         "roi": [
             0,
             0,
@@ -223,8 +228,84 @@
             1080
         ],
         "replace": [
-            ",",
+            "\\.|\\,",
             ""
+        ]
+    },
+    "TSD_ClearMonster": {
+        "recognition": "OCR",
+        "expected": [
+            "袭击"
+        ],
+        "roi": [
+            14,
+            283,
+            691,
+            756
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 500,
+        "next": [
+            "TSD_ClickFleetButton"
+        ],
+        "interrupt": [
+            "ClickCenterBelow_500ms"
+        ]
+    },
+    "TSD_ClickFleetButton": {
+        "recognition": "OCR",
+        "expected": [
+            "派遣舰队"
+        ],
+        "roi": [
+            36,
+            1114,
+            261,
+            162
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 500,
+        "next": [
+            "TSD_SelectFreeFleetInList"
+        ]
+    },
+    "TSD_ClickAttackButton": {
+        "recognition": "OCR",
+        "expected": [
+            "袭击"
+        ],
+        "roi": [
+            81,
+            822,
+            581,
+            210
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 500
+    },
+    "TSD_SelectHighestFleet": {
+        "recognition": "OCR",
+        "expected": [
+            "深渊"
+        ],
+        "roi": [
+            49,
+            175,
+            238,
+            520
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 500,
+        "next": [
+            "TSD_ClickAttackButton"
+        ],
+        "interrupt": [
+            "TSD_checkTargetFlying",
+            "BackText"
         ]
     }
 }
