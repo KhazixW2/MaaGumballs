@@ -85,13 +85,13 @@ class Mars101(CustomAction):
         1. 检查58层的称号: 位面点满即可
         3. 检查76层的称号: 位面，大铸剑师，大剑师都点满
         """
-        if (self.layers == 3 or self.layers == 4) and self.isTitle_L3 == False:
+        if self.layers >= 3 and self.isTitle_L3 == False:
             fightUtils.title_learn("魔法", 1, "魔法学徒", 3, context)
             context.run_task("Fight_ReturnMainWindow")
             self.isTitle_L3 = True
             return True
 
-        elif (self.layers == 58 or self.layers == 59) and self.isTitle_L58 == False:
+        elif self.layers >= 58 and self.isTitle_L58 == False:
             fightUtils.title_learn("魔法", 1, "魔法学徒", 3, context)
             fightUtils.title_learn("魔法", 2, "黑袍法师", 1, context)
             fightUtils.title_learn("魔法", 3, "咒术师", 1, context)
@@ -110,7 +110,7 @@ class Mars101(CustomAction):
             self.isTitle_L58 = True
             return True
 
-        elif self.layers == 76 or self.layers == 77 and self.isTitle_L76 == False:
+        elif self.layers >= 76 and self.isTitle_L76 == False:
             fightUtils.title_learn("战斗", 1, "见习战士", 3, context)
             fightUtils.title_learn("战斗", 2, "战士", 3, context)
             fightUtils.title_learn("战斗", 3, "剑舞者", 3, context)
