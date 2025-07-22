@@ -2,3 +2,6 @@ maafw==4.4.0
 loguru>=0.7.0
 opencv-python>=4.10
 plyer>=2.1.0
+psutil>=7.0.0
+cryptography>=45.0.5
+wmi>=1.5.1

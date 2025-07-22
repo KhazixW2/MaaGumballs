@@ -133,7 +133,7 @@
         ],
         "action": "Click",
         "post_delay": 2000,
-        "timeout": 500
+        "timeout": 2000
     },
     "TSD_EndExploit": {
         "recognition": "OCR",
@@ -160,6 +160,21 @@
             1183,
             157,
             56
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 500
+    },
+    "TSD_EndExplore": {
+        "recognition": "OCR",
+        "expected": [
+            "结束探索"
+        ],
+        "roi": [
+            127,
+            832,
+            465,
+            138
         ],
         "action": "Click",
         "post_delay": 500,
