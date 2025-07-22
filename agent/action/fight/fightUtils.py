@@ -1065,7 +1065,8 @@ def handle_skillShop_event(
     if context.run_recognition(
         "Fight_SkillShop", context.tasker.controller.post_screencap().wait().get()
     ):
-        logger.info("打开技能商店")
+        logger.info("触发技能商店")
+
         context.run_task("Fight_SkillShop")
         # 拼凑技能路径
         template_path = ["items/scroll/%s.png" % skill for skill in target_skill]
@@ -1123,5 +1124,8 @@ def timing_decorator(func):
 
 # 获取统计信息的函数
 def get_time_statistics():
-    """返回所有函数的执行时间统计信息"""
-    return function_time_records
+    """返回所有函数的执行时间统计信息，返回后清空统计信息"""
+    global function_time_records
+    result = function_time_records
+    function_time_records = {}
+    return result

@@ -306,13 +306,13 @@ class Mars101(CustomAction):
             if fightUtils.check_magic("土", "大地之门", context):
                 fightUtils.cast_magic("气", "静电场", context)
                 if fightUtils.cast_magic("土", "大地之门", context):
-                    self.useEarthGate += 1
                     templayer = self.layers
                     for _ in range(10):
                         logger.info(f"等待大地之门特效结束")
                         self.Check_CurrentLayers(context)
                         if self.layers != templayer and self.layers != -1:
                             logger.info(f"大地之门特效结束, 当前层数为{self.layers}")
+                            self.useEarthGate += 1
                             return True
                         time.sleep(1)
         return False
@@ -481,7 +481,7 @@ class Mars101(CustomAction):
             if mars_reward_detail.nodes:
                 for node in mars_reward_detail.nodes:
                     if node.name == "Mars_Inter_Confirm_Fail":
-                        logger.info("领取Mars奖励失败, 需要重新清理当前层")
+                        logger.info("领取Mars奖励失败, 为了防止卡死, 跳过这次领取")
                         return False
             return True
 

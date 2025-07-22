@@ -21,6 +21,7 @@ class JJC101(CustomAction):
         self.isTitle_L1 = False
         self.isTitle_L36 = False
         self.isTitle_L63 = False
+        self.isAutoPickup = False
         self.layers = 1
 
     def initialize(self, context: Context):
@@ -95,17 +96,17 @@ class JJC101(CustomAction):
             OpenDetail = context.run_task("Bag_Open")
             if OpenDetail.nodes:
 
-                if not fightUtils.checkEquipment("宝物", 6, "土系魔法书", context):
-                    fightUtils.findEquipment(6, "土系魔法书", True, context)
+                # if not fightUtils.checkEquipment("宝物", 6, "土系魔法书", context):
+                #     fightUtils.findEquipment(6, "土系魔法书", True, context)
 
                 if not fightUtils.checkEquipment("盔甲", 6, "执政官铠甲", context):
                     fightUtils.findEquipment(6, "执政官铠甲", True, context)
 
-                if not fightUtils.checkEquipment("鞋子", 6, "次元靴", context):
-                    fightUtils.findEquipment(6, "次元靴", True, context)
+                # if not fightUtils.checkEquipment("鞋子", 6, "次元靴", context):
+                #     fightUtils.findEquipment(6, "次元靴", True, context)
 
-                if not fightUtils.checkEquipment("项链", 6, "星月教挂坠", context):
-                    fightUtils.findEquipment(6, "星月教挂坠", True, context)
+                # if not fightUtils.checkEquipment("项链", 6, "星月教挂坠", context):
+                #     fightUtils.findEquipment(6, "星月教挂坠", True, context)
                 context.run_task("Fight_ReturnMainWindow")
                 logger.info(f"current layers {self.layers},装备检查完成")
             else:
@@ -404,8 +405,7 @@ class JJC101(CustomAction):
         # 寻找斯巴达头盔
         if not self.isHaveSpartanHat:
             # 检测三次斯巴达的头盔，检查到了就提前结束检查
-            time.sleep(1)
-            for _ in range(5):
+            for _ in range(3):
                 img = context.tasker.controller.post_screencap().wait().get()
                 if context.run_recognition("JJC_Find_Body", img):
                     context.run_task("JJC_Find_Body")
@@ -414,40 +414,54 @@ class JJC101(CustomAction):
                     break
 
     @timing_decorator
-    def handle_skillShop_event(self, context: Context):
+    def handle_skillShop_event(self, context: Context,image):
         # 打开技能商店
         if self.layers >= 40:
             return True
-        fightUtils.handle_skillShop_event(
-            context,
-            target_skill=[
-                "石肤术",
-                "地震术",
-                "静电场",
-                "毁灭之刃",
-                "瓦解射线",
-                "失明术",
-                "治疗术",
-                "寒冰护盾",
-                "死亡波纹",
-            ],
-        )
+        # 打开技能商店
+        if context.run_recognition("Fight_SkillShop",image):
+            fightUtils.handle_skillShop_event(
+                context,
+                target_skill=[
+                    "石肤术",
+                    "地震术",
+                    "静电场",
+                    "毁灭之刃",
+                    "瓦解射线",
+                    "失明术",
+                    "治疗术",
+                    "寒冰护盾",
+                    "死亡波纹",
+                ],
+            )
 
     @timing_decorator
-    def handle_stone_event(self, context: Context):
+    def handle_stone_event(self, context: Context, image):
         if self.layers <= 29 and context.run_recognition(
-            "JJC_StoneChest", context.tasker.controller.post_screencap().wait().get()
+            "JJC_StoneChest", image
         ):
             context.run_task("JJC_StoneChest")
-
+    
+    def handle_auto_pickup_event(self, context: Context):
+        logger.info("开启自动拾取, 等待动画结束")
+        context.run_task("Fight_PickUpAll_Emptyfloor")
+        self.isAutoPickup = True
+    
     def handle_postLayers_event(self, context: Context):
-        time.sleep(1)
         self.handle_perfect_event(context)
         self.Check_DefaultStatus(context)
-        self.handle_stone_event(context)
-        self.handle_sparta_event(context)
-        self.handle_skillShop_event(context)
-        fightUtils.handle_downstair_event(context)
+
+        image = context.tasker.controller.post_screencap().wait().get()
+        self.handle_stone_event(context, image)
+        self.handle_skillShop_event(context, image)
+        self.handle_sparta_event(context)   
+        
+        if self.isAutoPickup:
+            logger.info("触发下楼事件")
+            fightUtils.handle_downstair_event(context)
+        else:
+            logger.info("触发开启自动拾取事件")
+            self.handle_auto_pickup_event(context)
 
     @timing_decorator
     def handle_clearCurLayer_event(self, context: Context):

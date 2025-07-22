@@ -33,8 +33,8 @@ class FightProcessor:
             self._grid_count = 10
             self._hit_monster_count = 3
             self.max_grid_loop = 25
-            self.max_monster_loop_fail = 4
-            self.max_grid_loop_fail = 4
+            self.max_monster_loop_fail = 5
+            self.max_grid_loop_fail = 6
             self.isCheckDragon = False
             self.targetWish = "工资"
 
@@ -268,7 +268,7 @@ class FightProcessor:
                             x + w // 2, y + h // 2
                         ).wait()
                         time.sleep(0.05)
-
+        time.sleep(0.2)
         return True
 
     def checkClosedDoor(self, context: Context) -> tuple[int, int]:
@@ -342,6 +342,7 @@ class FightProcessor:
                     self.visited[r][c] += 1
                     checkGridCnt += 1
                     time.sleep(0.03)
+        time.sleep(0.2)
         return checkGridCnt
 
     def handle_dragon_encounter(self, context: Context, img):
