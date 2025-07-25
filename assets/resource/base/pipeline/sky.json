@@ -1,0 +1,331 @@
+{
+    "EntryEden_Autosky": {
+        "post_delay": 1000,
+        "timeout": 2000,
+        "threshold": 0.8,
+        "recognition": "OCR",
+        "expected": [
+            "伊甸"
+        ],
+        "roi": [
+            0,
+            1140,
+            240,
+            139
+        ],
+        "action": "Click",
+        "next": [
+            "EntryHall_Autosky",
+            "EntryHall2_Autosky"
+        ],
+        "on_error": [
+            "TaskFailNotify"
+        ]
+    },
+    "EntryHall2_Autosky": {
+        "post_delay": 1000,
+        "timeout": 2000,
+        "recognition": "OCR",
+        "doc": "老玩家的战术大厅",
+        "expected": "可监控",
+        "roi": [
+            105,
+            477,
+            129,
+            126
+        ],
+        "action": "Click",
+        "target": true,
+        "target_offset": [
+            0,
+            0,
+            0,
+            -63
+        ],
+        "next": [
+            "SkyExplore_Autosky"
+        ]
+    },
+    "EntryHall_Autosky": {
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/Entryhall.png",
+        "roi": [
+            56,
+            310,
+            649,
+            504
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "SkyExplore_Autosky"
+        ]
+    },
+    "SkyExplore_Autosky": {
+        "recognition": "TemplateMatch",
+        "doc": "这一步是点击战术大厅里的飞艇图案进入快捷探索界面,下一步直接进入雷达界面",
+        "template": "dailyTask/SkyExplore.png",
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "Enter_Radar_Interface_Autosky"
+        ]
+    },
+    "SkyExplore_Start_Autosky": {
+        "recognition": "OCR",
+        "doc": "这一步是在快捷探索界面点击自动探索按钮,如果超时仍找不到下一步，默认是能量不足或无法显示更多目标，则停止任务",
+        "expected": "自动探索",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "action": "Click",
+        "roi": [
+            270,
+            898,
+            140,
+            47
+        ],
+        "next": [
+            "SkyExplore_LackOfEnergy_Autosky",
+            "SkyExplore_LackOfBox_Autosky",
+            "SkyExplore_Confirm_Finish_Autosky"
+        ],
+        "on_error": [
+            "StopCureentTask"
+        ]
+    },
+    "SkyExplore_LackOfEnergy_Autosky": {
+        "recognition": "OCR",
+        "doc": "如果能量不足则说明已经完成了，停止当前任务",
+        "expected": "能量不足",
+        "roi": [
+            68,
+            275,
+            613,
+            204
+        ],
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "StopCureentTask"
+        ]
+    },
+    "SkyExplore_LackOfBox_Autosky": {
+        "recognition": "OCR",
+        "doc": "如果无法显示更多目标则说明已经完成了，停止当前任务",
+        "expected": "无法显示更多目标",
+        "roi": [
+            96,
+            350,
+            533,
+            113
+        ],
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "StopCureentTask"
+        ]
+    },
+    "SkyExplore_Confirm_Finish_Autosky": {
+        "recognition": "TemplateMatch",
+        "doc": "这里必须加一步确认，因为如果开了游戏加速，前两个识别可能识别不到",
+        "template": "dailyTask/SkyExplore_Confirm_Finish_Autosky.png",
+        "roi": [
+            303,
+            240,
+            106,
+            86
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 5000,
+        "next": [
+            "SkyExplore_Finish_Autosky"
+        ]
+    },
+    "SkyExplore_Finish_Autosky": {
+        "recognition": "OCR",
+        "doc": "识别到返回，说明本次自动探索消耗了能量，需要再次进入雷达界面检测一下有没有可以打的",
+        "expected": "返回",
+        "roi": [
+            494,
+            1173,
+            184,
+            75
+        ],
+        "post_delay": 1000,
+        "timeout": 2000,
+        "action": "Click",
+        "next": [
+            "Enter_Radar_Interface_Autosky"
+        ],
+        "interrupt": [
+            "BackText"
+        ]
+    },
+    "Enter_Radar_Interface_Autosky": {
+        "recognition": "TemplateMatch",
+        "doc": "点击这个小按钮进入雷达界面",
+        "template": "dailyTask/Enter_Radar_Interface_Autosky.png",
+        "roi": [
+            589,
+            495,
+            38,
+            41
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "CheckExplorationInfo_Autosky"
+        ]
+    },
+    "CheckExplorationInfo_Autosky": {
+        "recognition": "OCR",
+        "doc": "确定已经来到了雷达界面",
+        "expected": "探索信息",
+        "roi": [
+            11,
+            724,
+            134,
+            56
+        ],
+        "post_delay": 1000,
+        "timeout": 5000,
+        "next": []
+    },
+    "ChangeTarget0_Autosky": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            589,
+            1124,
+            106,
+            39
+        ],
+        "post_delay": 1000,
+        "timeout": 1000,
+        "next": [
+            "RiftDetection_Autosky"
+        ]
+    },
+    "RiftDetection_Autosky": {
+        "recognition": "OCR",
+        "expected": "时空裂痕",
+        "roi": [
+            0,
+            327,
+            119,
+            53
+        ],
+        "post_delay": 500,
+        "timeout": 500,
+        "inverse": true,
+        "next": [
+            "EventDetection_Autosky"
+        ]
+    },
+    "EventDetection_Autosky": {
+        "recognition": "OCR",
+        "expected": [
+            "探索",
+            "袭击"
+        ],
+        "roi": [
+            585,
+            296,
+            102,
+            57
+        ],
+        "next": [
+            "ExploreEventDetection_Autosky",
+            "CombatEventDetection_Autosky",
+            "ChangeTarget0_Autosky"
+        ]
+    },
+    "ExploreEventDetection_Autosky": {
+        "recognition": "OCR",
+        "expected": "探索",
+        "roi": [
+            585,
+            296,
+            102,
+            57
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 5000
+    },
+    "CombatEventDetection_Autosky": {
+        "recognition": "OCR",
+        "expected": "袭击",
+        "roi": [
+            585,
+            296,
+            102,
+            57
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 10000,
+        "next": [
+            "SkipDetection_Autosky",
+            "Lost_Autosky"
+        ]
+    },
+    "SkipDetection_Autosky": {
+        "recognition": "OCR",
+        "doc": "这一步是跳过飞艇战斗，但不能放在interrupt里面，否则可能会多点导致退出雷达界面",
+        "expected": "跳过",
+        "roi": [
+            556,
+            1185,
+            109,
+            50
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 5000,
+        "next": [
+            "CheckExplorationInfo_Autosky"
+        ],
+        "interrupt": [
+            "ClickCenter_200ms"
+        ]
+    },
+    "Lost_Autosky": {
+        "recognition": "OCR",
+        "doc": "出现这个界面，说明遇到打不过的了",
+        "expected": "继续袭击",
+        "roi": [
+            191,
+            574,
+            117,
+            42
+        ],
+        "post_delay": 1000,
+        "timeout": 5000,
+        "next": [
+            "StopCureentTask"
+        ]
+    },
+    "Exit_Radar_Interface_Autosky": {
+        "recognition": "TemplateMatch",
+        "doc": "点击这个小按钮进离开雷达界面",
+        "template": "dailyTask/Exit_Radar_Interface_Autosky.png",
+        "roi": [
+            606,
+            1203,
+            41,
+            45
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000
+    },
+    "Autosky": {
+        "action": "Custom",
+        "custom_action": "Autosky"
+    }
+}
