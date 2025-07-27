@@ -94,7 +94,7 @@ def send_byPushplus(dp: dict, title: str, text: str) -> bool:
                 logger.info("消息推送失败")
                 return False
         else:
-            logger.error("消息推送失败")
+            logger.error(f"消息推送失败，状态码：{response.status_code}")
             return False
     except Exception as e:
         logger.info(f"pushplus发送失败：{e}")
@@ -114,7 +114,7 @@ def send_qmsg(dp: dict, title: str, text: str) -> bool:
         bot = decrypt(bot)
         user = decrypt(user)
 
-        url = f"https://qmsg.zendee.cn/send/{key}"
+        url = f"{ server }/send/ { key }"
         data = {"msg": text, "qq": user, "bot": bot}
         response = requests.post(url, data=data)
         if response.status_code == 200:
@@ -127,7 +127,7 @@ def send_qmsg(dp: dict, title: str, text: str) -> bool:
                 )
                 return False
         else:
-            logger.error("消息推送失败")
+            logger.error(f"消息推送失败，状态码：{ response.status_code }")
             return False
     else:
         logger.info("Qmsg配置不完整，请检查配置文件")

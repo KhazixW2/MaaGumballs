@@ -1,8 +1,7 @@
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
-from utils import logger
-from utils import message
+from utils import logger, send_message
 
 from action.fight import fightUtils
 from action.fight import fightProcessor
@@ -554,7 +553,7 @@ class JJC101(CustomAction):
             logger.info(
                 f"{func_name} 执行 {data['count']} 次，总耗时: {data['total_time']:.4f}秒"
             )
-        message.send_message(f"MaaGB", f"竞技场探索结束，当前到达{self.layers}层")
+        send_message(f"MaaGB", f"竞技场探索结束，当前到达{self.layers}层")
         return CustomAction.RunResult(success=True)
 
 
@@ -705,7 +704,7 @@ class JJC_CalEarning(CustomAction):
             EarningDetail = fightUtils.pair_by_distance(recoDetail.all_results, 400)
             if EarningDetail["获得金币"]:
                 temp = int(EarningDetail["获得金币"]) // 10000
-                message.send_message(
+                send_message(
                     f"MaaGB",
                     f"获得金币: {temp}w",
                 )

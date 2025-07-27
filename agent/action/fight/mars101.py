@@ -1,8 +1,7 @@
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
-from utils import logger
-from utils import message
+from utils import logger, send_message
 
 from action.fight.fightUtils import timing_decorator
 from action.fight import fightUtils
@@ -723,7 +722,7 @@ class Mars101(CustomAction):
             logger.info(
                 f"{func_name} 执行 {data['count']} 次，总耗时: {data['total_time']:.4f}秒"
             )
-        message.send_message(f"MaaGB", f"马尔斯探索结束，当前到达{self.layers}层")
+        send_message(f"MaaGB", f"马尔斯探索结束，当前到达{self.layers}层")
         return CustomAction.RunResult(success=True)
 
 
