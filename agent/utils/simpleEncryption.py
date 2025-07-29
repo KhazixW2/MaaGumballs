@@ -32,7 +32,11 @@ def get_os_description() -> str:
         except ImportError:
             return f"Linux {platform.release()}"
     elif system == "Darwin":
-        return f"Darwin {platform.mac_ver()[0]}"
+        kernel_detail = subprocess.check_output(
+            ["sysctl", "-n", "kern.version"], text=True
+        ).strip()
+
+        return f"{platform.system()} {platform.release()} {kernel_detail}"
     else:
         return system
 
@@ -47,7 +51,7 @@ def get_os_architecture() -> str:
     if machine in ("x86_64", "amd64"):
         return "X64"
     elif machine in ("aarch64", "arm64"):
-        return "ARM64"
+        return "Arm64"
     elif machine in ("i386", "x86"):
         return "X86"
     else:
@@ -132,11 +136,30 @@ def aes_decrypt(data_b64: str, key: str) -> str:
     return decrypted_data.decode("utf-8").rstrip("\x00")
 
 
+def get_machine_name() -> str:
+    """
+    获取机器名称
+
+    :return: 机器名称
+    """
+    try:
+        system = platform.system()
+        if system == "Windows":
+            return platform.node()
+        elif system == "Linux":
+            return platform.node().split(".")[0]  # 返回主机名，不包含域名部分
+        elif system == "Darwin":
+            return platform.node().split(".")[0]
+    except Exception as e:
+        logging.warning(f"Failed to get machine name: {e}")
+    return platform.node()  # 返回主机名，不包含域名部分
+
+
 def generate():
     os_description = get_os_description()
     os_architecture = get_os_architecture()
     plain_text_specific_id = get_platform_specific_id()
-    machine_name = platform.node()
+    machine_name = get_machine_name()
 
     combined_string = (
         f"{os_description}_{os_architecture}_{plain_text_specific_id}_{machine_name}"
@@ -221,19 +244,3 @@ def decrypt(encrypted_base64):
     except Exception as e:
         logging.warning(e)
         return ""
-
-
-if __name__ == "__main__":
-    # Example usage
-    key = get_device_key()
-    # logging.info(f"Generated device key: {key}")
-    # test_string = "52681047"
-    # encrypted = encrypt(test_string)
-    # logging.info(f"Encrypted: {encrypted}")
-    encrypted = "6AtOBPHeqXCUbpz3PaABybg1KM2KNjRCL4rYNR9TADs="
-    decrypted = decrypt(encrypted)
-    logging.info(f"Decrypted: {decrypted}")
-
-    # assert decrypted == test_string, "Decryption did not return the original string"
-    # device_key = generate()
-    # print(f"Device Key: {device_key}")

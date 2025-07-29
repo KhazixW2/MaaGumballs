@@ -116,18 +116,22 @@ def send_qmsg(dp: dict, title: str, text: str) -> bool:
 
         url = f"{ server }/send/ { key }"
         data = {"msg": text, "qq": user, "bot": bot}
-        response = requests.post(url, data=data)
-        if response.status_code == 200:
-            if response.json()["code"] == 0:
-                logger.info("消息推送成功")
-                return True
+        try:
+            response = requests.post(url, data=data)
+            if response.status_code == 200:
+                if response.json()["code"] == 0:
+                    logger.info("消息推送成功")
+                    return True
+                else:
+                    logger.info(
+                        "消息推送失败：" + response.json().get("reason", "未知错误")
+                    )
+                    return False
             else:
-                logger.info(
-                    "消息推送失败：" + response.json().get("reason", "未知错误")
-                )
+                logger.error(f"消息推送失败，状态码：{ response.status_code }")
                 return False
-        else:
-            logger.error(f"消息推送失败，状态码：{ response.status_code }")
+        except Exception as e:
+            logger.error(f"Qmsg发送失败：{e}")
             return False
     else:
         logger.info("Qmsg配置不完整，请检查配置文件")
