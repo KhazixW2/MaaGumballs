@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 import smtplib
+import re
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import requests
@@ -29,6 +30,29 @@ def read_config() -> bool:
 # 判断dict是否为空
 def dictIsNoneOrEmpty(dp: dict) -> bool:
     return dp is None or len(dp) == 0 or dp == {} or bool(dp) is False or not dp
+
+
+# 判断url是否合法
+def is_valid_url(url: str) -> bool:
+    """
+    使用正则表达式验证URL是否有效
+    Args:
+        url (str): 需要验证的URL字符串
+    Returns:
+        bool: 如果URL有效返回True，否则返回False
+    """
+    # 定义URL的正则表达式模式
+    url_pattern = re.compile(
+        r"^https?://"  # http:// 或 https://
+        r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|"  # 域名
+        r"localhost|"  # localhost
+        r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # IP地址
+        r"(?::\d+)?"  # 可选端口号
+        r"(?:/?|[/?]\S+)$",
+        re.IGNORECASE,
+    )  # 路径部分
+
+    return bool(url_pattern.match(url))
 
 
 # 通过smtp发送邮件
@@ -114,21 +138,26 @@ def send_qmsg(dp: dict, title: str, text: str) -> bool:
         bot = decrypt(bot)
         user = decrypt(user)
 
-        url = f"{ server }/send/ { key }"
+        url = f"{ server }/send/{ key }"
         data = {"msg": text, "qq": user, "bot": bot}
+        logger.info(f"Qmsg_url：{url}")
         try:
-            response = requests.post(url, data=data)
-            if response.status_code == 200:
-                if response.json()["code"] == 0:
-                    logger.info("消息推送成功")
-                    return True
+            if is_valid_url(url):
+                response = requests.post(url, data=data)
+                if response.status_code == 200:
+                    if response.json()["code"] == 0:
+                        logger.info("消息推送成功")
+                        return True
+                    else:
+                        logger.info(
+                            "消息推送失败：" + response.json().get("reason", "未知错误")
+                        )
+                        return False
                 else:
-                    logger.info(
-                        "消息推送失败：" + response.json().get("reason", "未知错误")
-                    )
+                    logger.error(f"消息推送失败，状态码：{ response.status_code }")
                     return False
             else:
-                logger.error(f"消息推送失败，状态码：{ response.status_code }")
+                logger.error("Qmsg URL 无效，请检查配置")
                 return False
         except Exception as e:
             logger.error(f"Qmsg发送失败：{e}")
