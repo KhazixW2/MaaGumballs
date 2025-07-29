@@ -172,12 +172,17 @@ def get_platform_specific_id():
         system = platform.system()
 
         if system == "Windows":
-            # Use WMI to get the motherboard UUID
-            import wmi
-
-            c = wmi.WMI()
-            for item in c.Win32_ComputerSystemProduct():
-                return item.UUID
+            result = subprocess.run(
+                [
+                    "powershell",
+                    "-Command",
+                    "(Get-CimInstance -ClassName Win32_ComputerSystemProduct).UUID",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            return result.stdout.strip()
         elif system == "Linux":
             try:
                 uuid_path = "/sys/class/dmi/id/product_uuid"
