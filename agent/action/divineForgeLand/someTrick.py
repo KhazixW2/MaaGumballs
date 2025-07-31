@@ -93,6 +93,53 @@ class GoDownstairsTrick_Test(CustomAction):
                 "学徒鞋子": "equipments/1level/学徒鞋子.png",
                 "学徒戒指": "equipments/1level/学徒戒指.png",
             },
+            "火系": {
+                "火术士项链": "equipments/1level/火术士项链.png",
+                "灼眼者面罩": "equipments/2level/",
+                "火蜥蜴腕轮": "equipments/3level/火蜥蜴腕轮.png",
+                "毁灭者石板": "equipments/4level/毁灭者石板.png",
+                "末日指轮": "equipments/5level/末日指轮.png",
+            },
+            "水系": {
+                "水精灵披风": "equipments/1level/水精灵披风.png",
+                "冰霜之瓶": "equipments/2level/冰霜之瓶.png",
+                "海妖之眼": "equipments/3level/海妖之眼.png",
+                "泉水项链": "equipments/4level/泉水项链.png",
+                "曙光战甲": "equipments/5level/曙光战甲.png",
+            },
+            "土系": {
+                "花岗岩手套": "equipments/1level/花岗岩手套.png",
+                "黑曜石铠甲": "equipments/2level/黑曜石铠甲.png",
+                "荆棘之球": "equipments/3level/荆棘之球.png",
+                "重力之源": "equipments/4level/重力之源.png",
+                "土元素之靴": "equipments/5level/土元素之靴.png",
+            },
+            "气系": {
+                "闪电之靴": "equipments/1level/闪电之靴.png",
+                "电弧束带": "equipments/2level/电弧束带.png",
+                "蓝宝石胸甲": "equipments/3level/蓝宝石胸甲.png",
+                "泰坦之盔": "equipments/4level/泰坦之盔.png",
+                "时光沙漏": "equipments/5level/时光沙漏.png",
+            },
+            "光系": {
+                "白珍珠": "equipments/1level/白珍珠.png",
+                "神官披肩": "equipments/2level/神官披肩.png",
+                "信仰之戒": "equipments/3level/信仰之戒.png",
+                "圣裁官手套": "equipments/4level/圣裁官手套.png",
+                "教皇腰带": "equipments/5level/教皇腰带.png",
+            },
+            "暗系": {
+                "黑珍珠": "equipments/1level/黑珍珠.png",
+                "幽魂靴": "equipments/2level/幽魂靴.png",
+                "黑巫术腰带": "equipments/3level/黑巫术腰带.png",
+                "巫毒斗篷": "equipments/4level/巫毒斗篷.png",
+                "杀戮护符": "equipments/5level/杀戮护符.png",
+            },
+            "贵族套": {
+                "贵族丝带": "equipments/1level/贵族丝带.png",
+                "礼仪戒指": "equipments/2level/礼仪戒指.png",
+                "天鹅绒斗篷": "equipments/3level/天鹅绒斗篷.png",
+            },
         }
         # 这里检查套装
         logger.info(f"黑装备-{equipment} 检查是否有目标装备")
