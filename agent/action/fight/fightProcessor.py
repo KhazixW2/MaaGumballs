@@ -239,7 +239,7 @@ class FightProcessor:
             return 0
 
     def checkMonster(self, context: Context) -> bool:
-        logger.info(f"{self.visited}")
+        logger.debug(f"{self.visited}")
         img = context.tasker.controller.post_screencap().wait().get()
 
         # 检测是否有怪物并攻击
@@ -262,13 +262,12 @@ class FightProcessor:
                     context,
                 ):
                     self.visited[r][c] += 1
-                    logger.info(f"检测({r + 1},{c + 1})有怪物: {x}, {y}, {w}, {h}")
+                    logger.debug(f"检测({r + 1},{c + 1})有怪物: {x}, {y}, {w}, {h}")
                     for _ in range(self.hit_monster_count):
                         context.tasker.controller.post_click(
                             x + w // 2, y + h // 2
                         ).wait()
                         time.sleep(0.05)
-        time.sleep(0.15)
         return True
 
     def checkClosedDoor(self, context: Context) -> tuple[int, int]:
@@ -390,7 +389,6 @@ class FightProcessor:
                 fail_check_monster_cnt >= self.max_monster_loop_fail
                 or fail_check_grid_cnt >= self.max_grid_loop_fail
             ):
-
                 break
         logger.info("已完成清理当前层~")
         return True

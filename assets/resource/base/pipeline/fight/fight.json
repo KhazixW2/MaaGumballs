@@ -214,7 +214,7 @@
         ],
         "action": "Click",
         "threshold": 0.8,
-        "post_delay": 200,
+        "post_delay": 150,
         "timeout": 2000
     },
     "Fight_SkillPack_Type": {
@@ -227,7 +227,7 @@
             225
         ],
         "action": "Click",
-        "post_delay": 200,
+        "post_delay": 150,
         "timeout": 2000
     },
     "Fight_ClickSpecialMagicPage": {
@@ -242,7 +242,7 @@
             "特殊"
         ],
         "action": "Click",
-        "post_delay": 200,
+        "post_delay": 150,
         "timeout": 2000
     },
     "Fight_ClickFireMagicPage": {
@@ -263,7 +263,7 @@
             91,
             78
         ],
-        "post_delay": 200,
+        "post_delay": 150,
         "timeout": 2000
     },
     "Fight_ClickWaterMagicPage": {
@@ -284,7 +284,7 @@
             85,
             70
         ],
-        "post_delay": 200,
+        "post_delay": 150,
         "timeout": 2000
     },
     "Fight_ClickEarthMagicPage": {
@@ -305,7 +305,7 @@
             77,
             64
         ],
-        "post_delay": 200,
+        "post_delay": 150,
         "timeout": 2000
     },
     "Fight_ClickQiMagicPage": {
@@ -326,7 +326,7 @@
             95,
             75
         ],
-        "post_delay": 200,
+        "post_delay": 150,
         "timeout": 2000
     },
     "Fight_ClickLightMagicPage": {
@@ -347,7 +347,7 @@
             87,
             80
         ],
-        "post_delay": 200,
+        "post_delay": 150,
         "timeout": 2000
     },
     "Fight_ClickDarkMagicPage": {
@@ -368,7 +368,7 @@
             95,
             77
         ],
-        "post_delay": 200,
+        "post_delay": 150,
         "timeout": 2000
     },
     "Fight_Magic_Cast": {
@@ -395,7 +395,7 @@
             100,
             100
         ],
-        "post_delay": 200
+        "post_delay": 100
     },
     "Fight_Magic_Elemental": {
         "next": [
