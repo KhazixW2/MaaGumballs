@@ -205,9 +205,10 @@ class Mars101(CustomAction):
                     self.is_android_skill_enabled = True
 
     def handle_boss_event(self, context: Context):
-        if context.run_recognition(
-            "Fight_OpenedDoor", context.tasker.controller.post_screencap().wait().get()
-        ):
+        image = context.tasker.controller.post_screencap().wait().get()
+        if context.run_recognition("Fight_OpenedDoor", image):
+            if context.run_recognition("Mars_BossReward", image):
+                self.handle_MarsReward_event(context, image)
             context.run_task("Fight_OpenedDoor")
         else:
             time.sleep(6)
