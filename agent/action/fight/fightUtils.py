@@ -859,7 +859,7 @@ def dragonwish(targetWish: str, context: Context):
             image = context.tasker.controller.post_screencap().wait().get()
             if context.run_recognition("ConfirmButton_500ms", image):
                 context.run_task("ConfirmButton_500ms")
-
+            send_message("MaaGB", "冒险者大人，今日钻石已领肥家咯~")
         elif min_index_wish in ["我要大量的矿石"]:
             # 等待地图加载
             time.sleep(10)
@@ -1034,7 +1034,6 @@ def handle_dragon_event(map_str: str, context: Context):
         logger.info("是神龙,俺,俺们有救了！！！")
         dragonwish(map_str, context)
         logger.info("神龙带肥家lo~")
-        send_message(f"MaaGB", "是神龙,俺,俺们有救了！！！")
 
 
 def handle_currentlayer_event(context: Context):
