@@ -874,6 +874,76 @@
                             }
                         }
                     }
+                },
+                {
+                    "name": "火系",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "火系"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "水系",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "水系"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "土系",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "土系"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "气系",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "气系"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "光系",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "光系"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "暗系",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "暗系"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "贵族套",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "贵族套"
+                            }
+                        }
+                    }
                 }
             ]
         },
