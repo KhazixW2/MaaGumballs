@@ -145,14 +145,14 @@ def get_machine_name() -> str:
     try:
         system = platform.system()
         if system == "Windows":
-            return platform.node()
+            return platform.node().upper()
         elif system == "Linux":
-            return platform.node().split(".")[0]  # 返回主机名，不包含域名部分
+            return platform.node().split(".")[0].upper()  # 返回主机名，不包含域名部分
         elif system == "Darwin":
-            return platform.node().split(".")[0]
+            return platform.node().split(".")[0].upper()
     except Exception as e:
         logging.warning(f"Failed to get machine name: {e}")
-    return platform.node()  # 返回主机名，不包含域名部分
+    return platform.node().upper()  # 返回主机名，不包含域名部分
 
 
 def generate():
