@@ -33,15 +33,15 @@ class SaveLoad_little(CustomAction):
 
 @AgentServer.custom_action("GoDownstairsTrick_Test")
 class GoDownstairsTrick_Test(CustomAction):
-    # 这里检查永恒套装
-    def CheckEternalSuit(self, context: Context, image, tartget_equipment_path):
+    # 这里检查套装
+    def CheckEternalSuit(self, context: Context, image, target_equipment_path):
         checkEternalDetail = context.run_recognition(
             "CheckEternalSuit",
             image,
             pipeline_override={
                 "CheckEternalSuit": {
                     "recognition": "TemplateMatch",
-                    "template": [tartget_equipment_path],
+                    "template": [target_equipment_path],
                     "roi": [30, 68, 665, 590],
                     "threshold": 0.7,
                 }
@@ -55,90 +55,99 @@ class GoDownstairsTrick_Test(CustomAction):
         context: Context,
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
-        # 这里检查永恒套装
-        logger.info("黑永恒 检查是否有目标装备")
+        equipment = json.loads(argv.custom_action_param)["equipment"]
+        equipmentsList: dict = {
+            "永恒套": {
+                "永恒腕轮": "equipments/5level/永恒腕轮.png",
+                "永恒披风": "equipments/5level/永恒披风.png",
+                "永恒王冠": "equipments/5level/永恒王冠.png",
+                "永恒之球": "equipments/5level/永恒之球.png",
+            },
+            "龙鳞套": {
+                "龙鳞护腕": "equipments/4level/龙鳞护腕.png",
+                "龙鳞甲": "equipments/4level/龙鳞甲.png",
+                "龙鳞盔": "equipments/4level/龙鳞盔.png",
+                "龙鳞腰带": "equipments/4level/龙鳞腰带.png",
+            },
+            "神谕套": {
+                "神谕手套": "equipments/5level/神谕手套.png",
+                "神谕之甲": "equipments/5level/神谕之甲.png",
+                "神谕之盔": "equipments/5level/神谕之盔.png",
+                "神谕束带": "equipments/5level/神谕束带.png",
+            },
+            "魔导士套": {
+                "魔导士挂坠": "equipments/5level/魔导士挂坠.png",
+                "魔导士斗篷": "equipments/5level/魔导士斗篷.png",
+                "魔导士之靴": "equipments/5level/魔导士之靴.png",
+                "魔导士指轮": "equipments/5level/魔导士指轮.png",
+            },
+            "骑士套": {
+                "骑士手套": "equipments/1level/骑士手套.png",
+                "骑士盔甲": "equipments/1level/骑士盔甲.png",
+                "骑士头盔": "equipments/1level/骑士头盔.png",
+                "骑士腰带": "equipments/1level/骑士腰带.png",
+            },
+            "学徒套": {
+                "学徒项链": "equipments/1level/学徒项链.png",
+                "学徒披风": "equipments/1level/学徒披风.png",
+                "学徒鞋子": "equipments/1level/学徒鞋子.png",
+                "学徒戒指": "equipments/1level/学徒戒指.png",
+            },
+        }
+        # 这里检查套装
+        logger.info(f"黑装备-{equipment} 检查是否有目标装备")
         context.run_task("OpenEquipmentPackage")
         img = context.tasker.controller.post_screencap().wait().get()
-        before_gloves = self.CheckEternalSuit(
-            context, img, "equipments/5level/永恒腕轮.png"
-        )
-        before_cloak = self.CheckEternalSuit(
-            context, img, "equipments/5level/永恒披风.png"
-        )
-        before_helmet = self.CheckEternalSuit(
-            context, img, "equipments/5level/永恒王冠.png"
-        )
-        before_weapon = self.CheckEternalSuit(
-            context, img, "equipments/5level/永恒之球.png"
-        )
-        context.run_task("BackText")
+        targetList: dict = {}
+        for key in equipmentsList[equipment]:
+            targetList[key] = self.CheckEternalSuit(
+                context, img, equipmentsList[equipment][key]
+            )
 
+        context.run_task("BackText")
+        logger.info(f"targetList: {targetList}")
         for i in range(101):
             if context.tasker.stopping:
                 logger.info("检测到停止任务, 开始退出agent")
                 return CustomAction.RunResult(success=False)
 
-            logger.info(f"黑永恒第{i}次尝试")
+            logger.info(f"黑装备-{equipment} 第{ i+1 }次尝试")
             context.run_task("Save_Status")
             context.run_task("StartAppV2")
             context.run_task("Fight_OpenedDoor")
             fightUtils.cast_magic("土", "地震术", context)
             context.run_task("KillChestMonster")
 
-            logger.info("黑永恒 检查是否黑到目标装备")
+            logger.info(f"黑装备-{equipment} 检查是否黑到目标装备")
             context.run_task("OpenEquipmentPackage")
             time.sleep(1)
             img_2 = context.tasker.controller.post_screencap().wait().get()
             temp = 0
-            if not before_gloves:
-                after_gloves = self.CheckEternalSuit(
-                    context, img_2, "equipments/5level/永恒腕轮.png"
-                )
-                if after_gloves:
-                    temp += 1
-            else:
-                after_gloves = before_gloves
-            if not before_cloak:
-                after_cloak = self.CheckEternalSuit(
-                    context, img_2, "equipments/5level/永恒披风.png"
-                )
-                if after_cloak:
-                    temp += 1
-            else:
-                after_cloak = before_cloak
-            if not before_helmet:
-                after_helmet = self.CheckEternalSuit(
-                    context, img_2, "equipments/5level/永恒王冠.png"
-                )
-                if after_helmet:
-                    temp += 1
-            else:
-                after_helmet = before_helmet
-            if not before_weapon:
-                after_weapon = self.CheckEternalSuit(
-                    context, img_2, "equipments/5level/永恒之球.png"
-                )
-                if after_weapon:
-                    temp += 1
-            else:
-                after_weapon = before_weapon
+            for key in targetList:
+                if not targetList[key]:
+                    afterResult = self.CheckEternalSuit(
+                        context, img_2, equipmentsList[equipment][key]
+                    )
+                    if afterResult:
+                        logger.info(f"黑装备-{equipment} 检查到目标装备-{key}")
+                        temp += 1
 
             context.run_task("BackText")
 
             if temp >= 1:
-                logger.info("黑永恒成功，恢复网络，可以暂离保存")
+                logger.info(f"黑装备-{equipment} 成功，恢复网络，可以暂离保存")
                 context.run_task("StopAppV2")
                 time.sleep(1)
                 context.run_task("Save_Status")
                 return CustomAction.RunResult(success=True)
 
             else:
-                logger.info("黑永恒失败, 小SL然后联网进行下一次尝试")
+                logger.info(f"黑装备-{equipment} 失败, 小SL然后联网进行下一次尝试")
                 context.run_task("LogoutGame")
                 context.run_task("StopAppV2")
                 context.run_task("ReturnMaze")
 
-        logger.warning("黑永恒失败")
+        logger.warning(f"黑装备-{equipment} 失败")
         return CustomAction.RunResult(success=False)
 
 
