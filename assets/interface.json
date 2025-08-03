@@ -671,7 +671,7 @@
             ]
         },
         "开启自动拾取": {
-            "default_case": "yes",
+            "default_case": "no",
             "cases": [
                 {
                     "name": "no",
