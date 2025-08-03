@@ -243,7 +243,8 @@
             "option": [
                 "自动肉鸽时使用钻石购买体力",
                 "目标出图楼层",
-                "目标大地数量"
+                "目标大地数量",
+                "开启自动拾取"
             ],
             "pipeline_override": {
                 "Select_WorldTree_InputBox_Text": {
@@ -277,7 +278,6 @@
                 "",
                 "2. **楼层操作**  ",
                 "   - 自动点称号(1/58/76层)",
-                "   - 自动在1层开启自动拾取",
                 "   - 自动释放大地之门(50以后*9层)  ",
                 "   - 自动检查状态并使用恢复法术(≥50层的*1/5/*9层)  ",
                 "   - 自动处理玛尔斯石碑、宝箱奖励、各类商人事件",
@@ -296,7 +296,9 @@
                 "   - 准备电能药剂并标特别关注  ",
                 "   - 备好太阳冈布奥与天启者冈布奥  ",
                 "▶️ **关键设置**  ",
-                "   - 设置目标出图楼层以及目标大地数量",
+                "   - 设置目标出图楼层(会在到达目标出图楼层之后的所有x9层尝试出图)",
+                "   - 设置目标大地数量(设置为2时不能确保拿到2张大地, 只是会去尝试使用第二张大地)",
+                "   - 设置是否开启自动拾取(目前触控方式minitouch小概率出现点击失效, adbinput没有发现此问题但是adbinput无法开启自动拾取, 请自行选择触控方式和自动拾取配置项)",
                 "     ▶️ **注意事项**  ",
                 "   - 不处理隐秘洞穴小游戏(需手动探索拿钥匙)  ",
                 "   - 遇异常时提供截图/录屏/maa.log文件反馈  ",
@@ -444,7 +446,7 @@
                     }
                 }
             ]
-        }, 
+        },
         "开启每日签到": {
             "default_case": "yes",
             "cases": [
@@ -465,7 +467,7 @@
                     }
                 }
             ]
-        },        
+        },
         "开启荒野探索": {
             "default_case": "yes",
             "cases": [
@@ -486,7 +488,7 @@
                     }
                 }
             ]
-        },        
+        },
         "开启马戏团任务": {
             "default_case": "yes",
             "cases": [
@@ -507,7 +509,7 @@
                     }
                 }
             ]
-        },        
+        },
         "开启每日扫荡": {
             "default_case": "yes",
             "cases": [
@@ -528,7 +530,7 @@
                     }
                 }
             ]
-        },        
+        },
         "开启派遣魔蜥": {
             "default_case": "yes",
             "cases": [
@@ -549,7 +551,7 @@
                     }
                 }
             ]
-        },        
+        },
         "开启领取炼金招牌": {
             "default_case": "yes",
             "cases": [
@@ -570,7 +572,7 @@
                     }
                 }
             ]
-        },        
+        },
         "开启天空扫荡": {
             "default_case": "yes",
             "cases": [
@@ -591,7 +593,7 @@
                     }
                 }
             ]
-        },        
+        },
         "开启遗迹扫荡": {
             "default_case": "yes",
             "cases": [
@@ -662,6 +664,27 @@
                     "name": "yes",
                     "pipeline_override": {
                         "PowerBuy": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "开启自动拾取": {
+            "default_case": "yes",
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "Fight_PickUpAll_Emptyfloor": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "Fight_PickUpAll_Emptyfloor": {
                             "enabled": true
                         }
                     }
@@ -812,11 +835,11 @@
                 }
             ]
         },
-        "黑装备类型":{
+        "黑装备类型": {
             "default_case": "永恒套",
             "cases": [
                 {
-                    "name":"永恒套",
+                    "name": "永恒套",
                     "pipeline_override": {
                         "GoDownstairsTrick": {
                             "custom_action_param": {

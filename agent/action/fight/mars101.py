@@ -86,7 +86,7 @@ class Mars101(CustomAction):
             self.isTitle_L1 = True
             return True
 
-        elif (self.layers >= 58 and self.layers <= 68) and self.isTitle_L58 == False:
+        elif (self.layers >= 58 and self.layers <= 63) and self.isTitle_L58 == False:
             fightUtils.title_learn("魔法", 1, "魔法学徒", 3, context)
             fightUtils.title_learn("魔法", 2, "黑袍法师", 3, context)
             fightUtils.title_learn("魔法", 3, "咒术师", 1, context)
@@ -104,7 +104,7 @@ class Mars101(CustomAction):
             self.isTitle_L58 = True
             return True
 
-        elif (self.layers >= 76 and self.layers <= 86) and self.isTitle_L76 == False:
+        elif (self.layers >= 76 and self.layers <= 81) and self.isTitle_L76 == False:
             fightUtils.title_learn("战斗", 1, "见习战士", 3, context)
             fightUtils.title_learn("战斗", 2, "战士", 3, context)
             fightUtils.title_learn("战斗", 3, "剑舞者", 3, context)
@@ -576,7 +576,7 @@ class Mars101(CustomAction):
         ):
             self.handle_before_leave_maze_event(context)
         else:
-            if self.isAutoPickup:
+            if self.isAutoPickup == self.target_autopickup_para:
                 logger.info("触发下楼事件")
                 fightUtils.handle_downstair_event(context)
             else:
@@ -679,6 +679,9 @@ class Mars101(CustomAction):
             context.get_node_data("Mars_Target_Earthgate_Setting")["recognition"][
                 "param"
             ]["expected"][0]
+        )
+        self.target_autopickup_para = bool(
+            context.get_node_data("Fight_PickUpAll_Emptyfloor")["enabled"]
         )
 
         # initialize
