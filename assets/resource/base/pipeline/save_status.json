@@ -89,7 +89,7 @@
             "utils/ReturnMazeButton.png"
         ],
         "action": "Click",
-        "threshold": 0.8,
+        "threshold": 0.75,
         "roi": [
             426,
             72,
