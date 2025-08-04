@@ -61,7 +61,6 @@
         "action": "Custom",
         "custom_action": "TSD_explore",
         "custom_action_param": {
-            "is_explore": true,
             "fleet_nums": 4
         },
         "post_delay": 500,
