@@ -363,15 +363,17 @@
             "option": [
                 "是否探索废墟等事件",
                 "是否清理主地图小怪",
-                "是否清理主地图BOSS"
+                "是否清理主地图BOSS",
+                "出战舰队数量"
             ],
             "doc": [
                 "### 介绍",
                 "时空域自动探索,目前支持探索废墟类事件，清理主地图小怪及BOSS",
                 "### 使用前检查",
                 "- 确保已开启外域及时空域,并且大地图右下角按钮是【外域】,且已进入时空域",
-                "- 默认所有舰队能损无战胜所有小怪，最高战力舰队能战胜BOSS",
                 "- 在选项勾选此次要完成的任务",
+                "- 根据自身舰队战力情况，选择出战舰队数量，会根据战力大小选择舰队",
+                "- 地图BOSS由最高战力舰队出战",
                 "### 其他",
                 "特殊事件、空间奇点及星球内部事件,后续提供支持"
             ]
@@ -1006,6 +1008,51 @@
                     }
                 }
             ]
+        },
+        "出战舰队数量":{
+            "default_case": "1",
+            "cases":[
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "TSD_Explore":{
+                            "custom_action_param": {
+                                "fleet_nums": 1
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "TSD_Explore":{
+                            "custom_action_param": {
+                                "fleet_nums": 2
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "3",
+                    "pipeline_override": {
+                        "TSD_Explore":{
+                            "custom_action_param": {
+                                "fleet_nums": 3
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "4",
+                    "pipeline_override": {
+                        "TSD_Explore":{
+                            "custom_action_param": {
+                                "fleet_nums": 4
+                            }
+                        }
+                    }
+                }
+            ]    
         }
     }
 }

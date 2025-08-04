@@ -61,7 +61,8 @@
         "action": "Custom",
         "custom_action": "TSD_explore",
         "custom_action_param": {
-            "is_explore": true
+            "is_explore": true,
+            "fleet_nums": 4
         },
         "post_delay": 500,
         "timeout": 2000
@@ -349,5 +350,18 @@
     },
     "TSD_CheckMonsterBossTask": {
         "enabled": false
+    },
+    "TSD_SelectCancelButton":{
+        "recognition": "OCR",
+        "expected":[
+             "取消"
+        ],
+        "threshold": 0.8,
+        "roi": [
+            383,690,254,98
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000
     }
 }

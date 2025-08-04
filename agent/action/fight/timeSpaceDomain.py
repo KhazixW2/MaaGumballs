@@ -10,31 +10,37 @@ import time
 import re
 import json
 
-fleetRoiList: dict = {
-    "奥鲁维": [130, 199, 60, 51],
-    "卡纳斯": [227, 200, 63, 50],
-    "游荡者": [327, 200, 64, 49],
-    "深渊": [425, 199, 64, 53],
-}
-
-highestFleet = ""  # 最高战力舰队
-exploreNums = 1  # 剩余需要探索的次数
-
 
 @AgentServer.custom_action("TSD_explore")
 class TSD_explore(CustomAction):
 
+    def __init__(self):
+        super().__init__()
+
+        # 舰队状态roi列表
+        self.fleetRoiList: dict = {
+            "奥鲁维": [130, 199, 60, 51],
+            "卡纳斯": [227, 200, 63, 50],
+            "游荡者": [327, 200, 64, 49],
+            "深渊": [425, 199, 64, 53],
+        }
+
+        self.powerList: dict = {}  # 舰队战力
+        self.highestFleet = ""  # 最高战力舰队
+        self.exploreNums = 1  # 剩余需要探索的次数
+        self.fleet_nums = 4  # 默认出战舰队数量
+        self.fight_fleets = []  # 根据选择的舰队数量按战力大小排列的舰队列表
+
     # 获取舰队战力值
-    def getAllFleetPower(self, context: Context) -> dict:
+    def getAllFleetPower(self, context: Context) -> bool:
         fleetPowerRoiList: dict = {
             "奥鲁维": [62, 123, 139, 28],
             "卡纳斯": [207, 123, 150, 27],
             "游荡者": [361, 124, 151, 26],
             "深渊": [515, 120, 140, 32],
         }
-        global highestFleet
+
         img = context.tasker.controller.post_screencap().wait().get()
-        powerList: dict = {}
         for key in fleetPowerRoiList:
             nums = context.run_recognition(
                 "TSD_getPowerNumber",
@@ -45,21 +51,19 @@ class TSD_explore(CustomAction):
             )
             if nums:
                 powerNumber = fightUtils.extract_num(nums.filterd_results[0].text)
-                powerList[key] = powerNumber
+                self.powerList[key] = powerNumber
             else:
-                powerList[key] = 0
-        highestFleet = self.comparePower(powerList)
-        return powerList
+                self.powerList[key] = 0
+        self.comparePower(self.powerList)
+        return True
 
     # 获取最高战力舰队
-    def comparePower(self, powerList: dict) -> str:
-        name = "奥鲁维"
-        power = powerList[name]
-        for name in powerList:
-            if power < powerList[name]:
-                power = powerList[name]
-                name = name
-        return name
+    def comparePower(self, powerList: dict):
+        powerList = dict(
+            sorted(powerList.items(), key=lambda item: item[1], reverse=True)
+        )
+        self.fight_fleets = list(powerList.keys())[: self.fleet_nums]
+        self.highestFleet = self.fight_fleets[0] if self.fight_fleets else ""
 
     # 检查舰队状态，是否都是空闲
     def checkAllFleetStatus(self, context: Context) -> int:
@@ -85,12 +89,12 @@ class TSD_explore(CustomAction):
     def returnFleets(self, context: Context) -> bool:
         while True:
             img = context.tasker.controller.post_screencap().wait().get()
-            for key in fleetRoiList:
+            for key in self.fleetRoiList:
                 status = context.run_recognition(
                     "TSD_checkFreeFleet",
                     img,
                     pipeline_override={
-                        "TSD_checkFreeFleet": {"roi": fleetRoiList[key]}
+                        "TSD_checkFreeFleet": {"roi": self.fleetRoiList[key]}
                     },
                 )
                 if not status:
@@ -99,13 +103,13 @@ class TSD_explore(CustomAction):
                     context.run_task(
                         "TSD_ClickFleet",
                         pipeline_override={
-                            "TSD_ClickFleet": {"target": fleetRoiList[key]}
+                            "TSD_ClickFleet": {"target": self.fleetRoiList[key]}
                         },
                     )
                     context.run_task(
                         "TSD_ReturnFleet",
                         pipeline_override={
-                            "TSD_checkTargetFleetFree": {"roi": fleetRoiList[key]},
+                            "TSD_checkTargetFleetFree": {"roi": self.fleetRoiList[key]},
                             "TSD_View": {
                                 "next": ["TSD_EndExploit"],
                                 "interrupt": [
@@ -127,7 +131,6 @@ class TSD_explore(CustomAction):
 
     # 获取当前屏幕的探索目标
     def GetTaskTargetList(self, context: Context, taskType: str):
-        global exploreNums
         TargetTemplate: dict = {
             "explore": "exploreTarget",
             "monster": "monsterTarget",
@@ -149,10 +152,10 @@ class TSD_explore(CustomAction):
             },
         )
         if exploreList and exploreList.filterd_results:
-            exploreNums = len(exploreList.filterd_results)
+            self.exploreNums = len(exploreList.filterd_results)
             return exploreList.filterd_results
         else:
-            exploreNums = 0
+            self.exploreNums = 0
             return []
 
     # 按列表执行事件
@@ -162,20 +165,25 @@ class TSD_explore(CustomAction):
         taskType: str,
         exploreList: list[RecognitionDetail] | list,
     ) -> bool:
-        global exploreNums
         taskEntry: dict = {
             "explore": {"taskName": "TSD_Investigate", "pipeline_override": None},
             "monster": {
                 "taskName": "TSD_ClearMonster",
                 "pipeline_override": {
-                    "TSD_SelectFreeFleetInList": {"next": "TSD_ClickAttackButton"}
+                    "TSD_SelectFreeFleetInList": {
+                        "recognition": "OCR",
+                        "expected": self.fight_fleets,
+                        "roi": [44, 164, 627, 537],
+                        "interrupt": ["TSD_SelectCancelButton"],
+                        "next": ["TSD_ClickAttackButton"],
+                    }
                 },
             },
             "monster_boss": {
                 "taskName": "TSD_ClearMonster",
                 "pipeline_override": {
                     "TSD_ClickFleetButton": {"next": "TSD_SelectHighestFleet"},
-                    "TSD_SelectHighestFleet": {"expected": [highestFleet]},
+                    "TSD_SelectHighestFleet": {"expected": [self.highestFleet]},
                 },
             },
             "monster_planet": "TSD_ClearMonsterPlanet",  # 占位，未实现
@@ -198,7 +206,7 @@ class TSD_explore(CustomAction):
             if task1.status.succeeded == False:
                 context.run_task("BackText")
                 return False
-            exploreNums -= 1
+            self.exploreNums -= 1
             time.sleep(1)
         return True
 
@@ -228,15 +236,13 @@ class TSD_explore(CustomAction):
 
     # 检测目标是否还存在
     def checkTargetExist(self, context: Context, taskType: str) -> bool:
-        global exploreNums
 
         # 先判断当前屏幕有无目标，没有的话再移动至左上角开始检查
         self.GetTaskTargetList(context, taskType)
-        if exploreNums > 0:
+        if self.exploreNums > 0:
             return True
         else:
             while True:  # 将地图移动至左上角
-                tempPath = "fight/time_space_domain/boundaryLeftTop.png"
                 if self.checkBoundary(context, "LeftTop"):
                     break
                 else:
@@ -250,8 +256,8 @@ class TSD_explore(CustomAction):
         # 检查是否存在目标（从左上角向右检测）
         while flag:
             self.GetTaskTargetList(context, taskType)
-            if exploreNums > 0:
-                logger.info(f"已找到{exploreNums}个探索目标")
+            if self.exploreNums > 0:
+                logger.info(f"已找到{self.exploreNums}个探索目标")
                 flag = False
             else:
                 logger.info(f"未找到探索目标，将移动地图再次搜索")
@@ -306,8 +312,7 @@ class TSD_explore(CustomAction):
     def run(
         self, context: Context, argv: CustomAction.RunArg
     ) -> CustomAction.RunResult:
-        global exploreNums
-
+        self.fleet_nums = json.loads(argv.custom_action_param)["fleet_nums"]
         taskList: dict = {
             "explore": {
                 "name": "探索废墟",
@@ -329,8 +334,11 @@ class TSD_explore(CustomAction):
         self.closeUnionMsgBox(context)
 
         # 获取所有舰队战力
-        powerList = self.getAllFleetPower(context)
-        logger.info(f"当前探索战力：{ powerList }，最高战力舰队：{ highestFleet }")
+        self.getAllFleetPower(context)
+        logger.info(f"当前选择出战舰队数量：{self.fleet_nums}")
+        logger.info(f"当前舰队战力：{ self.powerList }")
+        logger.info(f"最高战力舰队：{ self.highestFleet }")
+        logger.info(f"选择出战舰队列表：{ self.fight_fleets }")
 
         # 所有舰队返回
         self.returnFleets(context)
@@ -342,6 +350,7 @@ class TSD_explore(CustomAction):
                 while self.checkTargetExist(context, key):
                     lists = self.GetTaskTargetList(context, key)
                     self.runTask(context, key, lists)
+                send_message("外域探索", f"【{ taskList[key]['name'] }】任务执行完毕")
             else:
                 logger.info(f"未开启【{ taskList[key]['name'] }】任务")
                 continue
