@@ -1,0 +1,123 @@
+{
+  "AutoCdk": {
+    "next": [
+      "MainSettingsEntrace"
+    ],
+    "interrupt": [
+      "ReturnBigMap"
+    ],
+    "post_delay": 1000
+  },
+  "MainSettingsEntrace": {
+    "template": "Main/MainSettingsEntrace.png",
+    "recognition": "TemplateMatch",
+    "threshold": 0.8,
+    "roi": [
+      486,
+      0,
+      233,
+      189
+    ],
+    "action": "Click",
+    "post_delay": 1000,
+    "timeout": 2000,
+    "next": [
+      "Select_CdkEntrace"
+    ],
+    "interrupt": [
+      "BackText"
+    ]
+  },
+  "Select_CdkEntrace": {
+    "template": "Main/CdkEntrace.png",
+    "recognition": "TemplateMatch",
+    "threshold": 0.8,
+    "roi": [
+      82,
+      484,
+      561,
+      514
+    ],
+    "action": "Click",
+    "post_delay": 1000,
+    "timeout": 2000,
+    "next": [
+      "Select_Cdk_Textbox"
+    ],
+    "interrupt": [
+      "BackText"
+    ]
+  },
+  "Select_Cdk_Textbox": {
+    "recognition": "OCR",
+    "expected": [
+      "请输入密令"
+    ],
+    "roi": [
+      128,
+      832,
+      460,
+      138
+    ],
+    "action": "Click",
+    "post_delay": 500,
+    "timeout": 3000,
+    "next": [
+      "CdkTextInputAction"
+    ]
+  },
+  "CdkText_Confirm": {
+    "recognition": "OCR",
+    "expected": [
+      "确定",
+      "确认"
+    ],
+    "roi": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "action": "Click",
+    "post_delay": 2500,
+    "timeout": 10000,
+    "next": [
+      "ConfirmButton",
+      "CheckConfirmResult_flase"
+    ],
+    "interrupt": [
+      "Select_CdkEntrace",
+      "BackText"
+    ]
+  },
+  "CdkTextInputAction": {
+    "action": "InputText",
+    "input_text": "二郎神",
+    "next": [
+      "CdkText_Confirm"
+    ],
+    "interrupt": [
+      "BackText",
+      "Select_CdkEntrace"
+    ]
+  },
+  "CheckConfirmResult_flase": {
+    "recognition": "OCR",
+    "expected": [
+      "口令错误",
+      "再回去想想",
+      "聊天机器人",
+      "这里行不通",
+      "口令很陌生"
+    ],
+    "roi": [
+      128,
+      526,
+      395,
+      107
+    ],
+    "post_delay": 2500,
+    "timeout": 2000,
+    "action": "StopTask"
+  }
+}
