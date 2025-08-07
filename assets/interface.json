@@ -381,6 +381,7 @@
         {
             "name": "自动兑换密令",
             "entry": "AutoCdk",
+            "advanced": "AutoCdk",
             "doc": [
                 "### 自动兑换密令",
                 "   - 该功能目前测试中，暂无.py文件内容，也没有log输出"
@@ -392,6 +393,22 @@
             "doc": "注意: 该node只在完成所有任务后,仅退出游戏"
         }
     ],
+    "advanced": {
+        "AutoCdk": {
+            "field": [
+                "密令文本"
+            ],
+            "type": [
+                "string"
+            ],
+            "doc": "自动兑换密令功能,输入兑换码兑换码之间使用, ; / 分开",
+            "pipeline_override": {
+                "CDK_InputTexts": {
+                    "expected": ""
+                }
+            }
+        }
+    },
     "option": {
         "选择神锻任务": {
             "default_case": "黑水池",

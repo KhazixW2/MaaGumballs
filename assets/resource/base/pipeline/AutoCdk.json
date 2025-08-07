@@ -1,15 +1,16 @@
 {
   "AutoCdk": {
     "next": [
-      "MainSettingsEntrace"
+      "Cdk_MainSettingsEntrance",
+      "Cdk_Select_Textbox"
     ],
     "interrupt": [
       "ReturnBigMap"
     ],
     "post_delay": 1000
   },
-  "MainSettingsEntrace": {
-    "template": "Main/MainSettingsEntrace.png",
+  "Cdk_MainSettingsEntrance": {
+    "template": "utils/MainSettingsEntrance.png",
     "recognition": "TemplateMatch",
     "threshold": 0.8,
     "roi": [
@@ -22,14 +23,14 @@
     "post_delay": 1000,
     "timeout": 2000,
     "next": [
-      "Select_CdkEntrace"
+      "Cdk_Select_CdkEntrance"
     ],
     "interrupt": [
       "BackText"
     ]
   },
-  "Select_CdkEntrace": {
-    "template": "Main/CdkEntrace.png",
+  "Cdk_Select_CdkEntrance": {
+    "template": "utils/CdkEntrance.png",
     "recognition": "TemplateMatch",
     "threshold": 0.8,
     "roi": [
@@ -42,13 +43,13 @@
     "post_delay": 1000,
     "timeout": 2000,
     "next": [
-      "Select_Cdk_Textbox"
+      "Cdk_Select_Textbox"
     ],
     "interrupt": [
       "BackText"
     ]
   },
-  "Select_Cdk_Textbox": {
+  "Cdk_Select_Textbox": {
     "recognition": "OCR",
     "expected": [
       "请输入密令"
@@ -63,10 +64,14 @@
     "post_delay": 500,
     "timeout": 3000,
     "next": [
-      "CdkTextInputAction"
+      "Cdk_InputTexts"
+    ],
+    "interrupt": [
+      "BackText",
+      "Cdk_Select_CdkEntrance"
     ]
   },
-  "CdkText_Confirm": {
+  "Cdk_Text_Confirm": {
     "recognition": "OCR",
     "expected": [
       "确定",
@@ -83,25 +88,14 @@
     "timeout": 10000,
     "next": [
       "ConfirmButton",
-      "CheckConfirmResult_flase"
+      "Cdk_CheckResult_flase"
     ],
     "interrupt": [
-      "Select_CdkEntrace",
+      "Cdk_Select_CdkEntrance",
       "BackText"
     ]
   },
-  "CdkTextInputAction": {
-    "action": "InputText",
-    "input_text": "二郎神",
-    "next": [
-      "CdkText_Confirm"
-    ],
-    "interrupt": [
-      "BackText",
-      "Select_CdkEntrace"
-    ]
-  },
-  "CheckConfirmResult_flase": {
+  "Cdk_CheckResult_flase": {
     "recognition": "OCR",
     "expected": [
       "口令错误",
@@ -118,6 +112,20 @@
     ],
     "post_delay": 2500,
     "timeout": 2000,
-    "action": "StopTask"
+    "action": "StopTask",
+    "focus": {
+      "succeeded": "[color:Tomato]识别错误,请冒险者大人来看看哦~[/color]"
+    }
+  },
+  "Cdk_InputTexts": {
+    "doc": "这里默认为空，需要用户输入兑换码兑换码之间使用, ; / 分开",
+    "expected": "",
+    "next": [
+      "Cdk_Text_Confirm"
+    ],
+    "interrupt": [
+      "BackText",
+      "Cdk_Select_CdkEntrance"
+    ]
   }
 }
