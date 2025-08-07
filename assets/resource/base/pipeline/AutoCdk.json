@@ -73,7 +73,7 @@
   },
   "Cdk_TextInputAction": {
     "action": "InputText",
-    "input_text": "二郎神",
+    "input_text": "",
     "next": [
       "Cdk_Text_Confirm"
     ],
