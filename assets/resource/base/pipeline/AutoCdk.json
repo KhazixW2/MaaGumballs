@@ -71,6 +71,17 @@
       "Cdk_Select_CdkEntrance"
     ]
   },
+  "Cdk_TextInputAction": {
+    "action": "InputText",
+    "input_text": "二郎神",
+    "next": [
+      "Cdk_Text_Confirm"
+    ],
+    "interrupt": [
+      "BackText",
+      "Cdk_Select_CdkEntrance"
+    ]
+  },
   "Cdk_Text_Confirm": {
     "recognition": "OCR",
     "expected": [
@@ -88,14 +99,14 @@
     "timeout": 10000,
     "next": [
       "ConfirmButton",
-      "Cdk_CheckResult_flase"
+      "Cdk_CheckResult_False"
     ],
     "interrupt": [
       "Cdk_Select_CdkEntrance",
       "BackText"
     ]
   },
-  "Cdk_CheckResult_flase": {
+  "Cdk_CheckResult_False": {
     "recognition": "OCR",
     "expected": [
       "口令错误",
@@ -119,13 +130,6 @@
   },
   "Cdk_InputTexts": {
     "doc": "这里默认为空，需要用户输入兑换码兑换码之间使用, ; / 分开",
-    "expected": "",
-    "next": [
-      "Cdk_Text_Confirm"
-    ],
-    "interrupt": [
-      "BackText",
-      "Cdk_Select_CdkEntrance"
-    ]
+    "expected": ""
   }
 }
