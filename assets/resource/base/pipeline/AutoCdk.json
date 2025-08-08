@@ -1,8 +1,12 @@
 {
-  "AutoCdk": {
+  "AutoCdk":{
+    "action": "Custom",
+    "custom_action": "AutoCdk"
+  },
+  "Cdk_Start": {
     "next": [
-      "Cdk_MainSettingsEntrance",
-      "Cdk_Select_Textbox"
+      "Cdk_Window",
+      "Cdk_MainSettingsEntrance"
     ],
     "interrupt": [
       "ReturnBigMap"
@@ -43,10 +47,29 @@
     "post_delay": 1000,
     "timeout": 2000,
     "next": [
-      "Cdk_Select_Textbox"
+      "Cdk_Window"
     ],
     "interrupt": [
       "BackText"
+    ]
+  },
+  "Cdk_Window": {
+    "recognition": "OCR",
+    "expected": "冈布奥密令",
+    "roi": [
+      128,
+      182,
+      481,
+      491
+    ],
+    "post_delay": 500,
+    "timeout": 2000,
+    "next": [
+      "Cdk_Select_Textbox"
+    ],
+    "interrupt": [
+      "BackText",
+      "Cdk_Select_CdkEntrance"
     ]
   },
   "Cdk_Select_Textbox": {
@@ -61,10 +84,10 @@
       138
     ],
     "action": "Click",
-    "post_delay": 500,
+    "post_delay": 1000,
     "timeout": 3000,
     "next": [
-      "Cdk_InputTexts"
+      "Cdk_TextInputAction"
     ],
     "interrupt": [
       "BackText",
@@ -73,7 +96,9 @@
   },
   "Cdk_TextInputAction": {
     "action": "InputText",
-    "input_text": "",
+    "input_text": "山山子大人驾到！",
+    "post_delay": 1000,
+    "timeout": 2000,
     "next": [
       "Cdk_Text_Confirm"
     ],
@@ -128,7 +153,7 @@
       "succeeded": "[color:Tomato]识别错误,请冒险者大人来看看哦~[/color]"
     }
   },
-  "Cdk_InputTexts": {
+  "Cdk_Sources": {
     "doc": "这里默认为空，需要用户输入兑换码兑换码之间使用, ; / 分开",
     "expected": ""
   }

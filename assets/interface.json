@@ -404,7 +404,9 @@
             "doc": "自动兑换密令功能,输入兑换码兑换码之间使用, ; / 分开",
             "pipeline_override": {
                 "CDK_InputTexts": {
-                    "expected": ""
+                    "expected": [
+                        "{密令文本}"
+                    ]
                 }
             }
         }
