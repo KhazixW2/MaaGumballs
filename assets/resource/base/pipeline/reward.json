@@ -269,8 +269,8 @@
             "Cdk_Select_Textbox"
         ],
         "interrupt": [
-            "BackText",
-            "Cdk_Select_CdkEntrance"
+            "Cdk_Select_CdkEntrance",
+            "BackText"
         ]
     },
     "Cdk_Select_Textbox": {
@@ -291,8 +291,8 @@
             "Cdk_TextInputAction"
         ],
         "interrupt": [
-            "BackText",
-            "Cdk_Select_CdkEntrance"
+            "Cdk_Select_CdkEntrance",
+            "BackText"
         ]
     },
     "Cdk_TextInputAction": {
@@ -304,8 +304,8 @@
             "Cdk_Text_Confirm"
         ],
         "interrupt": [
-            "BackText",
-            "Cdk_Select_CdkEntrance"
+            "Cdk_Select_CdkEntrance",
+            "BackText"
         ]
     },
     "Cdk_Text_Confirm": {
@@ -347,15 +347,10 @@
         ],
         "post_delay": 2500,
         "timeout": 2000,
+        "action": "DoNothing",
         "focus": {
             "succeeded": "[color:Green]密令已经兑换过了哦~[/color]"
-        },
-        "next": [
-            "Cdk_Select_CdkEntrance"
-        ],
-        "interrupt": [
-            "BackText"
-        ]
+        }
     },
     "Cdk_CheckResult_False": {
         "recognition": "OCR",

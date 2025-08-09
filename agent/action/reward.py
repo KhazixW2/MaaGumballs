@@ -116,8 +116,8 @@ class AutoCdk(CustomAction):
 
             logger.info(f"处理第 {index}/{len(cdk_list)} 个兑换码: {code}")
             context.override_pipeline({target_node: {"input_text": code}})
+            context.run_task("BackText")
             context.run_task("Cdk_Start")
-            context.run_task("ReturnBigMap")
             logger.info(f"第 {index} 个兑换码处理完成")
             time.sleep(1)  # 兑换间隔
 
