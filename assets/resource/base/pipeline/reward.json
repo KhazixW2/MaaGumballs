@@ -339,7 +339,8 @@
         "expected": [
             "不得不说",
             "一个大忙",
-            "你的奖励"
+            "你的奖励",
+            "又对了"
         ],
         "roi": [
             128,
@@ -351,7 +352,7 @@
         "timeout": 2000,
         "action": "DoNothing",
         "focus": {
-            "succeeded": "[color:Blue]密令兑换成功，赞美山山子大人~[/color]"
+            "succeeded": "[color:Blue]密令兑换成功，赞美放牛的~[/color]"
         }
     },
     "Cdk_CheckResult_False": {
