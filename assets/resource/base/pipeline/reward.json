@@ -325,10 +325,35 @@
         "timeout": 10000,
         "next": [
             "ConfirmButton",
+            "Cdk_CheckResult_True",
             "Cdk_CheckResult_False"
         ],
         "interrupt": [
             "Cdk_Select_CdkEntrance",
+            "BackText"
+        ]
+    },
+    "Cdk_CheckResult_True": {
+        "recognition": "OCR",
+        "expected": [
+            "已经领取过了",
+            "浑水摸鱼"
+        ],
+        "roi": [
+            128,
+            526,
+            395,
+            107
+        ],
+        "post_delay": 2500,
+        "timeout": 2000,
+        "focus": {
+            "succeeded": "[color:Green]密令已经兑换过了哦~[/color]"
+        },
+        "next": [
+            "Cdk_Select_CdkEntrance"
+        ],
+        "interrupt": [
             "BackText"
         ]
     },
@@ -339,7 +364,10 @@
             "再回去想想",
             "聊天机器人",
             "这里行不通",
-            "口令很陌生"
+            "口令很陌生",
+            "你很有想法",
+            "浑水摸鱼",
+            "错误的口令"
         ],
         "roi": [
             128,
@@ -351,7 +379,7 @@
         "timeout": 2000,
         "action": "StopTask",
         "focus": {
-            "succeeded": "[color:Tomato]识别错误,请冒险者大人来看看哦~[/color]"
+            "succeeded": "[color:Tomato]密令识别错误,请冒险者大人来看看哦~[/color]"
         }
     },
     "Cdk_Sources": {
