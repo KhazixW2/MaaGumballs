@@ -326,7 +326,8 @@
         "next": [
             "ConfirmButton",
             "Cdk_CheckResult_True",
-            "Cdk_CheckResult_False"
+            "Cdk_CheckResult_False",
+            "Cdk_CheckResult_Error"
         ],
         "interrupt": [
             "Cdk_Select_CdkEntrance",
@@ -334,6 +335,26 @@
         ]
     },
     "Cdk_CheckResult_True": {
+        "recognition": "OCR",
+        "expected": [
+            "不得不说",
+            "一个大忙",
+            "你的奖励"
+        ],
+        "roi": [
+            128,
+            526,
+            395,
+            107
+        ],
+        "post_delay": 2500,
+        "timeout": 2000,
+        "action": "DoNothing",
+        "focus": {
+            "succeeded": "[color:Blue]密令兑换成功，赞美山山子大人~[/color]"
+        }
+    },
+    "Cdk_CheckResult_False": {
         "recognition": "OCR",
         "expected": [
             "已经领取过了",
@@ -352,7 +373,7 @@
             "succeeded": "[color:Green]密令已经兑换过了哦~[/color]"
         }
     },
-    "Cdk_CheckResult_False": {
+    "Cdk_CheckResult_Error": {
         "recognition": "OCR",
         "expected": [
             "口令错误",
