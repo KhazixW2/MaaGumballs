@@ -122,4 +122,5 @@ class AutoCdk(CustomAction):
             time.sleep(1)  # 兑换间隔
 
         logger.info("所有密令处理完毕")
+        context.run_task("ReturnBigMap")
         return CustomAction.RunResult(success=True)
