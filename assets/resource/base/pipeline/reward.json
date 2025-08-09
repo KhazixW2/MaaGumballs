@@ -269,8 +269,8 @@
             "Cdk_Select_Textbox"
         ],
         "interrupt": [
-            "BackText",
-            "Cdk_Select_CdkEntrance"
+            "Cdk_Select_CdkEntrance",
+            "BackText"
         ]
     },
     "Cdk_Select_Textbox": {
@@ -291,8 +291,8 @@
             "Cdk_TextInputAction"
         ],
         "interrupt": [
-            "BackText",
-            "Cdk_Select_CdkEntrance"
+            "Cdk_Select_CdkEntrance",
+            "BackText"
         ]
     },
     "Cdk_TextInputAction": {
@@ -304,8 +304,8 @@
             "Cdk_Text_Confirm"
         ],
         "interrupt": [
-            "BackText",
-            "Cdk_Select_CdkEntrance"
+            "Cdk_Select_CdkEntrance",
+            "BackText"
         ]
     },
     "Cdk_Text_Confirm": {
@@ -325,21 +325,66 @@
         "timeout": 10000,
         "next": [
             "ConfirmButton",
-            "Cdk_CheckResult_False"
+            "Cdk_CheckResult_True",
+            "Cdk_CheckResult_False",
+            "Cdk_CheckResult_Error"
         ],
         "interrupt": [
             "Cdk_Select_CdkEntrance",
             "BackText"
         ]
     },
+    "Cdk_CheckResult_True": {
+        "recognition": "OCR",
+        "expected": [
+            "不得不说",
+            "一个大忙",
+            "你的奖励",
+            "又对了"
+        ],
+        "roi": [
+            128,
+            526,
+            395,
+            107
+        ],
+        "post_delay": 2500,
+        "timeout": 2000,
+        "action": "DoNothing",
+        "focus": {
+            "succeeded": "[color:Blue]密令兑换成功，赞美放牛的~[/color]"
+        }
+    },
     "Cdk_CheckResult_False": {
+        "recognition": "OCR",
+        "expected": [
+            "已经领取过了",
+            "浑水摸鱼"
+        ],
+        "roi": [
+            128,
+            526,
+            395,
+            107
+        ],
+        "post_delay": 2500,
+        "timeout": 2000,
+        "action": "DoNothing",
+        "focus": {
+            "succeeded": "[color:Green]密令已经兑换过了哦~[/color]"
+        }
+    },
+    "Cdk_CheckResult_Error": {
         "recognition": "OCR",
         "expected": [
             "口令错误",
             "再回去想想",
             "聊天机器人",
             "这里行不通",
-            "口令很陌生"
+            "口令很陌生",
+            "你很有想法",
+            "浑水摸鱼",
+            "错误的口令"
         ],
         "roi": [
             128,
@@ -351,7 +396,7 @@
         "timeout": 2000,
         "action": "StopTask",
         "focus": {
-            "succeeded": "[color:Tomato]识别错误,请冒险者大人来看看哦~[/color]"
+            "succeeded": "[color:Tomato]密令识别错误,请冒险者大人来看看哦~[/color]"
         }
     },
     "Cdk_Sources": {
