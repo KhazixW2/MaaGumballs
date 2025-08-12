@@ -133,7 +133,7 @@ class TSD_explore(CustomAction):
         return True
 
     # 获取当前屏幕的探索目标
-    def GetTaskTargetList(self, context: Context, taskType: str, threshold=0.8):
+    def GetTaskTargetList(self, context: Context, taskType: str, threshold: float):
         TargetTemplate: dict = {
             "explore": "exploreTarget",
             "monster": "monsterTarget",
@@ -143,13 +143,16 @@ class TSD_explore(CustomAction):
             "exploit": "exploitTarget",
         }
         img = context.tasker.controller.post_screencap().wait().get()
+        template = f"fight/time_space_domain/{TargetTemplate[taskType]}.png"
+        if taskType == "planet":
+            template = [f"fight/time_space_domain/planet{i}.png" for i in range(0, 5)]
         exploreList = context.run_recognition(
             "GetTaskTargetList",
             img,
             pipeline_override={
                 "GetTaskTargetList": {
                     "recognition": "TemplateMatch",
-                    "template": f"fight/time_space_domain/{TargetTemplate[taskType]}.png",
+                    "template": template,
                     "roi": [12, 268, 693, 872],
                     "threshold": threshold,
                 }
@@ -157,6 +160,7 @@ class TSD_explore(CustomAction):
         )
         if exploreList and exploreList.filterd_results:
             self.exploreNums = len(exploreList.filterd_results)
+            self.check = False  # 存在目标，需要在运行到右下角时从左上角开始检查
             return exploreList.filterd_results
         else:
             self.exploreNums = 0
@@ -189,7 +193,6 @@ class TSD_explore(CustomAction):
                     "TSD_SelectHighestFleet": {"expected": [self.highestFleet]},
                 },
             },
-            "planet": "TSD_ClearMonsterPlanet",  # 占位，未实现
             "exploit": "TSD_ExploitAllFleet",  # 占位，未实现
         }
         exploreList = None
@@ -198,7 +201,7 @@ class TSD_explore(CustomAction):
             inPlanet = True
             taskType = "monster"  # 星球小怪任务使用清理小怪任务的逻辑
             # 因为小怪图片不一样，所以获取怪物的参数不一样
-            exploreList = self.GetTaskTargetList(context, "monster_planet")
+            exploreList = self.GetTaskTargetList(context, "monster_planet", 0.8)
         elif taskType == "explore":
             exploreList = self.GetTaskTargetList(context, taskType, 0.91)
         else:
@@ -257,19 +260,66 @@ class TSD_explore(CustomAction):
             return True
         return False
 
+    def swipeMapToLeftTop(self, context: Context):
+        while True:  # 将地图移动至左上角
+            if self.checkBoundary(context, "LeftTop"):
+                break
+            else:
+                context.run_task("FD_SwipeMapMiddleToTopLeft")
+            time.sleep(1)
+        self.direction = "Right"
+        self.isDown = False
+        time.sleep(1)
+
+    def swipeMap(self, context: Context):
+        if self.checkBoundary(context, self.direction):
+            logger.info(f"地图{self.direction}边界")
+            if self.checkBoundary(context, "RightBottom"):
+                logger.info("已到达地图边界")
+                if self.check:
+                    self.check = False
+                    return False
+                else:
+                    # 返回地图左上角重新检查一遍
+                    self.check = True
+                    self.swipeMapToLeftTop(context)
+
+            elif not self.isDown:  # 未达到右下角，地图下移一次
+                logger.info("地图下移")
+                context.run_task("FD_SwipeMapToDown")
+                self.direction = "Left" if self.direction == "Right" else "Right"
+                self.isDown = True
+                time.sleep(1)
+            else:  # 已经下移过一次，按direction移动一次
+                logger.info("地图移动")
+                if self.direction == "Right":
+                    context.run_task("FD_SwipeMapToRight")
+                else:
+                    context.run_task("FD_SwipeMapToLeft")
+                self.isDown = False
+                time.sleep(1)
+        else:  # 未达到边界，地图按当前direction继续移动一次
+            logger.info("地图移动")
+            if self.direction == "Right":
+                context.run_task("FD_SwipeMapToRight")
+            else:
+                context.run_task("FD_SwipeMapToLeft")
+            self.isDown = False
+            time.sleep(2)
+
     # 检测目标是否还存在
-    def checkTargetExist(self, context: Context, taskType: str) -> bool:
+    def checkTargetExist(
+        self, context: Context, taskType: str, threshold: float
+    ) -> bool:
 
-        # 先判断当前屏幕有无目标，没有的话再移动至左上角开始检查
-        self.GetTaskTargetList(context, taskType)
-        if self.exploreNums > 0:
-            self.check = False  # 存在目标，需要在运行到右下角时从左上角开始检查
-            return True
+        if taskType in ["monster_boss", "planet"]:
+            # 这两个任务直接可以从左上角开始检测
+            self.swipeMapToLeftTop(context)
+
         flag = True
-
-        # 检查是否存在目标（从左上角向右检测）
+        # 检查是否存在目标
         while flag:
-            targetList = self.GetTaskTargetList(context, taskType)
+            targetList = self.GetTaskTargetList(context, taskType, threshold)
             if self.exploreNums > 0:
                 if taskType == "planet":
                     time.sleep(1)
@@ -295,16 +345,12 @@ class TSD_explore(CustomAction):
                             logger.info(
                                 f"识别到星球名称: {planetName.filterd_results[0].text}, 已探索星球列表: {self.planetList}"
                             )
-                            self.GetTaskTargetList(context, "monster_planet")
+                            self.GetTaskTargetList(context, "monster_planet", 0.82)
                             if planetName.filterd_results[0].text in self.planetList:
                                 if self.exploreNums == 0:
                                     logger.info(f"该星球已发现过且已无小怪，请继续探索")
                                     context.run_task("BackText")  # 返回地图并移动
-                                    if self.direction == "Right":
-                                        context.run_task("FD_SwipeMapToRight")
-                                    else:
-                                        context.run_task("FD_SwipeMapToLeft")
-                                    time.sleep(1)
+                                    self.swipeMap(context)
                                 else:
                                     # 该星球已发现过，但是仍有怪物未清除
                                     flag = False
@@ -312,11 +358,7 @@ class TSD_explore(CustomAction):
                                 if self.exploreNums == 0:
                                     logger.info(f"该星球已无小怪，请继续探索")
                                     context.run_task("BackText")  # 返回地图并移动
-                                    if self.direction == "Right":
-                                        context.run_task("FD_SwipeMapToRight")
-                                    else:
-                                        context.run_task("FD_SwipeMapToLeft")
-                                    time.sleep(1)
+                                    self.swipeMap(context)
                                 else:
                                     logger.info("发现新星球")
                                     flag = False
@@ -333,50 +375,7 @@ class TSD_explore(CustomAction):
                     flag = False
             else:
                 logger.info(f"未找到探索目标，将移动地图再次搜索")
-                if self.checkBoundary(context, self.direction):
-                    logger.info(f"地图{self.direction}边界")
-                    if self.checkBoundary(context, "RightBottom"):
-                        logger.info("已到达地图边界")
-                        if self.check:
-                            self.check = False
-                            return False
-                        else:
-                            # 返回地图左上角重新检查一遍
-                            self.check = True
-                            while True:  # 将地图移动至左上角
-                                if self.checkBoundary(context, "LeftTop"):
-                                    break
-                                else:
-                                    context.run_task("FD_SwipeMapMiddleToTopLeft")
-                                time.sleep(1)
-                            self.direction = "Right"
-                            self.isDown = False
-                            time.sleep(1)
-
-                    elif not self.isDown:  # 未达到右下角，地图下移一次
-                        logger.info("地图下移")
-                        context.run_task("FD_SwipeMapToDown")
-                        self.direction = (
-                            "Left" if self.direction == "Right" else "Right"
-                        )
-                        self.isDown = True
-                        time.sleep(1)
-                    else:  # 已经下移过一次，按direction移动一次
-                        logger.info("地图移动")
-                        if self.direction == "Right":
-                            context.run_task("FD_SwipeMapToRight")
-                        else:
-                            context.run_task("FD_SwipeMapToLeft")
-                        self.isDown = False
-                        time.sleep(1)
-                else:  # 未达到边界，地图按当前direction继续移动一次
-                    logger.info("地图移动")
-                    if self.direction == "Right":
-                        context.run_task("FD_SwipeMapToRight")
-                    else:
-                        context.run_task("FD_SwipeMapToLeft")
-                    self.isDown = False
-                    time.sleep(2)
+                self.swipeMap(context)
         return True
 
     def closeUnionMsgBox(self, context: Context) -> bool:
@@ -408,23 +407,29 @@ class TSD_explore(CustomAction):
             "explore": {
                 "name": "探索废墟",
                 "enabled": context.get_node_data("TSD_CheckExploreTask")["enabled"],
+                "threshold": 0.91,
             },
             "monster": {
                 "name": "清理主地图小怪",
                 "enabled": context.get_node_data("TSD_CheckMonsterTask")["enabled"],
+                "threshold": 0.8,
             },
             "monster_boss": {
                 "name": "清理主地图Boss",
                 "enabled": context.get_node_data("TSD_CheckMonsterBossTask")["enabled"],
+                "threshold": 0.8,
             },
             "planet": {
                 "name": "清理星球小怪",
                 "enabled": context.get_node_data("TSD_CheckMonsterPlanetTask")[
                     "enabled"
                 ],
+                "threshold": 0.9,
             },
             # "exploit": json.loads(argv.custom_action_param)["exploit"] # 占位
         }
+
+        context.run_task("ClickCenterBelow_500ms")
 
         # 先关闭联盟聊天窗口，避免干扰
         self.closeUnionMsgBox(context)
@@ -443,7 +448,7 @@ class TSD_explore(CustomAction):
         for key in taskList:
             if taskList[key]["enabled"] == True:
                 logger.info(f"开始执行【{ taskList[key]['name'] }】任务")
-                while self.checkTargetExist(context, key):
+                while self.checkTargetExist(context, key, taskList[key]["threshold"]):
                     self.runTask(context, key)
                 logger.info(f"【{ taskList[key]['name'] }】任务执行完毕")
             else:

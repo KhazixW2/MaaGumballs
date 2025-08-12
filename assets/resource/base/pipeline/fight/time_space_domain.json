@@ -43,19 +43,51 @@
     },
     "TSD_GetInDomain_Confirm": {
         "recognition": "TemplateMatch",
-        "template": "fight/time_space_domain/wormhole.png",
+        "template": [
+            "fight/time_space_domain/domain1.png",
+            "fight/time_space_domain/domain2.png"
+        ],
         "roi": [
             213,
             567,
             277,
             216
         ],
-        "action": "DoNothing",
+        "action": "Click",
         "post_delay": 3000,
         "timeout": 2000,
         "next": [
+            "TSD_CheckInTSD"
+        ],
+        "interrupt":[
+            "TSD_CheckInOD"
+        ]
+    },
+    "TSD_CheckInTSD":{
+        "recognition": "OCR",
+        "expected": [
+            "时空域"
+        ],
+        "roi": [
+            153,726,82,35
+        ],
+        "post_delay": 2000,
+        "next":[
             "TSD_Explore"
         ]
+    },
+    "TSD_CheckInOD":{
+        "recognition": "OCR",
+        "expected": [
+            "秩序域"
+        ],
+        "roi": [
+            153,726,82,35
+        ],
+        "action": "StopTask",
+        "focus": {
+            "succeeded":"[color:red]这不是时空域，请冒险者大人快来看看~~[/color]"
+        }
     },
     "TSD_Explore": {
         "action": "Custom",
