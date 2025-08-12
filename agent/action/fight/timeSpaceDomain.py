@@ -7,7 +7,6 @@ from utils import logger, send_message
 from action.fight import fightUtils
 
 import time
-import re
 import json
 
 
@@ -30,6 +29,10 @@ class TSD_explore(CustomAction):
         self.exploreNums = 1  # 剩余需要探索的次数
         self.fleet_nums = 4  # 默认出战舰队数量
         self.fight_fleets = []  # 根据选择的舰队数量按战力大小排列的舰队列表
+        self.check = False  # 是否从左上角开始检查
+        self.direction = "Right"  # 移动方向
+        self.isDown = False  # 是否下移过一次
+        self.planetList: list = []  # 记录探索的星球
 
     # 获取舰队战力值
     def getAllFleetPower(self, context: Context) -> bool:
@@ -130,11 +133,12 @@ class TSD_explore(CustomAction):
         return True
 
     # 获取当前屏幕的探索目标
-    def GetTaskTargetList(self, context: Context, taskType: str):
+    def GetTaskTargetList(self, context: Context, taskType: str, threshold=0.8):
         TargetTemplate: dict = {
             "explore": "exploreTarget",
             "monster": "monsterTarget",
             "monster_boss": "monsterBossTarget",
+            "planet": "planet",
             "monster_planet": "monsterPlanetTarget",
             "exploit": "exploitTarget",
         }
@@ -147,7 +151,7 @@ class TSD_explore(CustomAction):
                     "recognition": "TemplateMatch",
                     "template": f"fight/time_space_domain/{TargetTemplate[taskType]}.png",
                     "roi": [12, 268, 693, 872],
-                    "threshold": 0.91,
+                    "threshold": threshold,
                 }
             },
         )
@@ -163,7 +167,6 @@ class TSD_explore(CustomAction):
         self,
         context: Context,
         taskType: str,
-        exploreList: list[RecognitionDetail] | list,
     ) -> bool:
         taskEntry: dict = {
             "explore": {"taskName": "TSD_Investigate", "pipeline_override": None},
@@ -172,7 +175,7 @@ class TSD_explore(CustomAction):
                 "pipeline_override": {
                     "TSD_SelectFreeFleetInList": {
                         "recognition": "OCR",
-                        "expected": self.fight_fleets,
+                        "expected": self.fight_fleets[:1],
                         "roi": [44, 164, 627, 537],
                         "interrupt": ["TSD_SelectCancelButton"],
                         "next": ["TSD_ClickAttackButton"],
@@ -186,9 +189,20 @@ class TSD_explore(CustomAction):
                     "TSD_SelectHighestFleet": {"expected": [self.highestFleet]},
                 },
             },
-            "monster_planet": "TSD_ClearMonsterPlanet",  # 占位，未实现
+            "planet": "TSD_ClearMonsterPlanet",  # 占位，未实现
             "exploit": "TSD_ExploitAllFleet",  # 占位，未实现
         }
+        exploreList = None
+        inPlanet = False
+        if taskType == "planet":
+            inPlanet = True
+            taskType = "monster"  # 星球小怪任务使用清理小怪任务的逻辑
+            # 因为小怪图片不一样，所以获取怪物的参数不一样
+            exploreList = self.GetTaskTargetList(context, "monster_planet")
+        elif taskType == "explore":
+            exploreList = self.GetTaskTargetList(context, taskType, 0.91)
+        else:
+            exploreList = self.GetTaskTargetList(context, taskType, 0.82)
         for explore in exploreList:
             box = explore.box
             btn = context.tasker.controller.post_click(
@@ -207,6 +221,15 @@ class TSD_explore(CustomAction):
                 context.run_task("BackText")
                 return False
             self.exploreNums -= 1
+            self.fight_fleets.append(self.fight_fleets.pop(0))  # 轮换舰队顺序
+            taskEntry["monster"]["pipeline_override"]["TSD_SelectFreeFleetInList"][
+                "expected"
+            ] = self.fight_fleets[:1]
+            # logger.info(f"出战舰队顺序: {self.fight_fleets}")
+            if inPlanet and self.exploreNums == 0:
+                # 星球小怪任务完成后，返回地图
+                logger.info("该星球已无小怪，返回地图")
+                context.run_task("BackText")
             time.sleep(1)
         return True
 
@@ -240,52 +263,120 @@ class TSD_explore(CustomAction):
         # 先判断当前屏幕有无目标，没有的话再移动至左上角开始检查
         self.GetTaskTargetList(context, taskType)
         if self.exploreNums > 0:
+            self.check = False  # 存在目标，需要在运行到右下角时从左上角开始检查
             return True
-        else:
-            while True:  # 将地图移动至左上角
-                if self.checkBoundary(context, "LeftTop"):
-                    break
-                else:
-                    context.run_task("FD_SwipeMapMiddleToTopLeft")
-                time.sleep(1)
-            logger.info("地图已移动至左上角")
-
         flag = True
-        isDown = False  # 判断是否下移过一次
-        direction = "Right"
+
         # 检查是否存在目标（从左上角向右检测）
         while flag:
-            self.GetTaskTargetList(context, taskType)
+            targetList = self.GetTaskTargetList(context, taskType)
             if self.exploreNums > 0:
-                logger.info(f"已找到{self.exploreNums}个探索目标")
-                flag = False
-            else:
-                logger.info(f"未找到探索目标，将移动地图再次搜索")
-                if self.checkBoundary(context, direction):
-                    logger.info(f"地图{direction}边界")
-                    if self.checkBoundary(context, "RightBottom"):
-                        logger.info("已到达地图边界")
+                if taskType == "planet":
+                    time.sleep(1)
+                    if len(self.planetList) < 4:
+                        # 获取星球的名字
+                        box = targetList[0].box
+                        btn = context.tasker.controller.post_click(
+                            box[0] + box[2] // 2, box[1] + box[3] // 2
+                        )
+                        time.sleep(2)  # 有动画，需要停顿下才能识别
+                        planetName = context.run_recognition(
+                            "GetPlanetName",
+                            context.tasker.controller.post_screencap().wait().get(),
+                            pipeline_override={
+                                "GetPlanetName": {
+                                    "recognition": "OCR",
+                                    "roi": [195, 429, 329, 101],
+                                    "timeout": 2000,
+                                }
+                            },
+                        )
+                        if planetName and planetName.filterd_results:
+                            logger.info(
+                                f"识别到星球名称: {planetName.filterd_results[0].text}, 已探索星球列表: {self.planetList}"
+                            )
+                            self.GetTaskTargetList(context, "monster_planet")
+                            if planetName.filterd_results[0].text in self.planetList:
+                                if self.exploreNums == 0:
+                                    logger.info(f"该星球已发现过且已无小怪，请继续探索")
+                                    context.run_task("BackText")  # 返回地图并移动
+                                    if self.direction == "Right":
+                                        context.run_task("FD_SwipeMapToRight")
+                                    else:
+                                        context.run_task("FD_SwipeMapToLeft")
+                                    time.sleep(1)
+                                else:
+                                    # 该星球已发现过，但是仍有怪物未清除
+                                    flag = False
+                            else:
+                                if self.exploreNums == 0:
+                                    logger.info(f"该星球已无小怪，请继续探索")
+                                    context.run_task("BackText")  # 返回地图并移动
+                                    if self.direction == "Right":
+                                        context.run_task("FD_SwipeMapToRight")
+                                    else:
+                                        context.run_task("FD_SwipeMapToLeft")
+                                    time.sleep(1)
+                                else:
+                                    logger.info("发现新星球")
+                                    flag = False
+                                self.planetList.append(
+                                    planetName.filterd_results[0].text
+                                )
+                    else:
+                        # 已经探索过4个星球，结束探索
+                        logger.info("已探索4个星球，结束探索")
                         flag = False
                         return False
-                    elif not isDown:  # 未达到右下角，地图下移一次
+                else:
+                    logger.info(f"已找到{self.exploreNums}个探索目标")
+                    flag = False
+            else:
+                logger.info(f"未找到探索目标，将移动地图再次搜索")
+                if self.checkBoundary(context, self.direction):
+                    logger.info(f"地图{self.direction}边界")
+                    if self.checkBoundary(context, "RightBottom"):
+                        logger.info("已到达地图边界")
+                        if self.check:
+                            self.check = False
+                            return False
+                        else:
+                            # 返回地图左上角重新检查一遍
+                            self.check = True
+                            while True:  # 将地图移动至左上角
+                                if self.checkBoundary(context, "LeftTop"):
+                                    break
+                                else:
+                                    context.run_task("FD_SwipeMapMiddleToTopLeft")
+                                time.sleep(1)
+                            self.direction = "Right"
+                            self.isDown = False
+                            time.sleep(1)
+
+                    elif not self.isDown:  # 未达到右下角，地图下移一次
                         logger.info("地图下移")
                         context.run_task("FD_SwipeMapToDown")
-                        direction = "Left" if direction == "Right" else "Right"
-                        isDown = True
+                        self.direction = (
+                            "Left" if self.direction == "Right" else "Right"
+                        )
+                        self.isDown = True
+                        time.sleep(1)
                     else:  # 已经下移过一次，按direction移动一次
                         logger.info("地图移动")
-                        if direction == "Right":
+                        if self.direction == "Right":
                             context.run_task("FD_SwipeMapToRight")
                         else:
                             context.run_task("FD_SwipeMapToLeft")
-                        isDown = False
+                        self.isDown = False
+                        time.sleep(1)
                 else:  # 未达到边界，地图按当前direction继续移动一次
                     logger.info("地图移动")
-                    if direction == "Right":
+                    if self.direction == "Right":
                         context.run_task("FD_SwipeMapToRight")
                     else:
                         context.run_task("FD_SwipeMapToLeft")
-                    isDown = False
+                    self.isDown = False
+                    time.sleep(2)
         return True
 
     def closeUnionMsgBox(self, context: Context) -> bool:
@@ -326,7 +417,12 @@ class TSD_explore(CustomAction):
                 "name": "清理主地图Boss",
                 "enabled": context.get_node_data("TSD_CheckMonsterBossTask")["enabled"],
             },
-            # "monster_planet": json.loads(argv.custom_action_param)["monster_planet"], # 占位
+            "planet": {
+                "name": "清理星球小怪",
+                "enabled": context.get_node_data("TSD_CheckMonsterPlanetTask")[
+                    "enabled"
+                ],
+            },
             # "exploit": json.loads(argv.custom_action_param)["exploit"] # 占位
         }
 
@@ -348,9 +444,8 @@ class TSD_explore(CustomAction):
             if taskList[key]["enabled"] == True:
                 logger.info(f"开始执行【{ taskList[key]['name'] }】任务")
                 while self.checkTargetExist(context, key):
-                    lists = self.GetTaskTargetList(context, key)
-                    self.runTask(context, key, lists)
-                send_message("外域探索", f"【{ taskList[key]['name'] }】任务执行完毕")
+                    self.runTask(context, key)
+                logger.info(f"【{ taskList[key]['name'] }】任务执行完毕")
             else:
                 logger.info(f"未开启【{ taskList[key]['name'] }】任务")
                 continue

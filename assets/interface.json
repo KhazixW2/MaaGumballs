@@ -366,6 +366,7 @@
                 "是否探索废墟等事件",
                 "是否清理主地图小怪",
                 "是否清理主地图BOSS",
+                "是否清理星球小怪",
                 "出战舰队数量"
             ],
             "doc": [
@@ -1057,7 +1058,28 @@
                 }
             ]
         },
-        "出战舰队数量": {
+        "是否清理星球小怪":{
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "TSD_CheckMonsterPlanetTask": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "TSD_CheckMonsterPlanetTask": {
+                            "enabled": true
+                        }
+                    }
+
+                }
+            ]
+        },
+        "出战舰队数量":{
             "default_case": "1",
             "cases": [
                 {

@@ -262,12 +262,13 @@
             756
         ],
         "action": "Click",
-        "post_delay": 500,
-        "timeout": 500,
+        "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "TSD_ClickFleetButton"
         ],
         "interrupt": [
+            "TSD_SelectCancelButton",
             "ClickCenterBelow_500ms"
         ]
     },
@@ -284,7 +285,7 @@
         ],
         "action": "Click",
         "post_delay": 500,
-        "timeout": 500,
+        "timeout": 2000,
         "next": [
             "TSD_SelectFreeFleetInList"
         ]
@@ -302,7 +303,7 @@
         ],
         "action": "Click",
         "post_delay": 500,
-        "timeout": 500
+        "timeout": 2000
     },
     "TSD_SelectHighestFleet": {
         "recognition": "OCR",
@@ -317,7 +318,7 @@
         ],
         "action": "Click",
         "post_delay": 500,
-        "timeout": 500,
+        "timeout": 2000,
         "next": [
             "TSD_ClickAttackButton"
         ],
@@ -348,6 +349,9 @@
         "enabled": false
     },
     "TSD_CheckMonsterBossTask": {
+        "enabled": false
+    },
+    "TSD_CheckMonsterPlanetTask": {
         "enabled": false
     },
     "TSD_SelectCancelButton":{
