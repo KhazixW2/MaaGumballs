@@ -271,7 +271,7 @@ class TSD_explore(CustomAction):
         self.isDown = False
         time.sleep(1)
 
-    def swipeMap(self, context: Context):
+    def swipeMap(self, context: Context) -> bool:
         if self.checkBoundary(context, self.direction):
             logger.info(f"地图{self.direction}边界")
             if self.checkBoundary(context, "RightBottom"):
@@ -283,7 +283,6 @@ class TSD_explore(CustomAction):
                     # 返回地图左上角重新检查一遍
                     self.check = True
                     self.swipeMapToLeftTop(context)
-
             elif not self.isDown:  # 未达到右下角，地图下移一次
                 logger.info("地图下移")
                 context.run_task("FD_SwipeMapToDown")
@@ -306,6 +305,7 @@ class TSD_explore(CustomAction):
                 context.run_task("FD_SwipeMapToLeft")
             self.isDown = False
             time.sleep(2)
+        return True
 
     # 检测目标是否还存在
     def checkTargetExist(
@@ -321,6 +321,7 @@ class TSD_explore(CustomAction):
         while flag:
             targetList = self.GetTaskTargetList(context, taskType, threshold)
             if self.exploreNums > 0:
+                self.check = False  # 存在目标，到达地图边界就需要再次从左上角开始检查
                 if taskType == "planet":
                     time.sleep(1)
                     if len(self.planetList) < 4:
@@ -375,7 +376,13 @@ class TSD_explore(CustomAction):
                     flag = False
             else:
                 logger.info(f"未找到探索目标，将移动地图再次搜索")
-                self.swipeMap(context)
+                if (
+                    self.swipeMap(context) == False
+                ):  # 已经完整探索一遍未发现目标，结束任务
+                    flag = False
+                    return False
+                else:
+                    self.swipeMap(context)
         return True
 
     def closeUnionMsgBox(self, context: Context) -> bool:
