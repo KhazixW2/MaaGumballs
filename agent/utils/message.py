@@ -5,6 +5,11 @@ import re
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import requests
+import time
+import hmac
+import hashlib
+import base64
+import urllib.parse
 
 from .logger import logger
 from .simpleEncryption import decrypt
@@ -140,7 +145,7 @@ def send_qmsg(dp: dict, title: str, text: str) -> bool:
 
         url = f"{ server }/send/{ key }"
         data = {"msg": text, "qq": user, "bot": bot}
-        logger.info(f"Qmsg_url：{url}")
+        logger.debug(f"Qmsg_url：{url}")
         try:
             if is_valid_url(url):
                 response = requests.post(url, data=data)
@@ -160,17 +165,82 @@ def send_qmsg(dp: dict, title: str, text: str) -> bool:
                 logger.error("Qmsg URL 无效，请检查配置")
                 return False
         except Exception as e:
-            logger.error(f"Qmsg发送失败：{e}")
+            logger.error(f"Qmsg发送失败：{str(e)}")
             return False
     else:
         logger.info("Qmsg配置不完整，请检查配置文件")
 
 
+def dingTalk_sign(timestamp: str, secret: str) -> str:
+    """
+    钉钉签名
+    Args:
+        timestamp(str): 时间戳
+        secret(str): 密钥
+
+    Returns:
+        sign(str): 签名
+    """
+    secret_enc = secret.encode("utf-8")
+    string_to_sign = "{}\n{}".format(timestamp, secret)
+    string_to_sign_enc = string_to_sign.encode("utf-8")
+    hmac_code = hmac.new(
+        secret_enc, string_to_sign_enc, digestmod=hashlib.sha256
+    ).digest()
+    sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))
+    return sign
+
+
+def send_dingTalk(dp: dict, title: str, text: str) -> bool:
+    """
+    发送钉钉消息
+    Args:
+        title(str): 标题
+        text(str): 内容
+    Returns:
+        发送成功返回True，否则返回False
+    """
+
+    token = dp.get("ExternalNotificationDingTalkToken")
+    secret = dp.get("ExternalNotificationDingTalkSecret")
+
+    if not token:
+        logger.error("钉钉配置不完整，请检查配置文件")
+    else:
+        url = f"https://oapi.dingtalk.com/robot/send?access_token={ token }"
+        token = decrypt(token)
+        if secret:
+            secret = decrypt(secret)
+            timestamp = str(round(time.time() * 1000))
+            sign = dingTalk_sign(timestamp, secret)
+            url = f"https://oapi.dingtalk.com/robot/send?access_token={ token }&timestamp={ timestamp }&sign={ sign }"
+
+        headers = {"Content-Type": "application/json"}
+        data = {"msgtype": "text", "text": {"content": text}}
+        try:
+            response = requests.post(url, headers=headers, data=json.dumps(data))
+            if response.status_code == 200:
+                if response.json()["errmsg"] == "ok":
+                    logger.info("消息推送成功")
+                    return True
+                else:
+                    logger.error(f"消息推送失败: { response.json()["errmsg"] }")
+                    return False
+            else:
+                logger.error(f"消息推送失败，状态码：{ response.status_code }")
+                return False
+        except Exception as e:
+            logger.info(f"消息推送失败: { str(e) }")
+
+
 def send_message(title: str, text: str) -> bool:
     """
-    # 发送消息的主函数
-    # title: 消息标题
-    # text: 消息内容
+    发送消息的主函数
+    Args:
+        title(str): 消息标题
+        text(str): 消息内容
+    Returns:
+        发送成功返回True，否则返回False
     """
     global config
     if dictIsNoneOrEmpty(config):
@@ -190,6 +260,8 @@ def send_message(title: str, text: str) -> bool:
                 send_byPushplus(config, title, text=text)
             elif message_type == "Qmsg":
                 send_qmsg(config, title, text=text)
+            elif message_type == "DingTalk":
+                send_dingTalk(config, title, text=text)
             else:
                 logger.info("未配置消息类型或暂不支持此消息类型！")
                 return False
