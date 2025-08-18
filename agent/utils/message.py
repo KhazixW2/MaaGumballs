@@ -207,8 +207,8 @@ def send_dingTalk(dp: dict, title: str, text: str) -> bool:
     if not token:
         logger.error("钉钉配置不完整，请检查配置文件")
     else:
-        url = f"https://oapi.dingtalk.com/robot/send?access_token={ token }"
         token = decrypt(token)
+        url = f"https://oapi.dingtalk.com/robot/send?access_token={ token }"
         if secret:
             secret = decrypt(secret)
             timestamp = str(round(time.time() * 1000))
