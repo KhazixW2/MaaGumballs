@@ -129,11 +129,14 @@ class Mars101(CustomAction):
             fightUtils.title_learn("战斗", 2, "战士", 3, context)
             fightUtils.title_learn("战斗", 3, "剑舞者", 3, context)
             fightUtils.title_learn("战斗", 4, "大剑师", 3, context)
-            fightUtils.title_learn("魔法", 2, "黑袍法师", 3, context)
+            # fightUtils.title_learn("魔法", 2, "黑袍法师", 3, context)
             # fightUtils.title_learn("魔法", 3, "咒术师", 3, context)
             # fightUtils.title_learn("魔法", 4, "土系大师", 3, context)
             fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
             fightUtils.title_learn("冒险", 2, "勘探家", 3, context)
+            if self.isTitle_L28 == False:
+                fightUtils.title_learn("冒险", 3, "符文师", 3, context)
+                self.isTitle_L28 = True
             # fightUtils.title_learn("冒险", 3, "符文师", 3, context)
             fightUtils.title_learn("冒险", 4, "武器大师", 3, context)
             fightUtils.title_learn("冒险", 5, "大铸剑师", 1, context)
