@@ -69,7 +69,7 @@
         ],
         "action": "Click",
         "post_delay": 500,
-        "timeout": 500
+        "timeout": 1000
     },
     "ConfirmButton": {
         "recognition": "OCR",
@@ -85,7 +85,7 @@
         ],
         "action": "Click",
         "post_delay": 1000,
-        "timeout": 500
+        "timeout": 1000
     },
     "ConfirmButton_Select": {
         "recognition": "TemplateMatch",

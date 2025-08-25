@@ -246,8 +246,7 @@
                 "目标出图楼层",
                 "目标大地数量",
                 "开启自动拾取",
-                "魔法系冈布奥选择",
-                "神器选择"
+                "魔法系冈布奥选择"
             ],
             "pipeline_override": {
                 "Select_WorldTree_InputBox_Text": {
@@ -255,6 +254,9 @@
                 },
                 "Select_Drug_Next": {
                     "template": "items/电能试剂.png"
+                },
+                "Select_Artifact_Next": {
+                    "template": "equipments/7level/冒险家竖琴.png"
                 },
                 "select_InputBox_Text1": {
                     "input_text": "太阳冈布奥"
@@ -711,26 +713,6 @@
                     "pipeline_override": {
                         "Fight_PickUpAll_Emptyfloor": {
                             "enabled": true
-                        }
-                    }
-                }
-            ]
-        },
-        "神器选择": {
-            "cases": [
-                {
-                    "name": "冒险家竖琴",
-                    "pipeline_override": {
-                        "Select_Artifact_Next": {
-                            "template": "equipments/7level/冒险家竖琴.png"
-                        }
-                    }
-                },
-                {
-                    "name": "挑战者大剑",
-                    "pipeline_override": {
-                        "Select_Artifact_Next": {
-                            "template": "equipments/7level/挑战者大剑.png"
                         }
                     }
                 }
