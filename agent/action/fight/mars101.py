@@ -175,10 +175,12 @@ class Mars101(CustomAction):
             if HPStatus < 0.8:
                 if self.layers <= 60:
                     fightUtils.cast_magic_special("生命颂歌", context)
+                if self.layers >= 110:
+                    fightUtils.cast_magic("气", "静电场", context)
                 while HPStatus < 0.8:
-                    if not fightUtils.cast_magic("水", "治疗术", context):
-                        if not fightUtils.cast_magic("水", "治愈术", context):
-                            if not fightUtils.cast_magic("光", "神恩术", context):
+                    if not fightUtils.cast_magic("水", "痊愈术", context):
+                        if not fightUtils.cast_magic("光", "神恩术", context):
+                            if not fightUtils.cast_magic("水", "治疗术", context):
                                 logger.info("没有任何治疗方法了= =")
                                 break
                     context.run_task("Fight_ReturnMainWindow")
@@ -187,12 +189,6 @@ class Mars101(CustomAction):
                     MaxHp = float(StatusDetail["最大生命值"])
                     HPStatus = AfterHP / MaxHp
                     logger.info(f"current hp is {AfterHP}, HPStatus is {HPStatus}")
-                    if AfterHP == CurrentHP:
-                        logger.info("当前生命值没有变化，使用痊愈术或者神恩术")
-                        if not fightUtils.cast_magic("水", "治愈术", context):
-                            if not fightUtils.cast_magic("光", "神恩术", context):
-                                logger.info("没有任何治疗方法了= =")
-                                break
             else:
                 logger.info("当前生命值大于80%，不使用治疗")
 
@@ -745,7 +741,11 @@ class Mars101(CustomAction):
         # if 101 >= self.layers >= 97:
         #     StatusDetail: dict = fightUtils.checkGumballsStatusV2(context)
         #     atk = int(StatusDetail["攻击"])
-
+        # 检测隐藏冈布奥
+        if self.layers >= 90 and context.run_recognition(
+            "Mars_HideGumball", context.tasker.controller.post_screencap().wait().get()
+        ):
+            context.run_task("Mars_HideGumball")
         if (
             (self.layers >= self.target_leave_layer_para - 2)
             # 到了99层依然没有获得魔法助手就结算
@@ -781,14 +781,6 @@ class Mars101(CustomAction):
     @timing_decorator
     def handle_interrupt_event(self, context: Context):
         image = context.tasker.controller.post_screencap().wait().get()
-        # 检测隐藏冈布奥
-        if context.run_recognition(
-            "Mars_HideGumball",
-            image,
-        ):
-            logger.info("检测到隐藏冈布奥, 本层重新探索")
-            context.run_task("Mars_HideGumball")
-            return False
 
         if context.run_recognition(
             "Mars_Inter_Confirm_Success",

@@ -173,8 +173,7 @@
     "MarsBossReward_Select1": {
         "recognition": "TemplateMatch",
         "template": [
-            "fight/Mars/MarsBossReward_HPSteal.png",
-            "fight/Mars/MarsBossReward_HP.png"
+            "fight/Mars/MarsBossReward_HPSteal.png"
         ],
         "roi": [
             29,
@@ -225,41 +224,7 @@
     "MarsBossReward_Select4": {
         "recognition": "TemplateMatch",
         "template": [
-            "fight/Mars/MarsBossReward_HP.png"
-        ],
-        "roi": [
-            35,
-            463,
-            662,
-            489
-        ],
-        "action": "Click",
-        "timeout": 2000,
-        "next": [
-            "MarsReward_Open"
-        ]
-    },
-    "MarsBossReward_Select3": {
-        "recognition": "TemplateMatch",
-        "template": [
-            "fight/Mars/MarsBossReward_DamageReduction.png"
-        ],
-        "roi": [
-            35,
-            463,
-            662,
-            489
-        ],
-        "action": "Click",
-        "timeout": 2000,
-        "next": [
-            "MarsReward_Open"
-        ]
-    },
-    "MarsBossReward_Select4": {
-        "recognition": "TemplateMatch",
-        "template": [
-            "fight/Mars/MarsBossReward_Other6.png"
+            "fight/Mars/MarsBossReward_Other7.png"
         ],
         "roi": [
             35,
@@ -297,8 +262,7 @@
             "fight/Mars/MarsBody2.png",
             "fight/Mars/MarsBody3.png",
             "fight/Mars/MarsBody7.png",
-            "fight/Mars/MarsSlabStone.png",
-            "fight/Mars/Mars_HideGumball.png"
+            "fight/Mars/MarsSlabStone.png"
         ],
         "roi": [
             4,
@@ -321,10 +285,10 @@
             "fight/Mars/Mars_HideGumball.png"
         ],
         "roi": [
-            152,
-            203,
-            421,
-            275
+            208,
+            395,
+            302,
+            289
         ],
         "threshold": 0.85,
         "action": "Click",
