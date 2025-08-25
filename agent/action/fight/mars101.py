@@ -93,8 +93,9 @@ class Mars101(CustomAction):
         """
         检查默认称号
         1. 检查1层的称号: 魔法学徒点满
-        1. 检查58层的称号: 位面点满即可
-        3. 检查76层的称号: 位面，大铸剑师，大剑师都点满
+        2. 检查28层称号: 点满符文师
+        3. 检查58层的称号: 位面点满即可
+        4. 检查76层的称号: 位面，大铸剑师，大剑师都点满
         """
         if (self.layers >= 1 and self.layers <= 3) and self.isTitle_L1 == False:
             fightUtils.title_learn("魔法", 1, "魔法学徒", 3, context)
@@ -241,11 +242,7 @@ class Mars101(CustomAction):
         else:
             time.sleep(6)
             fightUtils.cast_magic_special("生命颂歌", context)
-            if (
-                self.target_magicgumball_para == "波塞冬"
-                and self.layers >= 60
-                and self.useEarthGate > 0
-            ):
+            if self.target_magicgumball_para == "波塞冬" and (self.useEarthGate > 0):
 
                 fightUtils.cast_magic("气", "静电场", context)
                 fightUtils.cast_magic(
@@ -292,7 +289,10 @@ class Mars101(CustomAction):
                     actions = [
                         lambda: fightUtils.cast_magic(
                             "水", "冰锥术", context, (boss_x, boss_y)
-                        )
+                        ),
+                        lambda: context.tasker.controller.post_click(
+                            boss_x, boss_y
+                        ).wait(),
                     ]
                 elif self.layers >= 100 and self.layers <= 120:
                     actions = [
@@ -409,6 +409,11 @@ class Mars101(CustomAction):
     def handle_preLayers_event(self, context: Context):
         self.handle_android_skill_event(context)
         self.handle_UseMagicAssist_event(context)
+        # 添加开场检查血量，防止意外
+        if (self.layers > self.target_leave_layer_para - 10) and self.layers % 10 != 0:
+            self.Check_DefaultStatus(context)
+            for _ in range(2):
+                fightUtils.cast_magic("水", "寒冰护盾", context)
 
         # self.Check_DefaultEquipment(context)
         return True
@@ -548,17 +553,23 @@ class Mars101(CustomAction):
 
     @timing_decorator
     def handle_MarsReward_event(self, context: Context, image=None):
-
-        if image is None:
-            image = context.tasker.controller.post_screencap().wait().get()
         normalReward = self.layers % 2 == 1
         bossReward = self.layers >= 30 and self.layers % 10 == 0
         if not (normalReward or bossReward):
             return True
+        logger.debug("单数层再次清层")
+        context.run_task("Mars_Fight_ClearCurrentLayer")
+        if image is None:
+            image = context.tasker.controller.post_screencap().wait().get()
+        for _ in range(5):
+            if not context.run_recognition("Mars_Reward", image):
+                logger.debug("当前截图中奖励可能被遮挡, 再次截图尝试")
+                time.sleep(1)
+                image = context.tasker.controller.post_screencap().wait().get()
+            else:
+                break
 
         if normalReward and context.run_recognition("Mars_Reward", image):
-            logger.debug("再次清层")
-            context.run_task("Mars_Fight_ClearCurrentLayer")
             logger.info("触发Mars奖励事件")
             mars_reward_detail = context.run_task("Mars_Reward")
             if mars_reward_detail.nodes:
@@ -608,13 +619,13 @@ class Mars101(CustomAction):
 
     @timing_decorator
     def handle_MarsStatue_event(self, context: Context, image=None):
+        if self.layers < 10 and self.useEarthGate < 1:
+            return False
         if image is None:
             image = context.tasker.controller.post_screencap().wait().get()
-        if self.layers < 10:
-            return False
         if context.run_recognition("Mars_Statue", image):
             logger.info(f"触发Mars白胡子老头事件, 献祭一下战利品吧~")
-            if self.useEarthGate and self.layers < 80:
+            if self.useEarthGate > 0 and self.layers < 80:
                 # 说明大地回来了，可以开始献祭至高战利品了
                 logger.info(f"大地已回来，可以开始献祭至高战利品了")
                 context.run_task(
@@ -654,37 +665,38 @@ class Mars101(CustomAction):
             context.run_task("Mars_Shower")
             context.run_task("Mars_EatBread")
             if self.target_magicgumball_para == "波塞冬":
-                if self.layers + 1 >= 100:
+                if self.layers >= 99:
                     fightUtils.cast_magic(
                         "土",
                         "石肤术",
                         context,
                     )
-                fightUtils.cast_magic(
-                    "暗",
-                    "死亡波纹",
-                    context,
-                )
-                if self.layers <= 59:
-                    times = 1
-                elif 60 < self.layers < 80:
-                    times = 2
-                else:
-                    times = 3
-                for _ in range(times):
+                if self.useEarthGate > 0:
                     fightUtils.cast_magic(
-                        "水",
-                        "冰锥术",
+                        "暗",
+                        "死亡波纹",
                         context,
-                        (special_layer_monster_1_x, special_layer_monster_1_y),
                     )
-                for _ in range(times):
-                    fightUtils.cast_magic(
-                        "水",
-                        "冰锥术",
-                        context,
-                        (special_layer_monster_2_x, special_layer_monster_2_y),
-                    )
+                    if self.layers <= 59:
+                        times = 1
+                    elif 59 < self.layers < 99:
+                        times = 2
+                    else:
+                        times = 3
+                    for _ in range(times):
+                        fightUtils.cast_magic(
+                            "水",
+                            "冰锥术",
+                            context,
+                            (special_layer_monster_1_x, special_layer_monster_1_y),
+                        )
+                    for _ in range(times):
+                        fightUtils.cast_magic(
+                            "水",
+                            "冰锥术",
+                            context,
+                            (special_layer_monster_2_x, special_layer_monster_2_y),
+                        )
             context.run_task("Fight_ReturnMainWindow")
             self.leaveSpecialLayer(context)
             # 检查一下状态
@@ -717,9 +729,9 @@ class Mars101(CustomAction):
         image = context.tasker.controller.post_screencap().wait().get()
         self.handle_MarsBody_event(context, image)
         self.handle_MarsStele_event(context, image)
-        self.handle_MarsStatue_event(context)
         self.handle_MarsRuinsShop_event(context, image)
-        self.handle_MarsReward_event(context)
+        self.handle_MarsReward_event(context, image)
+        self.handle_MarsStatue_event(context)
         self.handle_MarsExchangeShop_event(context, image)
         # 点称号挪到战后，确保购买战利品有足够的探索点
         self.Check_DefaultTitle(context)

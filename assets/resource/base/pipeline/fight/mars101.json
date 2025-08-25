@@ -177,6 +177,40 @@
             "fight/Mars/MarsBossReward_HP.png"
         ],
         "roi": [
+            29,
+            365,
+            662,
+            372
+        ],
+        "action": "Click",
+        "timeout": 2000,
+        "next": [
+            "MarsReward_Open"
+        ]
+    },
+    "MarsBossReward_Select2": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/Mars/MarsBossReward_HP.png"
+        ],
+        "roi": [
+            29,
+            365,
+            662,
+            372
+        ],
+        "action": "Click",
+        "timeout": 2000,
+        "next": [
+            "MarsReward_Open"
+        ]
+    },
+    "MarsBossReward_Select3": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/Mars/MarsBossReward_DamageReduction.png"
+        ],
+        "roi": [
             35,
             463,
             662,
@@ -188,7 +222,7 @@
             "MarsReward_Open"
         ]
     },
-    "MarsBossReward_Select2": {
+    "MarsBossReward_Select4": {
         "recognition": "TemplateMatch",
         "template": [
             "fight/Mars/MarsBossReward_HP.png"

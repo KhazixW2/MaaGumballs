@@ -34,7 +34,7 @@ class FightProcessor:
             self._hit_monster_count = 3
             self.max_grid_loop = 20
             self.max_monster_loop_fail = 4
-            self.max_grid_loop_fail = 3
+            self.max_grid_loop_fail = 4
             self.isCheckDragon = False
             self.targetWish = "工资"
 
@@ -265,11 +265,23 @@ class FightProcessor:
                     self.visited[r][c] += 1
                     monster_count += 1
                     logger.debug(f"检测({r + 1},{c + 1})有怪物: {x}, {y}, {w}, {h}")
-                    for _ in range(self.hit_monster_count):
-                        context.tasker.controller.post_click(
-                            x + w // 2, y + h // 2
-                        ).wait()
-                        time.sleep(0.05)
+                    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # 四方向
+                    for direction in directions:
+                        new_r, new_c = r + direction[0], c + direction[1]
+                        if 0 <= new_r < self.rows and 0 <= new_c < self.cols:
+                            if self.visited[new_r][new_c] == 0:
+                                continue
+                            else:
+                                logger.debug(
+                                    f"({new_r + 1},{new_c + 1})已被访问, 可以攻击到({r + 1},{c + 1})的怪物"
+                                )
+                                for _ in range(self.hit_monster_count):
+                                    context.tasker.controller.post_click(
+                                        x + w // 2, y + h // 2
+                                    ).wait()
+                                    time.sleep(0.05)
+                                break
+
         return monster_count > 0
 
     def checkClosedDoor(self, context: Context) -> tuple[int, int]:
@@ -370,7 +382,7 @@ class FightProcessor:
         # 开始清理当前层
         for _ in range(self.max_grid_loop):
             if context.tasker.stopping:
-                logger.info("JJC_Fight_ClearCurrentLayer 被停止")
+                logger.info("清层任务被停止")
                 return False
 
             # 截图,检测神龙和地板
@@ -381,6 +393,12 @@ class FightProcessor:
             # 检测grid还能不能找到, 累计几次找不到则退出
             if not self.detect_and_click_grid(context, img):
                 fail_check_grid_cnt += 1
+                if fail_check_grid_cnt >= self.max_grid_loop_fail - 3:
+                    # 连续多次找不到地板,则全部标记为已访问, 避免死循环
+                    for r in range(self.rows):
+                        for c in range(self.cols):
+                            if self.visited[r][c] == 0:
+                                self.visited[r][c] += 2
             else:
                 fail_check_grid_cnt = 0
 
@@ -389,6 +407,9 @@ class FightProcessor:
                 fail_check_monster_cnt += 1
             else:
                 fail_check_monster_cnt = 0
+            logger.debug(
+                f"连续检查不到地板轮次: {fail_check_grid_cnt}, 连续检查不到怪物轮次: {fail_check_monster_cnt}"
+            )
 
             if isclearall:
                 # 需要地板怪物全清
