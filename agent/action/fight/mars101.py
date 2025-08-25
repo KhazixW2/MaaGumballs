@@ -23,7 +23,7 @@ class Mars101(CustomAction):
     def __init__(self):
         super().__init__()
         self.isTitle_L1 = False
-        self.isTitle_L28 = False
+        self.isTitle_L10 = False
         self.isTitle_L58 = False
         self.isTitle_L76 = False
         self.useEarthGate = 0
@@ -102,11 +102,11 @@ class Mars101(CustomAction):
             context.run_task("Fight_ReturnMainWindow")
             self.isTitle_L1 = True
             return True
-        elif (self.layers >= 28 and self.layers <= 33) and self.isTitle_L28 == False:
+        elif (self.layers >= 10 and self.layers <= 13) and self.isTitle_L10 == False:
             fightUtils.title_learn("冒险", 1, "寻宝者", 1, context)
             fightUtils.title_learn("冒险", 2, "勘探家", 1, context)
             fightUtils.title_learn("冒险", 3, "符文师", 3, context)
-            self.isTitle_L28 = True
+            self.isTitle_L10 = True
             return True
         elif (self.layers >= 58 and self.layers <= 63) and self.isTitle_L58 == False:
             fightUtils.title_learn("魔法", 1, "魔法学徒", 3, context)
@@ -134,9 +134,9 @@ class Mars101(CustomAction):
             # fightUtils.title_learn("魔法", 4, "土系大师", 3, context)
             fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
             fightUtils.title_learn("冒险", 2, "勘探家", 3, context)
-            if self.isTitle_L28 == False:
+            if self.isTitle_L10 == False:
                 fightUtils.title_learn("冒险", 3, "符文师", 3, context)
-                self.isTitle_L28 = True
+                self.isTitle_L10 = True
             # fightUtils.title_learn("冒险", 3, "符文师", 3, context)
             fightUtils.title_learn("冒险", 4, "武器大师", 3, context)
             fightUtils.title_learn("冒险", 5, "大铸剑师", 1, context)
