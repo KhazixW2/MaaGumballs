@@ -872,11 +872,11 @@ class Mars101(CustomAction):
                 "input_text"
             ]
         )
-        self.astrological_title_para = bool(
+        self.astrological_title_para = (
             context.get_node_data("Mars_Astrological_Title_Setting")["recognition"][
                 "param"
             ]["expected"][0]
-        )
+        ).lower() == "yes"
 
         # initialize
         self.initialize(context)
