@@ -63,12 +63,6 @@ class GoDownstairsTrick_Test(CustomAction):
                 "永恒王冠": "equipments/5level/永恒王冠.png",
                 "永恒之球": "equipments/5level/永恒之球.png",
             },
-            "龙鳞套": {
-                "龙鳞护腕": "equipments/4level/龙鳞护腕.png",
-                "龙鳞甲": "equipments/4level/龙鳞甲.png",
-                "龙鳞盔": "equipments/4level/龙鳞盔.png",
-                "龙鳞腰带": "equipments/4level/龙鳞腰带.png",
-            },
             "神谕套": {
                 "神谕手套": "equipments/5level/神谕手套.png",
                 "神谕之甲": "equipments/5level/神谕之甲.png",
@@ -80,6 +74,18 @@ class GoDownstairsTrick_Test(CustomAction):
                 "魔导士斗篷": "equipments/5level/魔导士斗篷.png",
                 "魔导士之靴": "equipments/5level/魔导士之靴.png",
                 "魔导士指轮": "equipments/5level/魔导士指轮.png",
+            },
+            "龙鳞套": {
+                "龙鳞护腕": "equipments/4level/龙鳞护腕.png",
+                "龙鳞甲": "equipments/4level/龙鳞甲.png",
+                "龙鳞盔": "equipments/4level/龙鳞盔.png",
+                "龙鳞腰带": "equipments/4level/龙鳞腰带.png",
+            },
+            "命运套": {
+                "坚韧战靴": "equipments/4level/坚韧战靴.png",
+                "勇气腰带": "equipments/4level/勇气腰带.png",
+                "正义铠甲": "equipments/4level/正义铠甲.png",
+                "忠诚勋章": "equipments/4level/忠诚勋章.png",
             },
             "骑士套": {
                 "骑士手套": "equipments/1level/骑士手套.png",
@@ -139,6 +145,30 @@ class GoDownstairsTrick_Test(CustomAction):
                 "贵族丝带": "equipments/1level/贵族丝带.png",
                 "礼仪戒指": "equipments/2level/礼仪戒指.png",
                 "天鹅绒斗篷": "equipments/3level/天鹅绒斗篷.png",
+            },
+            "真理套": {
+                "真理挂坠": "equipments/3level/真理挂坠.png",
+                "真理披肩": "equipments/3level/真理披肩.png",
+                "真理之戒": "equipments/3level/真理之戒.png",
+                "真理之靴": "equipments/3level/真理之靴.png",
+            },
+            "法师套": {
+                "法师斗篷": "equipments/2level/法师斗篷.png",
+                "法师护符": "equipments/2level/法师护符.png",
+                "法师戒指": "equipments/2level/法师戒指.png",
+                "法师鞋": "equipments/2level/法师鞋.png",
+            },
+            "暗影套": {
+                "暗影护腕": "equipments/3level/暗影护腕.png",
+                "暗影铠甲": "equipments/3level/暗影铠甲.png",
+                "暗影头盔": "equipments/3level/暗影头盔.png",
+                "暗影腰带": "equipments/3level/暗影腰带.png",
+            },
+            "秩序套": {
+                "秩序铠甲": "equipments/2level/秩序铠甲.png",
+                "秩序手套": "equipments/2level/秩序手套.png",
+                "秩序头盔": "equipments/2level/秩序头盔.png",
+                "秩序腰带": "equipments/2level/秩序腰带.png",
             },
         }
         # 这里检查套装
