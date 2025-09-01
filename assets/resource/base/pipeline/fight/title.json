@@ -82,6 +82,9 @@
             81
         ],
         "post_delay": 400,
+        "interrupt": [
+            "ConfirmButton_500ms"
+        ],
         "timeout": 2000
     },
     "TitlePanel_CurrentPanel": {

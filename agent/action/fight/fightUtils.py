@@ -798,6 +798,9 @@ def dragonwish(targetWish: str, context: Context):
                     TextRecoDetail.box[1] + TextRecoDetail.box[3] // 2 + 10,
                 )
                 context.tasker.controller.post_click(center_x, center_y).wait()
+                logger.debug(
+                    f"识别到神龙或冈布奥, 已点击{(center_x, center_y)}, 识别范围为{TextRecoDetail.best_result.box}"
+                )
                 time.sleep(1)
         # 已点击愿望，等待界面加载
         if min_index_wish in [

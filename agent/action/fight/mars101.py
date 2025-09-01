@@ -24,8 +24,8 @@ class Mars101(CustomAction):
         super().__init__()
         self.isTitle_L1 = False
         self.isTitle_L10 = False
-        self.isTitle_L58 = False
-        self.isTitle_L76 = False
+        self.isTitle_L61 = False
+        self.isTitle_L86 = False
         self.useEarthGate = 0
         self.isGetTitanFoot = False
         self.isGetMagicAssist = False
@@ -94,8 +94,8 @@ class Mars101(CustomAction):
         检查默认称号
         1. 检查1层的称号: 魔法学徒点满
         2. 检查28层称号: 点满符文师
-        3. 检查58层的称号: 位面点满即可
-        4. 检查76层的称号: 位面，大铸剑师，大剑师都点满
+        3. 检查61层的称号: 位面点满即可
+        4. 检查86层的称号: 位面，大铸剑师，大剑师都点满
         """
         if (self.layers >= 1 and self.layers <= 3) and self.isTitle_L1 == False:
             fightUtils.title_learn("魔法", 1, "魔法学徒", 3, context)
@@ -108,10 +108,10 @@ class Mars101(CustomAction):
             fightUtils.title_learn("冒险", 3, "符文师", 3, context)
             self.isTitle_L10 = True
             return True
-        elif (self.layers >= 58 and self.layers <= 63) and self.isTitle_L58 == False:
+        elif (self.layers >= 61 and self.layers <= 63) and self.isTitle_L61 == False:
             fightUtils.title_learn("魔法", 1, "魔法学徒", 3, context)
-            fightUtils.title_learn("魔法", 2, "黑袍法师", 3, context)
-            fightUtils.title_learn("魔法", 3, "咒术师", 1, context)
+            fightUtils.title_learn("魔法", 2, "黑袍法师", 1, context)
+            fightUtils.title_learn("魔法", 3, "咒术师", 3, context)
             fightUtils.title_learn("魔法", 4, "土系大师", 1, context)
             fightUtils.title_learn("魔法", 5, "位面先知", 1, context)
             fightUtils.title_learn_branch("魔法", 5, "魔力强化", 3, context)
@@ -121,15 +121,15 @@ class Mars101(CustomAction):
 
             context.run_task("Save_Status")
             context.run_task("Fight_ReturnMainWindow")
-            self.isTitle_L58 = True
+            self.isTitle_L61 = True
             return True
 
-        elif (self.layers >= 76 and self.layers <= 81) and self.isTitle_L76 == False:
+        elif (self.layers >= 86 and self.layers <= 88) and self.isTitle_L86 == False:
             fightUtils.title_learn("战斗", 1, "见习战士", 3, context)
             fightUtils.title_learn("战斗", 2, "战士", 3, context)
             fightUtils.title_learn("战斗", 3, "剑舞者", 3, context)
             fightUtils.title_learn("战斗", 4, "大剑师", 3, context)
-            # fightUtils.title_learn("魔法", 2, "黑袍法师", 3, context)
+            fightUtils.title_learn("魔法", 2, "黑袍法师", 3, context)
             # fightUtils.title_learn("魔法", 3, "咒术师", 3, context)
             # fightUtils.title_learn("魔法", 4, "土系大师", 3, context)
             fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
@@ -144,6 +144,7 @@ class Mars101(CustomAction):
             fightUtils.title_learn_branch("冒险", 5, "生命强化", 3, context)
             # fightUtils.title_learn_branch("冒险", 5, "魔法强化", 3, context)
             if self.astrological_title_para:
+                logger.info("点了占星")
                 fightUtils.title_learn("占星", 1, "占星学徒", 1, context)
                 fightUtils.title_learn("占星", 2, "星象观测者", 3, context)
                 fightUtils.title_learn("占星", 3, "星象守卫", 3, context)
@@ -151,11 +152,13 @@ class Mars101(CustomAction):
                 fightUtils.title_learn("占星", 5, "星界裁决者", 1, context)
                 fightUtils.title_learn_branch("占星", 5, "攻击强化", 3, context)
                 fightUtils.title_learn_branch("占星", 5, "生命强化", 3, context)
+            else:
+                logger.info("没点占星")
 
             context.run_task("Fight_ReturnMainWindow")
             context.run_task("Save_Status")
             context.run_task("Fight_ReturnMainWindow")
-            self.isTitle_L76 = True
+            self.isTitle_L86 = True
             return True
         return False
 
@@ -241,15 +244,21 @@ class Mars101(CustomAction):
         else:
             time.sleep(6)
             fightUtils.cast_magic_special("生命颂歌", context)
-            if self.target_magicgumball_para == "波塞冬" and (self.useEarthGate > 0):
+            if self.target_magicgumball_para == "波塞冬":
 
                 fightUtils.cast_magic("气", "静电场", context)
                 fightUtils.cast_magic(
                     "水", "冰锥术", context, (boss_slave_1_x, boss_slave_1_y)
                 )
+                context.tasker.controller.post_click(
+                    boss_slave_1_x, boss_slave_1_y
+                ).wait()
                 fightUtils.cast_magic(
                     "水", "冰锥术", context, (boss_slave_2_x, boss_slave_2_y)
                 )
+                context.tasker.controller.post_click(
+                    boss_slave_2_x, boss_slave_2_y
+                ).wait()
             else:
                 fightUtils.cast_magic("光", "祝福术", context)
                 context.tasker.controller.post_click(
@@ -265,26 +274,7 @@ class Mars101(CustomAction):
 
             actions = []
             if self.target_magicgumball_para == "波塞冬":
-                if self.layers == 60 and self.useEarthGate == 0:
-                    logger.info("波塞冬阵容,59层出现拉绳子,无大地到达60层")
-                    actions = [
-                        lambda: context.tasker.controller.post_click(
-                            boss_x, boss_y
-                        ).wait(),
-                        lambda: context.tasker.controller.post_click(
-                            boss_x, boss_y
-                        ).wait(),
-                        lambda: fightUtils.cast_magic(
-                            "水", "冰锥术", context, (boss_x, boss_y)
-                        ),
-                        lambda: context.tasker.controller.post_click(
-                            boss_x, boss_y
-                        ).wait(),
-                        lambda: context.tasker.controller.post_click(
-                            boss_x, boss_y
-                        ).wait(),
-                    ]
-                elif self.layers < 100:
+                if self.layers < 100:
                     actions = [
                         lambda: fightUtils.cast_magic(
                             "水", "冰锥术", context, (boss_x, boss_y)
@@ -374,9 +364,9 @@ class Mars101(CustomAction):
         大地成功返回True,否则返回False
         """
         if (
-            ((self.layers > 50) and (self.layers % 10 == 9))
-            # 如果59遇到拉绳子无法大地，那么尝试在61或者62大地
-            or (61 <= self.layers <= 62)
+            ((self.layers > 60) and (self.layers % 10 == 9))
+            # 在61~63层时释放大地，或者x9(>60)层时释放大地
+            or (61 <= self.layers <= 63)
         ) and self.useEarthGate < self.target_earthgate_para:
             # 识别释放大地时没有拉绳子的洞
             image = context.tasker.controller.post_screencap().wait().get()
@@ -411,7 +401,7 @@ class Mars101(CustomAction):
         # 添加开场检查血量，防止意外
         if (self.layers > self.target_leave_layer_para - 10) and self.layers % 10 != 0:
             self.Check_DefaultStatus(context)
-            for _ in range(2):
+            if fightUtils.checkBuffStatus("寒冰护盾", context):
                 fightUtils.cast_magic("水", "寒冰护盾", context)
 
         # self.Check_DefaultEquipment(context)
@@ -670,32 +660,36 @@ class Mars101(CustomAction):
                         "石肤术",
                         context,
                     )
-                if self.useEarthGate > 0:
+                if (
                     fightUtils.cast_magic(
                         "暗",
                         "死亡波纹",
                         context,
                     )
+                    or self.layers >= self.target_leave_layer_para - 20
+                ):
                     if self.layers <= 59:
-                        times = 1
-                    elif 59 < self.layers < 99:
                         times = 2
-                    else:
+                    elif 59 < self.layers < 99:
                         times = 3
+                    else:
+                        times = 4
                     for _ in range(times):
-                        fightUtils.cast_magic(
+                        if not fightUtils.cast_magic(
                             "水",
                             "冰锥术",
                             context,
                             (special_layer_monster_1_x, special_layer_monster_1_y),
-                        )
+                        ):
+                            break
                     for _ in range(times):
-                        fightUtils.cast_magic(
+                        if not fightUtils.cast_magic(
                             "水",
                             "冰锥术",
                             context,
                             (special_layer_monster_2_x, special_layer_monster_2_y),
-                        )
+                        ):
+                            break
             context.run_task("Fight_ReturnMainWindow")
             self.leaveSpecialLayer(context)
             # 检查一下状态
@@ -876,7 +870,7 @@ class Mars101(CustomAction):
             context.get_node_data("Mars_Astrological_Title_Setting")["recognition"][
                 "param"
             ]["expected"][0]
-        ).lower() == "yes"
+        ).lower() == "true"
 
         # initialize
         self.initialize(context)
