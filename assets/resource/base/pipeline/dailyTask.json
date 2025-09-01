@@ -71,6 +71,42 @@
             "DailyTaskSelect"
         ]
     },
+    "HallSwipeToUp": {
+        "recognition": "DirectHit",
+        "action": "Swipe",
+        "begin": [
+            458,
+            525,
+            166,
+            48
+        ],
+        "end": [
+            468,
+            888,
+            175,
+            41
+        ],
+        "duration": 500,
+        "post_delay": 1000
+    },
+    "HallSwipeToDown": {
+        "recognition": "DirectHit",
+        "action": "Swipe",
+        "begin": [
+            468,
+            700,
+            175,
+            41
+        ],
+        "end": [
+            458,
+            525,
+            166,
+            48
+        ],
+        "duration": 500,
+        "post_delay": 1000
+    },
     "DailyTaskSelect": {
         "recognition": "DirectHit",
         "action": "Custom",
@@ -834,5 +870,19 @@
         "next": [
             "drawReward"
         ]
+    },
+    "WeeklyRaid": {
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/WeeklyRaid.png",
+        "roi": [
+            47,
+            262,
+            625,
+            846
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": []
     }
 }

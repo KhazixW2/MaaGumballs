@@ -21,6 +21,7 @@ class DailyTask(CustomAction):
             "AlchemySignboard",  # 炼金招牌
             "SkyExplore",  # 天空探索
             "RuinsExplore",  # 遗迹探索
+            # "WeeklyRaid",
         ]
 
         for key in custom_order:
@@ -36,11 +37,20 @@ class DailyTask(CustomAction):
 
 
             logger.info(f"执行任务: {key}")
-            image = context.tasker.controller.post_screencap().wait().get()
-            if context.run_recognition(key, image):
-                context.run_task(key)
+            IsCheck = False
+            context.run_action("HallSwipeToUp")
+            for i in range(3):
+                image = context.tasker.controller.post_screencap().wait().get()
+                if context.run_recognition(key, image):
+                    context.run_task(key)
+                    IsCheck = True
+                    break
+                else:
+                    context.run_action("HallSwipeToDown")
+
+            if IsCheck:
                 logger.info(f"完成任务: {key}")
-            else:
+            else :
                 logger.warning(f"任务: {key} 识别失败, 跳过该任务")
             context.run_task("ReturnHall")
 
