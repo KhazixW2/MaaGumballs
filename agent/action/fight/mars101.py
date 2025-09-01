@@ -274,7 +274,13 @@ class Mars101(CustomAction):
 
             actions = []
             if self.target_magicgumball_para == "波塞冬":
-                if self.layers < 100:
+                if 110 >= self.layers >= 50 and self.useEarthGate > 1:
+                    actions = [
+                        lambda: fightUtils.cast_magic(
+                            "水", "冰锥术", context, (boss_x, boss_y)
+                        )
+                    ]
+                elif self.layers < 100:
                     actions = [
                         lambda: fightUtils.cast_magic(
                             "水", "冰锥术", context, (boss_x, boss_y)
@@ -401,7 +407,7 @@ class Mars101(CustomAction):
         # 添加开场检查血量，防止意外
         if (self.layers > self.target_leave_layer_para - 10) and self.layers % 10 != 0:
             self.Check_DefaultStatus(context)
-            if fightUtils.checkBuffStatus("寒冰护盾", context):
+            if not fightUtils.checkBuffStatus("寒冰护盾", context):
                 fightUtils.cast_magic("水", "寒冰护盾", context)
 
         # self.Check_DefaultEquipment(context)
