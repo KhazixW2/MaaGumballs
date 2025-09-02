@@ -758,10 +758,10 @@ def dragonwish(targetWish: str, context: Context):
     textdetail = context.run_task("Fight_FindText")
     if textdetail.nodes:
         for result in textdetail.nodes[0].recognition.filterd_results:
-            if result.text.endswith("！"):
+            if result.text.endswith("！") or result.text.endswith("!"):
                 result.text = result.text[:-1]
             cuurent_wish_index = wishlist.index(result.text)
-            logger.info(f"当前许愿: {result.text}")
+            logger.info(f"当前许愿: {result.text}, 当前许愿索引: {cuurent_wish_index}")
             if cuurent_wish_index < min_index:
                 min_index = cuurent_wish_index
                 min_index_wish = result.text
@@ -775,7 +775,7 @@ def dragonwish(targetWish: str, context: Context):
             context.tasker.controller.post_click(center_x, center_y).wait()
         time.sleep(3)
 
-        logger.info(f"已点击愿望: {min_index_wish}")
+        logger.info(f"已点击愿望: {min_index_wish}, 愿望索引: {min_index}")
         status = True
         while status:
             image = context.tasker.controller.post_screencap().wait().get()

@@ -336,7 +336,9 @@ class Mars101(CustomAction):
             index = 0
             for _ in range(10):
                 # 执行当前动作
-                actions[index]()
+                if not actions[index]():
+                    logger.info("没有冰锥了，尝试直接点击boss")
+                    context.tasker.controller.post_click(boss_x, boss_y).wait()
                 time.sleep(1)
 
                 # 检查boss是否存在
@@ -461,6 +463,10 @@ class Mars101(CustomAction):
             fightUtils.title_learn("巨龙", 2, "初级龙族血统", 3, context)
             fightUtils.title_learn("巨龙", 3, "中级龙族血统", 3, context)
             fightUtils.title_learn("巨龙", 4, "高级龙族血统", 3, context)
+            if self.useEarthGate > 1:
+                fightUtils.title_learn("巨龙", 5, "邪龙血统", 1, context)
+                fightUtils.title_learn_branch("巨龙", 5, "攻击强化", 3, context)
+                fightUtils.title_learn_branch("巨龙", 5, "生命强化", 3, context)
         context.run_task("Fight_ReturnMainWindow")
 
         fightUtils.title_learn("战斗", 5, "剑圣", 1, context)
@@ -938,7 +944,7 @@ class Mars_Fight_ClearCurrentLayer(CustomAction):
     ) -> CustomAction.RunResult:
         # 进行特殊配置以适应Mars
         self.fightProcessor.grid_count = 40
-        self.fightProcessor.hit_monster_count = 3
+        self.fightProcessor.hit_monster_count = 7
         self.fightProcessor.targetWish = "马尔斯"
         self.fightProcessor.clearCurrentLayer(context, isclearall=True)
         return CustomAction.RunResult(success=True)
