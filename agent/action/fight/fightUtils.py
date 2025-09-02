@@ -703,6 +703,7 @@ def checkGumballsStatusV2(context: Context):
 
 
 def dragonwish(targetWish: str, context: Context):
+    logger.info(f"开始许愿: {targetWish}")
     wishlist = []
     min_index = 999
     min_index_wish = ""
