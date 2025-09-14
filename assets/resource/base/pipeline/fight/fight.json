@@ -401,11 +401,11 @@
     },
     "Fight_Magic_Elemental": {
         "next": [
-            "Fight_ClickLightMagicPage"
+            "Fight_ClickLightMagicPage",
+            "Fight_FindDragon"
         ],
         "interrupt": [
             "Fight_SkillPack_Type",
-            "Fight_DragonWish",
             "Fight_SkillPack_Open"
         ],
         "post_delay": 100,
@@ -432,7 +432,6 @@
             "Fight_ClickSpecialMagicPage"
         ],
         "interrupt": [
-            "Fight_DragonWish",
             "Fight_SkillPack_Open"
         ],
         "post_delay": 100,
@@ -657,24 +656,6 @@
         "post_delay": 1000,
         "threshold": 0.8,
         "timeout": 3000
-    },
-    "Fight_DragonWish": {
-        "recognition": "TemplateMatch",
-        "template": [
-            "fight/UniversalUI/DragonWish3.png",
-            "fight/UniversalUI/DragonWish2.png"
-        ],
-        "roi": [
-            158,
-            112,
-            415,
-            623
-        ],
-        "post_delay": 500,
-        "threshold": 0.8,
-        "timeout": 2000,
-        "action": "Custom",
-        "custom_action": "JJC_DragonWishTest"
     },
     "Fight_PickUpAll": {
         "action": "MultiSwipe",

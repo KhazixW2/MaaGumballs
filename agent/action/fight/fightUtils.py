@@ -81,11 +81,13 @@ def cast_magic(Type: str, MagicName: str, context: Context, TargetPos: tuple = (
         >>> cast_magic("火", "火球术", context)
         True
     """
-
+    logger.info(f"准备施放魔法:{MagicName}")
     # run
     context.run_task(
         "Fight_Magic_Elemental",
-        pipeline_override={"Fight_Magic_Elemental": {"next": [MagicType[Type]]}},
+        pipeline_override={
+            "Fight_Magic_Elemental": {"next": [MagicType[Type], "Fight_FindDragon"]}
+        },
     )
 
     image = context.tasker.controller.post_screencap().wait().get()
@@ -326,6 +328,7 @@ def title_learn_branch(
     titleName: str,
     expectedLevel: int,
     context: Context,
+    repeatable: bool = False,
 ):
 
     # 对应几级称号的坐标
@@ -337,6 +340,10 @@ def title_learn_branch(
         [418, 842, 123, 147],
         [530, 847, 133, 147],
     ]
+    if not repeatable:
+        titleName_roi = [54, 463, 623, 550]
+    else:
+        titleName_roi = [122, 649, 491, 249]
 
     for i in range(0, expectedLevel):
         logger.info(f"学习{titleType}系 {i+1}级{titleName}")
@@ -348,8 +355,9 @@ def title_learn_branch(
                 },
                 "TitlePanel_TitleCheck_New": {
                     "expected": titleName,
-                    "roi": [54, 463, 623, 550],
+                    "roi": titleName_roi,
                     "target_offset": [0, 0, 0, 0],
+                    "order_by": "Vertical",
                 },
                 "TitlePanel_Series": {"expected": titleType},
                 "TitlePanel_Panel": {"expected": titleType},
@@ -1042,6 +1050,7 @@ def handle_dragon_event(map_str: str, context: Context):
 
     if context.run_recognition("Fight_FindDragon", img):
         logger.info("是神龙,俺,俺们有救了！！！")
+        logger.info(f"当前:{map_str}")
         dragonwish(map_str, context)
         logger.info("神龙带肥家lo~")
         return True

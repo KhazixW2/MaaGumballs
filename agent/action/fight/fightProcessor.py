@@ -18,7 +18,7 @@ class FightProcessor:
         return cls._instance
 
     # 执行函数
-    def __init__(self):
+    def __init__(self, target_wish="工资"):
         if not hasattr(self, "initialized"):
             super().__init__()
             self.cols = 5
@@ -33,10 +33,10 @@ class FightProcessor:
             self._grid_count = 10
             self._hit_monster_count = 3
             self.max_grid_loop = 20
-            self.max_monster_loop_fail = 4
-            self.max_grid_loop_fail = 4
+            self.max_monster_loop_fail = 3
+            self.max_grid_loop_fail = 3
             self.isCheckDragon = False
-            self.targetWish = "工资"
+            self.targetWish = target_wish
 
             # 初始化逻辑
             roi_list = self.generate_floor_roi_grid()
@@ -393,7 +393,7 @@ class FightProcessor:
             # 检测grid还能不能找到, 累计几次找不到则退出
             if not self.detect_and_click_grid(context, img):
                 fail_check_grid_cnt += 1
-                if fail_check_grid_cnt >= self.max_grid_loop_fail - 3:
+                if fail_check_grid_cnt >= self.max_grid_loop_fail - 2:
                     # 连续多次找不到地板,则全部标记为已访问, 避免死循环
                     for r in range(self.rows):
                         for c in range(self.cols):
@@ -412,11 +412,8 @@ class FightProcessor:
             )
 
             if isclearall:
-                # 需要地板怪物全清
-                if (
-                    fail_check_monster_cnt >= self.max_monster_loop_fail
-                    and fail_check_grid_cnt >= self.max_grid_loop_fail
-                ):
+                # 需要地板全清
+                if fail_check_grid_cnt >= self.max_grid_loop_fail:
                     break
             # 如果提前清理完该层，那么不需要继续等待，可以提前退出
             elif (

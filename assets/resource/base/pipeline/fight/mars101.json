@@ -845,6 +845,63 @@
             96
         ],
         "threshold": 0.9,
+        "timeout": 3000
+    },
+    "Mars_GetDemonTitle_Confirm": {
+        "recognition": "TemplateMatch",
+        "action": "Click",
+        "template": "fight/Mars/恶魔系称号.png",
+        "roi": [
+            54,
+            639,
+            625,
+            330
+        ],
+        "timeout": 3000,
+        "post_delay": 500,
+        "next": [
+            "Mars_GetDemonTitle_Enabled"
+        ]
+    },
+    "Mars_GetDemonTitle_Confirm_2": {
+        "recognition": "OCR",
+        "expected": "恶魔系称号",
+        "roi": [
+            35,
+            655,
+            658,
+            210
+        ],
+        "post_delay": 500,
+        "timeout": 3000
+    },
+    "Mars_GetDemonTitle_Enabled": {
+        "recognition": "TemplateMatch",
+        "action": "Click",
+        "template": "fight/Mars/激活.png",
+        "roi": [
+            54,
+            639,
+            625,
+            330
+        ],
+        "post_delay": 500,
+        "timeout": 3000,
+        "next": [
+            "Mars_GetDemonTitle_Enabled_Next"
+        ]
+    },
+    "Mars_GetDemonTitle_Enabled_Next": {
+        "recognition": "TemplateMatch",
+        "action": "Click",
+        "template": "fight/Mars/激活_step_2.png",
+        "roi": [
+            54,
+            639,
+            625,
+            330
+        ],
+        "post_delay": 500,
         "timeout": 3000,
         "next": [
             "Fight_ReturnMainWindow"

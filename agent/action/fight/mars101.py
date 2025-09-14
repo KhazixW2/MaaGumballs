@@ -33,6 +33,7 @@ class Mars101(CustomAction):
         self.is_android_skill_enabled = False
         self.isLeaveMaze = False
         self.isAutoPickup = False
+        self.is_demontitle_enable = False
         self.layers = 1
 
     def initialize(self, context: Context):
@@ -59,6 +60,28 @@ class Mars101(CustomAction):
         if fightUtils.check_magic_special("泰坦之足", context):
             logger.info(f"已获得泰坦之足")
             self.isGetTitanFoot = True
+        # 初始化恶魔系称号状态
+        # 如果恶魔系称号期望开启，那么在初始化阶段启用手记获取称号
+        if self.astrological_title_para:
+            context.run_task("Fight_ReturnMainWindow")
+            OpenDetail = context.run_task("Bag_Open")
+            if OpenDetail:
+                time.sleep(1)
+                fightUtils.findItem("阿瑞斯的手记", True, context, threshold=0.8)
+            time.sleep(1)
+
+            if context.run_recognition(
+                "Mars_GetDemonTitle_Confirm",
+                context.tasker.controller.post_screencap().wait().get(),
+            ):
+                taskdetail = context.run_task("Mars_GetDemonTitle_Confirm")
+            else:
+                taskdetail = context.run_task("Mars_GetDemonTitle_Confirm_2")
+            if taskdetail.nodes:
+                logger.info("已获得恶魔系称号")
+                self.is_demontitle_enable = True
+            else:
+                logger.info("获取恶魔系称号失败")
 
     def Check_CurrentLayers(self, context: Context):
         tempLayers = fightUtils.handle_currentlayer_event(context)
@@ -103,13 +126,14 @@ class Mars101(CustomAction):
             self.isTitle_L1 = True
             return True
         elif (self.layers >= 10 and self.layers <= 13) and self.isTitle_L10 == False:
-            fightUtils.title_learn("冒险", 1, "寻宝者", 1, context)
-            fightUtils.title_learn("冒险", 2, "勘探家", 1, context)
+            fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
+            fightUtils.title_learn("冒险", 2, "勘探家", 3, context)
             fightUtils.title_learn("冒险", 3, "符文师", 3, context)
+            context.run_task("Fight_ReturnMainWindow")
             self.isTitle_L10 = True
             return True
         elif (self.layers >= 61 and self.layers <= 63) and self.isTitle_L61 == False:
-            fightUtils.title_learn("魔法", 1, "魔法学徒", 3, context)
+            fightUtils.title_learn("魔法", 1, "魔法学徒", 1, context)
             fightUtils.title_learn("魔法", 2, "黑袍法师", 1, context)
             fightUtils.title_learn("魔法", 3, "咒术师", 3, context)
             fightUtils.title_learn("魔法", 4, "土系大师", 1, context)
@@ -132,8 +156,8 @@ class Mars101(CustomAction):
             fightUtils.title_learn("魔法", 2, "黑袍法师", 3, context)
             # fightUtils.title_learn("魔法", 3, "咒术师", 3, context)
             # fightUtils.title_learn("魔法", 4, "土系大师", 3, context)
-            fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
-            fightUtils.title_learn("冒险", 2, "勘探家", 3, context)
+            # fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
+            # fightUtils.title_learn("冒险", 2, "勘探家", 3, context)
             if self.isTitle_L10 == False:
                 fightUtils.title_learn("冒险", 3, "符文师", 3, context)
                 self.isTitle_L10 = True
@@ -143,17 +167,20 @@ class Mars101(CustomAction):
             fightUtils.title_learn_branch("冒险", 5, "攻击强化", 3, context)
             fightUtils.title_learn_branch("冒险", 5, "生命强化", 3, context)
             # fightUtils.title_learn_branch("冒险", 5, "魔法强化", 3, context)
-            if self.astrological_title_para:
-                logger.info("点了占星")
-                fightUtils.title_learn("占星", 1, "占星学徒", 1, context)
-                fightUtils.title_learn("占星", 2, "星象观测者", 3, context)
-                fightUtils.title_learn("占星", 3, "星象守卫", 3, context)
-                fightUtils.title_learn("占星", 4, "星辰守望者", 3, context)
-                fightUtils.title_learn("占星", 5, "星界裁决者", 1, context)
-                fightUtils.title_learn_branch("占星", 5, "攻击强化", 3, context)
-                fightUtils.title_learn_branch("占星", 5, "生命强化", 3, context)
+            if self.astrological_title_para and self.is_demontitle_enable:
+                logger.info("点了恶魔")
+                fightUtils.title_learn("恶魔", 1, "堕落者", 1, context)
+                fightUtils.title_learn("恶魔", 2, "下位恶魔", 3, context)
+                fightUtils.title_learn("恶魔", 3, "中位恶魔", 3, context)
+                fightUtils.title_learn("恶魔", 4, "上位恶魔", 3, context)
+                fightUtils.title_learn("恶魔", 5, "恶魔大领主", 1, context)
+                fightUtils.title_learn_branch("恶魔", 5, "攻击强化", 3, context)
+                fightUtils.title_learn_branch(
+                    "恶魔", 5, "攻击强化", 3, context, repeatable=True
+                )
+                fightUtils.title_learn_branch("恶魔", 5, "生命强化", 3, context)
             else:
-                logger.info("没点占星")
+                logger.info("没点恶魔")
 
             context.run_task("Fight_ReturnMainWindow")
             context.run_task("Save_Status")
@@ -350,6 +377,7 @@ class Mars101(CustomAction):
                     break
 
                 index = (index + 1) % len(actions)
+                fightUtils.handle_dragon_event("马尔斯", context)
 
             # 捡东西
             time.sleep(1)
@@ -934,7 +962,7 @@ class Mars_Fight_ClearCurrentLayer(CustomAction):
 
     def __init__(self):
         super().__init__()
-        self.fightProcessor = fightProcessor.FightProcessor()
+        self.fightProcessor = fightProcessor.FightProcessor(target_wish="马尔斯")
 
     # 执行函数
     def run(
