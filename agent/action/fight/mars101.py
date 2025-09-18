@@ -169,7 +169,7 @@ class Mars101(CustomAction):
             # fightUtils.title_learn_branch("冒险", 5, "魔法强化", 3, context)
             if self.astrological_title_para and self.is_demontitle_enable:
                 logger.info("点了恶魔")
-                fightUtils.title_learn("恶魔", 1, "堕落者", 1, context)
+                fightUtils.title_learn("恶魔", 1, "堕落者", 3, context)
                 fightUtils.title_learn("恶魔", 2, "下位恶魔", 3, context)
                 fightUtils.title_learn("恶魔", 3, "中位恶魔", 3, context)
                 fightUtils.title_learn("恶魔", 4, "上位恶魔", 3, context)
@@ -841,6 +841,10 @@ class Mars101(CustomAction):
             context.run_task("Fight_ReturnMainWindow")
             return False
 
+        if context.run_recognition("Fight_FindRespawn", image):
+            logger.info("检测到死亡， 尝试小SL")
+            fightUtils.Saveyourlife(context)
+            return False
         return True
 
     def gotoSpecialLayer(self, context: Context):

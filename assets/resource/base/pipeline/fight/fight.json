@@ -716,5 +716,17 @@
         "order_by": "Score",
         "timeout": 3000,
         "next": "Fight_PickUpAll"
+    },
+    "Fight_FindRespawn": {
+        "recognition": "OCR",
+        "roi": [
+            66,
+            563,
+            583,
+            446
+        ],
+        "expected": "复活",
+        "action": "DoNothing",
+        "timeout": 2000
     }
 }

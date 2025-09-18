@@ -31,7 +31,8 @@ class FightProcessor:
             self._grid_lower = [130, 135, 143]
             self._grid_upper = [170, 175, 183]
             self._grid_count = 10
-            self._hit_monster_count = 3
+            self._hit_monster_count = 5
+
             self.max_grid_loop = 20
             self.max_monster_loop_fail = 3
             self.max_grid_loop_fail = 3
@@ -393,12 +394,13 @@ class FightProcessor:
             # 检测grid还能不能找到, 累计几次找不到则退出
             if not self.detect_and_click_grid(context, img):
                 fail_check_grid_cnt += 1
-                if fail_check_grid_cnt >= self.max_grid_loop_fail - 2:
-                    # 连续多次找不到地板,则全部标记为已访问, 避免死循环
+                if fail_check_grid_cnt >= 2:
+                    # 连续2次找不到地板,则全部标记为已访问, 避免死循环
+                    logger.debug("连续2次找不到地板,全部标记为已访问")
                     for r in range(self.rows):
                         for c in range(self.cols):
                             if self.visited[r][c] == 0:
-                                self.visited[r][c] += 2
+                                self.visited[r][c] += 1
             else:
                 fail_check_grid_cnt = 0
 
