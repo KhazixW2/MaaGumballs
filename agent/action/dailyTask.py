@@ -1,3 +1,4 @@
+from nt import pipe
 from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
@@ -29,12 +30,11 @@ class DailyTask(CustomAction):
                 logger.info("检测到停止任务, 开始退出agent")
                 return CustomAction.RunResult(success=False)
             # 检查任务是否开启
-            
+
             nodeDetail = context.get_node_data(f"{key}")
             if not nodeDetail or not nodeDetail.get("enabled", False):
                 logger.info(f"任务: {key} 已禁用, 跳过该任务")
                 continue
-
 
             logger.info(f"执行任务: {key}")
             IsCheck = False
@@ -50,10 +50,53 @@ class DailyTask(CustomAction):
 
             if IsCheck:
                 logger.info(f"完成任务: {key}")
-            else :
+            else:
                 logger.warning(f"任务: {key} 识别失败, 跳过该任务")
             context.run_task("ReturnHall")
 
             time.sleep(1)
+
+        return CustomAction.RunResult(success=True)
+
+
+@AgentServer.custom_action("WeeklyRaidFighting")
+class WeeklyRaidFighting(CustomAction):
+    def __init__(self):
+        self.weeklyRaidList = ["永恒王座"]
+        super().__init__()
+
+    def run(
+        self, context: Context, argv: CustomAction.RunArg
+    ) -> CustomAction.RunResult:
+        # 每周周赛战斗
+        # 1. 检测是什么副本
+
+        if recoDetail := context.run_recognition(
+            "WeeklyRaid_Check",
+            context.tasker.controller.post_screencap().wait().get(),
+        ):
+            if recoDetail.best_result.text in self.weeklyRaidList:
+                taskName = recoDetail.best_result.text
+                logger.info(f"检测到周赛战斗为: {taskName}")
+        else:
+            logger.warning("未检测到周赛战斗")
+            return CustomAction.RunResult(success=False)
+
+        # 2. 执行战斗, 一共6~7轮
+        for i in range(12):
+            if MonsterReco := context.run_recognition(
+                "WeeklyRaid_MonsterCheck",
+                context.tasker.controller.post_screencap().wait().get(),
+            ):
+                # 2.1 点开怪物
+                box = MonsterReco.best_result.box
+                center_x, center_y = box[0] + box[2] // 2, box[1] + box[3] // 2
+                context.tasker.controller.post_click(center_x, center_y).wait()
+                time.sleep(1)
+
+                # 2.2 袭击怪物
+                context.run_task("WeeklyRaid_Attack")
+            else:
+                context.run_task("WeeklyRaid_SwipeToRight")
 
         return CustomAction.RunResult(success=True)

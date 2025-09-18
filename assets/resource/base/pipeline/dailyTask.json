@@ -872,6 +872,11 @@
         ]
     },
     "WeeklyRaid": {
+        "next": [
+            "WeeklyRaid_Start"
+        ]
+    },
+    "WeeklyRaid_Start": {
         "recognition": "TemplateMatch",
         "template": "dailyTask/WeeklyRaid.png",
         "roi": [
@@ -883,6 +888,134 @@
         "action": "Click",
         "post_delay": 1000,
         "timeout": 2000,
-        "next": []
+        "next": [
+            "WeeklyRaid_Fighting"
+        ]
+    },
+    "WeeklyRaid_Fighting": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "custom_action": "WeeklyRaidFighting"
+    },
+    "WeeklyRaid_Check": {
+        "recognition": "OCR",
+        "expected": [
+            "永恒王座"
+        ],
+        "roi": [
+            38,
+            159,
+            653,
+            212
+        ],
+        "post_delay": 1000,
+        "timeout": 2000
+    },
+    "WeeklyRaid_MonsterCheck": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "dailyTask/weeklyRaid/永恒王座冈布奥1.png",
+            "dailyTask/weeklyRaid/永恒王座冈布奥2.png",
+            "dailyTask/weeklyRaid/永恒王座冈布奥3.png",
+            "dailyTask/weeklyRaid/永恒王座冈布奥4.png",
+            "dailyTask/weeklyRaid/永恒王座冈布奥5.png",
+            "dailyTask/weeklyRaid/永恒王座冈布奥6.png",
+            "dailyTask/weeklyRaid/永恒王座冈布奥7.png"
+        ],
+        "roi": [
+            47,
+            262,
+            625,
+            846
+        ]
+    },
+    "WeeklyRaid_Attack": {
+        "recognition": "OCR",
+        "expected": [
+            "袭击"
+        ],
+        "roi": [
+            5,
+            1122,
+            303,
+            157
+        ],
+        "action": "Click",
+        "post_delay": 3000,
+        "timeout": 5000,
+        "next": [
+            "WeeklyRaid_Attack_Skip"
+        ]
+    },
+    "WeeklyRaid_Attack_Skip": {
+        "recognition": "OCR",
+        "expected": [
+            "跳过"
+        ],
+        "action": "Click",
+        "roi": [
+            511,
+            1136,
+            193,
+            126
+        ],
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "WeeklyRaid_Attack_Success"
+        ],
+        "on_error": "TaskFailNotify"
+    },
+    "WeeklyRaid_Attack_Success": {
+        "recognition": "OCR",
+        "expected": [
+            "战斗胜利"
+        ],
+        "roi": [
+            89,
+            245,
+            570,
+            484
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "WeeklyRaid_Attack_Reward"
+        ]
+    },
+    "WeeklyRaid_Attack_Reward": {
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/weeklyRaid/永恒王座彩蛋.png",
+        "roi": [
+            158,
+            625,
+            546,
+            386
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "ConfirmButton_500ms",
+            "WeeklyRaid_Attack_Reward"
+        ]
+    },
+    "WeeklyRaid_SwipeToRight": {
+        "action": "Swipe",
+        "begin": [
+            430,
+            676,
+            10,
+            10
+        ],
+        "end": [
+            344,
+            677,
+            10,
+            10
+        ],
+        "post_delay": 1000,
+        "timeout": 2000
     }
 }
