@@ -86,7 +86,9 @@ def cast_magic(Type: str, MagicName: str, context: Context, TargetPos: tuple = (
     context.run_task(
         "Fight_Magic_Elemental",
         pipeline_override={
-            "Fight_Magic_Elemental": {"next": [MagicType[Type], "Fight_FindDragon"]}
+            "Fight_Magic_Elemental": {
+                "next": [MagicType[Type], "Fight_FindDragon", "Fight_FindRespawn"]
+            }
         },
     )
 
@@ -146,7 +148,11 @@ def check_magic(Type: str, MagicName: str, context: Context):
     # run
     context.run_task(
         "Fight_Magic_Elemental",
-        pipeline_override={"Fight_Magic_Elemental": {"next": [MagicType[Type]]}},
+        pipeline_override={
+            "Fight_Magic_Elemental": {
+                "next": [MagicType[Type], "Fight_FindDragon", "Fight_FindRespawn"]
+            }
+        },
     )
 
     image = context.tasker.controller.post_screencap().wait().get()

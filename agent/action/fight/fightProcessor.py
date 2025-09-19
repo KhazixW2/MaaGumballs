@@ -280,7 +280,7 @@ class FightProcessor:
                                     context.tasker.controller.post_click(
                                         x + w // 2, y + h // 2
                                     ).wait()
-                                    time.sleep(0.05)
+                                    # time.sleep(0.05)
                                 break
 
         return monster_count > 0
@@ -355,8 +355,8 @@ class FightProcessor:
                     context.tasker.controller.post_click(x + w // 2, y + h // 2).wait()
                     self.visited[r][c] += 1
                     checkGridCnt += 1
-                    time.sleep(0.03)
-        time.sleep(0.15)
+                    # time.sleep(0.03)
+        time.sleep(0.8)
         return checkGridCnt
 
     def handle_dragon_encounter(self, context: Context, img):

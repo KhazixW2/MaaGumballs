@@ -902,7 +902,7 @@
             330
         ],
         "post_delay": 500,
-        "timeout": 3000,
+        "Mars_Inter_Confirm_Success""timeout": 3000,
         "next": [
             "Fight_ReturnMainWindow"
         ]
