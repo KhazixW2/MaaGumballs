@@ -498,6 +498,8 @@ class Mars101(CustomAction):
             fightUtils.title_learn_branch(
                 "恶魔", 5, "攻击强化", 3, context, repeatable=True
             )
+            # 增加截图调试
+            context.run_task("Screenshot")
             fightUtils.title_learn_branch("恶魔", 5, "生命强化", 3, context)
         else:
             logger.info("没点恶魔")
@@ -527,6 +529,8 @@ class Mars101(CustomAction):
         fightUtils.cast_magic("火", "末日审判", context)
         for _ in range(5):
             fightUtils.cast_magic("光", "祝福术", context)
+        # 增加截图调试
+        context.run_task("Screenshot")
         self.leaveSpecialLayer(context)
         context.run_task("Fight_ReturnMainWindow")
 
@@ -543,6 +547,9 @@ class Mars101(CustomAction):
         self.leaveSpecialLayer(context)
         context.run_task("Fight_ReturnMainWindow")
         logger.info("可以出图了")
+
+        # 增加截图调试
+        context.run_task("Screenshot")
         self.isLeaveMaze = True
         # 到这可以出图了
 
