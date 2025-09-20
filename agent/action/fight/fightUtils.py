@@ -686,7 +686,8 @@ def checkGumballsStatusV2(context: Context):
             "魔法值": "225/225"
         }
     """
-    status = {
+    # 默认状态值
+    default_status = {
         "攻击": "50",
         "魔力": "50",
         "闪避": "10%",
@@ -697,22 +698,43 @@ def checkGumballsStatusV2(context: Context):
         "降低敌人攻击": "8",
     }
 
-    # 打开状态面包
-    context.run_task("Fight_ReturnMainWindow")
-    context.run_task("Fight_OpenStatusPanel")
+    # 复制默认状态，避免修改原始默认值
+    status = default_status.copy()
 
-    # 检查状态
-    image = context.tasker.controller.post_screencap().wait().get()
-    if reco_detail := context.run_recognition("Fight_CheckStatusText", image):
-        nodes = reco_detail.all_results
-        status = pair_by_distance(nodes, max_distance=200)
-    else:
-        logger.warning("状态识别失败，保持默认值")
+    try:
+        # 打开状态面板
+        context.run_task("Fight_ReturnMainWindow")
+        context.run_task("Fight_OpenStatusPanel")
 
-    # 输出状态字典
-    # logger.info(status)
+        # 检查状态
+        image = context.tasker.controller.post_screencap().wait().get()
+        if reco_detail := context.run_recognition("Fight_CheckStatusText", image):
+            try:
+                nodes = reco_detail.all_results
+                new_status = pair_by_distance(nodes, max_distance=200)
 
-    context.run_task("Fight_ReturnMainWindow")
+                # 验证获取的状态值，如果有异常值则使用默认值替代
+                for key, value in new_status.items():
+                    if key not in default_status.keys():
+                        continue
+                    if not value:
+                        logger.warning(f"状态值 '{key}' 识别为空，使用默认值")
+                        continue
+                    status[key] = value
+            except Exception as e:
+                logger.error(f"处理状态数据时出错: {str(e)}")
+            # logger.info(status)
+        else:
+            logger.warning("状态识别失败，保持默认值")
+    except Exception as e:
+        logger.error(f"检查角色状态时发生异常: {str(e)}")
+    finally:
+        # 确保无论如何都会返回主窗口
+        try:
+            context.run_task("Fight_ReturnMainWindow")
+        except Exception as e:
+            logger.error(f"返回主窗口时发生异常: {str(e)}")
+
     return status
 
 
