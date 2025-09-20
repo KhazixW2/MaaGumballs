@@ -524,15 +524,16 @@ class Mars101(CustomAction):
         fightUtils.title_learn_branch("战斗", 5, "生命强化", 3, context)
         context.run_task("Fight_ReturnMainWindow")
 
-        # 这里进夹层压血,这里的裸男不会打，魔法助手开着
-        self.gotoSpecialLayer(context)
-        fightUtils.cast_magic("火", "末日审判", context)
-        for _ in range(5):
-            fightUtils.cast_magic("光", "祝福术", context)
-        # 增加截图调试
-        context.run_task("Screenshot")
-        self.leaveSpecialLayer(context)
-        context.run_task("Fight_ReturnMainWindow")
+        # 这里进夹层压血
+        if self.target_earthgate_para > 1:
+            self.gotoSpecialLayer(context)
+            fightUtils.cast_magic("火", "末日审判", context)
+            for _ in range(4):
+                fightUtils.cast_magic("光", "祝福术", context)
+            # 增加截图调试
+            context.run_task("Screenshot")
+            self.leaveSpecialLayer(context)
+            context.run_task("Fight_ReturnMainWindow")
 
         OpenDetail = context.run_task("Bag_Open")
         if OpenDetail:
@@ -540,11 +541,11 @@ class Mars101(CustomAction):
             for _ in range(2):
                 if fightUtils.findItem("武器大师执照", True, context, threshold=0.8):
                     break
-        # 这里进夹层压血,这里的裸男不会打，魔法助手开着
-        self.gotoSpecialLayer(context)
-        for _ in range(5):
-            fightUtils.cast_magic("光", "祝福术", context)
-        self.leaveSpecialLayer(context)
+        if self.target_earthgate_para > 1:
+            self.gotoSpecialLayer(context)
+            for _ in range(5):
+                fightUtils.cast_magic("光", "祝福术", context)
+            self.leaveSpecialLayer(context)
         context.run_task("Fight_ReturnMainWindow")
         logger.info("可以出图了")
 
