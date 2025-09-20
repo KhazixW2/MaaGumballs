@@ -429,7 +429,9 @@
     },
     "Fight_Magic_Special": {
         "next": [
-            "Fight_ClickSpecialMagicPage"
+            "Fight_ClickSpecialMagicPage",
+            "Fight_FindDragon",
+            "Fight_FindRespawn"
         ],
         "interrupt": [
             "Fight_SkillPack_Open"
