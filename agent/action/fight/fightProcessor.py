@@ -356,7 +356,7 @@ class FightProcessor:
                     self.visited[r][c] += 1
                     checkGridCnt += 1
                     # time.sleep(0.03)
-        time.sleep(0.8)
+        time.sleep(0.25)
         return checkGridCnt
 
     def handle_dragon_encounter(self, context: Context, img):
