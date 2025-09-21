@@ -800,7 +800,11 @@ class Mars101(CustomAction):
         self.handle_MarsExchangeShop_event(context, image)
         # 点称号挪到战后，确保购买战利品有足够的探索点
         self.Check_DefaultTitle(context)
-
+        image = context.tasker.controller.post_screencap().wait().get()
+        if context.run_recognition("Fight_FindRespawn", image):
+            logger.info("检测到死亡， 尝试小SL")
+            fightUtils.Saveyourlife(context)
+            return False
         if not self.handle_SpecialLayer_event(context, image):
             # 如果卡剧情(离开),则返回False, 重新清理该层
             return False
@@ -815,11 +819,6 @@ class Mars101(CustomAction):
             "Mars_HideGumball", context.tasker.controller.post_screencap().wait().get()
         ):
             context.run_task("Mars_HideGumball")
-        image = context.tasker.controller.post_screencap().wait().get()
-        if context.run_recognition("Fight_FindRespawn", image):
-            logger.info("检测到死亡， 尝试小SL")
-            fightUtils.Saveyourlife(context)
-            return False
         if (
             (self.layers >= self.target_leave_layer_para - 2)
             # 到了99层依然没有获得魔法助手就结算
