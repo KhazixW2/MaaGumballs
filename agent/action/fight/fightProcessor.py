@@ -31,7 +31,7 @@ class FightProcessor:
             self._grid_lower = [130, 135, 143]
             self._grid_upper = [170, 175, 183]
             self._grid_count = 10
-            self._hit_monster_count = 5
+            self._hit_monster_count = 4
 
             self.max_grid_loop = 20
             self.max_monster_loop_fail = 3
@@ -244,7 +244,20 @@ class FightProcessor:
         img = context.tasker.controller.post_screencap().wait().get()
         monster_count = 0
 
-        # 检测是否有怪物并攻击
+        # 从 visited 数组中获取门的位置（999 表示门的位置）
+        door_r, door_c = -1, -1
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if self.visited[r][c] == 999:
+                    door_r, door_c = r, c
+                    break
+            if door_r != -1:
+                break
+
+        # 存储可攻击的怪物信息：(距离, 行, 列, x, y, w, h)
+        attackable_monsters = []
+
+        # 检测所有怪物
         for r in range(self.rows):
             for c in range(self.cols):
                 if self.visited[r][c] >= 30:
@@ -263,9 +276,11 @@ class FightProcessor:
                     self.monster_count,
                     context,
                 ):
-                    self.visited[r][c] += 1
                     monster_count += 1
                     logger.debug(f"检测({r + 1},{c + 1})有怪物: {x}, {y}, {w}, {h}")
+
+                    # 检查是否可以被攻击到
+                    can_attack = False
                     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # 四方向
                     for direction in directions:
                         new_r, new_c = r + direction[0], c + direction[1]
@@ -276,12 +291,32 @@ class FightProcessor:
                                 logger.debug(
                                     f"({new_r + 1},{new_c + 1})已被访问, 可以攻击到({r + 1},{c + 1})的怪物"
                                 )
-                                for _ in range(self.hit_monster_count):
-                                    context.tasker.controller.post_click(
-                                        x + w // 2, y + h // 2
-                                    ).wait()
-                                    # time.sleep(0.05)
+                                can_attack = True
                                 break
+
+                    # 如果可以攻击，计算与门的距离并添加到列表
+                    if can_attack:
+                        # 计算与门的距离（曼哈顿距离）
+                        if door_r != -1:  # 如果找到了门
+                            distance = abs(r - door_r) + abs(c - door_c)
+                        else:
+                            # 如果没有找到门，使用到原点的距离作为替代
+                            distance = r + c
+
+                        attackable_monsters.append((distance, r, c, x, y, w, h))
+
+        # 按距离排序（距离近的优先攻击）
+        attackable_monsters.sort(key=lambda m: m[0])
+
+        # 攻击排序后的怪物
+        for monster in attackable_monsters:
+            _, r, c, x, y, w, h = monster
+            # 确认攻击后再标记已访问
+            self.visited[r][c] += 1
+            logger.debug(f"攻击怪物({r + 1},{c + 1})，距离门：{monster[0]}")
+            for _ in range(self.hit_monster_count):
+                context.tasker.controller.post_click(x + w // 2, y + h // 2).wait()
+                # time.sleep(0.05)
 
         return monster_count > 0
 
