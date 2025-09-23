@@ -210,10 +210,23 @@ class Mars101(CustomAction):
                     fightUtils.cast_magic_special("生命颂歌", context)
                 if self.layers >= 110:
                     fightUtils.cast_magic("气", "静电场", context)
+                cast_state = {"痊愈术": True, "神恩术": True, "治疗术": True}
                 while HPStatus < 0.8:
-                    if not fightUtils.cast_magic("水", "痊愈术", context):
-                        if not fightUtils.cast_magic("光", "神恩术", context):
-                            if not fightUtils.cast_magic("水", "治疗术", context):
+                    if (
+                        not fightUtils.cast_magic("水", "痊愈术", context)
+                        and cast_state["痊愈术"]
+                    ):
+                        cast_state["痊愈术"] = False
+                        if (
+                            not fightUtils.cast_magic("光", "神恩术", context)
+                            and cast_state["神恩术"]
+                        ):
+                            cast_state["神恩术"] = False
+                            if (
+                                not fightUtils.cast_magic("水", "治疗术", context)
+                                and cast_state["治疗术"]
+                            ):
+                                cast_state["治疗术"] = False
                                 logger.info("没有任何治疗方法了= =")
                                 break
                     context.run_task("Fight_ReturnMainWindow")
@@ -531,6 +544,7 @@ class Mars101(CustomAction):
             for _ in range(4):
                 fightUtils.cast_magic("光", "祝福术", context)
             # 增加截图调试
+            time.sleep(1)
             context.run_task("Screenshot")
             self.leaveSpecialLayer(context)
             context.run_task("Fight_ReturnMainWindow")
@@ -545,6 +559,7 @@ class Mars101(CustomAction):
             self.gotoSpecialLayer(context)
             for _ in range(5):
                 fightUtils.cast_magic("光", "祝福术", context)
+            time.sleep(1)
             self.leaveSpecialLayer(context)
         context.run_task("Fight_ReturnMainWindow")
         logger.info("可以出图了")

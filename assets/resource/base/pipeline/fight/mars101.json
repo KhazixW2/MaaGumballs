@@ -119,6 +119,7 @@
             "MarsBossReward_Select3",
             "MarsBossReward_Select4",
             "MarsBossReward_Select5",
+            "MarsBossReward_Select6",
             "MarsReward_Open"
         ]
     },
@@ -155,7 +156,8 @@
         "recognition": "TemplateMatch",
         "template": [
             "fight/Mars/MarsDagger.png",
-            "fight/Mars/MarsShieldNecklace.png"
+            "fight/Mars/MarsHighLevelStaff.png",
+            "fight/Mars/MarsMagicNecklace.png"
         ],
         "roi": [
             35,
@@ -239,6 +241,23 @@
         ]
     },
     "MarsBossReward_Select5": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/Mars/MarsBossReward_MAG.png"
+        ],
+        "roi": [
+            35,
+            463,
+            662,
+            489
+        ],
+        "action": "Click",
+        "timeout": 2000,
+        "next": [
+            "MarsReward_Open"
+        ]
+    },
+    "MarsBossReward_Select6": {
         "recognition": "TemplateMatch",
         "template": [
             "fight/Mars/MarsBossReward_5w.png"
