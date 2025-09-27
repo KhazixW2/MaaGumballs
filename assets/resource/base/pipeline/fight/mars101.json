@@ -96,7 +96,8 @@
         "timeout": 2000,
         "next": [
             "MarsReward_OpenAll",
-            "MarsReward_Select",
+            "MarsReward_Select_1",
+            "MarsReward_Select_2",
             "MarsReward_Open",
             "Mars_Inter_Confirm_Fail"
         ]
@@ -152,12 +153,30 @@
         "action": "Click",
         "timeout": 2000
     },
-    "MarsReward_Select": {
+    "MarsReward_Select_1": {
         "recognition": "TemplateMatch",
         "template": [
             "fight/Mars/MarsDagger.png",
             "fight/Mars/MarsHighLevelStaff.png",
             "fight/Mars/MarsMagicNecklace.png"
+        ],
+        "roi": [
+            35,
+            463,
+            662,
+            489
+        ],
+        "action": "Click",
+        "timeout": 2000,
+        "next": [
+            "MarsReward_Open",
+            "Mars_Inter_Confirm_Fail"
+        ]
+    },
+    "MarsReward_Select_2": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/Mars/MarsPurse.png"
         ],
         "roi": [
             35,
@@ -572,6 +591,14 @@
         "timeout": 2000
     },
     "Mars_Exchange_Shop_Check": {
+        "next": [
+            "Mars_Exchange_Shop_Check_Dagger",
+            "Mars_Exchange_Shop_Check_Highlevel_1",
+            "Mars_Exchange_Shop_Check_Highlevel_2"
+        ],
+        "timeout": 1500
+    },
+    "Mars_Exchange_Shop_Check_Dagger": {
         "recognition": "TemplateMatch",
         "template": [
             "fight/Mars/MarsDagger.png"
@@ -582,7 +609,33 @@
             217,
             187
         ],
-        "timeout": 3000
+        "timeout": 1500
+    },
+    "Mars_Exchange_Shop_Check_Highlevel_1": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/Mars/MarsHighLevelStaff.png"
+        ],
+        "roi": [
+            424,
+            461,
+            217,
+            187
+        ],
+        "timeout": 1500
+    },
+    "Mars_Exchange_Shop_Check_Highlevel_2": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/Mars/MarsMagicNecklace.png"
+        ],
+        "roi": [
+            424,
+            461,
+            217,
+            187
+        ],
+        "timeout": 1500
     },
     "Mars_Exchange_Shop_Add": {
         "recognition": "TemplateMatch",
@@ -603,6 +656,28 @@
         ]
     },
     "Mars_Exchange_Shop_Add_Equipment_Choose": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/Mars/MarsExchangeShop_Could01.png",
+            "fight/Mars/MarsExchangeShop_Could02.png",
+            "fight/Mars/MarsExchangeShop_Could03.png",
+            "fight/Mars/MarsExchangeShop_Could04.png",
+            "fight/Mars/MarsExchangeShop_Could05.png"
+        ],
+        "roi": [
+            75,
+            356,
+            584,
+            523
+        ],
+        "on_error": [
+            "Mars_Exchange_Shop_Add_Equipment_Choose_2"
+        ],
+        "action": "Click",
+        "post_delay": 1500,
+        "timeout": 2000
+    },
+    "Mars_Exchange_Shop_Add_Equipment_Choose_2": {
         "recognition": "TemplateMatch",
         "template": [
             "fight/Mars/MarsExchangeShop_Could01.png",

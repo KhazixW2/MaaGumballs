@@ -585,6 +585,19 @@ def findItem(
     return True
 
 
+def openBagAndUseItem(
+    equipmentName: str,
+    isUse: bool,
+    context: Context,
+):
+    context.run_task("Fight_ReturnMainWindow")
+    OpenDetail = context.run_task("Bag_Open")
+    if OpenDetail:
+        time.sleep(1)
+        findItem(equipmentName, isUse, context)
+    time.sleep(1)
+
+
 def pair_by_distance(detections, max_distance=200):
     """
     根据距离进行智能配对，返回字典格式

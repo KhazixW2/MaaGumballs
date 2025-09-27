@@ -737,5 +737,20 @@
         "custom_action_param": {
             "save_dir": "debug/images"
         }
+    },
+    "WaitStableNode_ForOverride": {
+        "roi": [
+            5,
+            122,
+            707,
+            947
+        ],
+        "pre_wait_freezes": {
+            "time": 50,
+            "threshold": 0.96
+        },
+        "pre_delay": 10,
+        "post_delay": 10,
+        "timeout": 1000
     }
 }

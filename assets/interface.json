@@ -759,14 +759,6 @@
         "目标出图楼层": {
             "cases": [
                 {
-                    "name": "99",
-                    "pipeline_override": {
-                        "Mars_Target_Layer_Setting": {
-                            "expected": "99"
-                        }
-                    }
-                },
-                {
                     "name": "109",
                     "pipeline_override": {
                         "Mars_Target_Layer_Setting": {
@@ -781,11 +773,43 @@
                             "expected": "119"
                         }
                     }
+                },
+                {
+                    "name": "129",
+                    "pipeline_override": {
+                        "Mars_Target_Layer_Setting": {
+                            "expected": "129"
+                        }
+                    }
+                },
+                {
+                    "name": "139",
+                    "pipeline_override": {
+                        "Mars_Target_Layer_Setting": {
+                            "expected": "139"
+                        }
+                    }
+                },
+                {
+                    "name": "149",
+                    "pipeline_override": {
+                        "Mars_Target_Layer_Setting": {
+                            "expected": "149"
+                        }
+                    }
                 }
             ]
         },
         "目标大地数量": {
             "cases": [
+                {
+                    "name": "0",
+                    "pipeline_override": {
+                        "Mars_Target_Earthgate_Setting": {
+                            "expected": "0"
+                        }
+                    }
+                },
                 {
                     "name": "1",
                     "pipeline_override": {

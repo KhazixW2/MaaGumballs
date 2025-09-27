@@ -355,6 +355,53 @@ class FightProcessor:
         else:
             self.isCheckDragon = False
 
+    def checkGirdAndMonster(self, context: Context, img=None) -> bool:
+        """
+        检查当前地图是否存在地板或怪物
+        :param context: 上下文对象
+        :param img: 当前截图
+        :return: 是否存在地板或怪物
+        """
+        if img is None:
+            img = context.tasker.controller.post_screencap().wait().get()
+
+        for r in range(self.rows):
+            for c in range(self.cols):
+
+                x, y, w, h = self.roi_matrix[r][c]
+                roi_image = img[y : y + h, x : x + w]
+
+                # 检查地板
+                left_img = roi_image[h - 15 : h, 0:20].copy()
+                right_img = roi_image[h - 15 : h, w - 20 : w].copy()
+                left_detected = self.bgrColorMatch(
+                    left_img, self.grid_lower, self.grid_upper, self.grid_count, context
+                )
+                right_detected = self.bgrColorMatch(
+                    right_img,
+                    self.grid_lower,
+                    self.grid_upper,
+                    self.grid_count,
+                    context,
+                )
+                if left_detected or right_detected:
+                    return True
+
+                # 检查怪物
+                roi_image = img[y : y + h, x : x + w]
+                monster_img = roi_image[0:60, 0:60].copy()
+                monster_detected = self.bgrColorMatch(
+                    monster_img,
+                    self.monster_lower,
+                    self.monster_upper,
+                    self.monster_count,
+                    context,
+                )
+                if monster_detected:
+                    return True
+
+        return False
+
     def detect_and_click_grid(self, context: Context, img) -> int:
         """
         检测并点击地板格子
@@ -365,7 +412,7 @@ class FightProcessor:
         checkGridCnt = 0
         for r in range(self.rows):
             for c in range(self.cols):
-                if self.visited[r][c] >= 5:
+                if self.visited[r][c] >= 8:
                     continue
 
                 x, y, w, h = self.roi_matrix[r][c]
@@ -391,7 +438,6 @@ class FightProcessor:
                     self.visited[r][c] += 1
                     checkGridCnt += 1
                     # time.sleep(0.03)
-        time.sleep(0.3)
         return checkGridCnt
 
     def handle_dragon_encounter(self, context: Context, img):
@@ -439,6 +485,12 @@ class FightProcessor:
             else:
                 fail_check_grid_cnt = 0
 
+            context.run_task(
+                "WaitStableNode_ForOverride",
+                pipeline_override={
+                    "WaitStableNode_ForOverride": {"pre_wait_freezes": {"time": 30}}
+                },
+            )
             # 检测怪物并进行攻击
             if not self.checkMonster(context):
                 fail_check_monster_cnt += 1

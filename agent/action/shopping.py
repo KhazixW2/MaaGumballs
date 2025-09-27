@@ -298,10 +298,10 @@ class Mars_Shopping(CustomAction):
                 context.tasker.controller.post_click(
                     int(box[0] + box[2] / 2) + 65, int(box[1] + box[3] / 2) - 85
                 ).wait()
-                time.sleep(0.5)
+                time.sleep(0.3)
 
                 context.run_task("ConfirmButton_500ms")
-        time.sleep(0.5)
+        time.sleep(0.3)
         if recoDetail := context.run_recognition(
             "Shop_FindMarsSpecialBox_reco",
             context.tasker.controller.post_screencap().wait().get(),
@@ -322,7 +322,7 @@ class Mars_Shopping(CustomAction):
                 context.tasker.controller.post_click(
                     box[0] + box[2] // 2, box[1] + box[3] // 2
                 )
-                time.sleep(0.5)
+                time.sleep(0.3)
                 context.run_task("ConfirmButton_500ms")
 
         context.run_task("Fight_ReturnMainWindow")
