@@ -230,13 +230,10 @@
         ]
     },
     "TSD_SelectFreeFleetInList": {
-        "recognition": "TemplateMatch",
-        "template": "fight/time_space_domain/fleetFreeInList.png",
+        "recognition": "OCR",
+        "expected": ["深渊"],
         "roi": [
-            37,
-            167,
-            102,
-            77
+            44, 164, 627, 537
         ],
         "action": "Click",
         "post_delay": 1500

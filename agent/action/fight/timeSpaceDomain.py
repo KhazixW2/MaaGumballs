@@ -28,7 +28,9 @@ class TSD_explore(CustomAction):
         self.highestFleet = ""  # 最高战力舰队
         self.exploreNums = 1  # 剩余需要探索的次数
         self.fleet_nums = 4  # 默认出战舰队数量
+        self.default_fleets = ["奥鲁维", "卡纳斯", "游荡者", "深渊"]  # 默认舰队顺序
         self.fight_fleets = []  # 根据选择的舰队数量按战力大小排列的舰队列表
+        self.fleet_list = []  # 当前可用的舰队列表
         self.check = False  # 是否从左上角开始检查
         self.direction = "Right"  # 移动方向
         self.isDown = False  # 是否下移过一次
@@ -45,6 +47,7 @@ class TSD_explore(CustomAction):
 
         img = context.tasker.controller.post_screencap().wait().get()
         for key in fleetPowerRoiList:
+
             nums = context.run_recognition(
                 "TSD_getPowerNumber",
                 img,
@@ -91,6 +94,7 @@ class TSD_explore(CustomAction):
     # 返回所有舰队
     def returnFleets(self, context: Context) -> bool:
         while True:
+
             img = context.tasker.controller.post_screencap().wait().get()
             for key in self.fleetRoiList:
                 status = context.run_recognition(
@@ -173,13 +177,18 @@ class TSD_explore(CustomAction):
         taskType: str,
     ) -> bool:
         taskEntry: dict = {
-            "explore": {"taskName": "TSD_Investigate", "pipeline_override": None},
+            "explore": {
+                "taskName": "TSD_Investigate",
+                "pipeline_override": {
+                    "TSD_SelectFreeFleetInList": {"expected": self.fleet_list[:1]}
+                },
+            },
             "monster": {
                 "taskName": "TSD_ClearMonster",
                 "pipeline_override": {
                     "TSD_SelectFreeFleetInList": {
                         "recognition": "OCR",
-                        "expected": self.fight_fleets[:1],
+                        "expected": self.fleet_list[:1],
                         "roi": [44, 164, 627, 537],
                         "interrupt": ["TSD_SelectCancelButton"],
                         "next": ["TSD_ClickAttackButton"],
@@ -207,6 +216,10 @@ class TSD_explore(CustomAction):
         else:
             exploreList = self.GetTaskTargetList(context, taskType, 0.82)
         for explore in exploreList:
+            if context.tasker.stopping:
+                logger.info("检测到停止任务, 开始退出agent")
+                return CustomAction.RunResult(success=False)
+
             box = explore.box
             btn = context.tasker.controller.post_click(
                 box[0] + box[2] // 2, box[1] + box[3] // 2
@@ -224,11 +237,14 @@ class TSD_explore(CustomAction):
                 context.run_task("BackText")
                 return False
             self.exploreNums -= 1
-            self.fight_fleets.append(self.fight_fleets.pop(0))  # 轮换舰队顺序
+            self.fleet_list.append(self.fleet_list.pop(0))  # 轮换舰队顺序
+            taskEntry["explore"]["pipeline_override"]["TSD_SelectFreeFleetInList"][
+                "expected"
+            ] = self.fleet_list[:1]
             taskEntry["monster"]["pipeline_override"]["TSD_SelectFreeFleetInList"][
                 "expected"
-            ] = self.fight_fleets[:1]
-            # logger.info(f"出战舰队顺序: {self.fight_fleets}")
+            ] = self.fleet_list[:1]
+            logger.info(f"出战舰队顺序: {self.fleet_list}")
             if inPlanet and self.exploreNums == 0:
                 # 星球小怪任务完成后，返回地图
                 logger.info("该星球已无小怪，返回地图")
@@ -319,6 +335,7 @@ class TSD_explore(CustomAction):
         flag = True
         # 检查是否存在目标
         while flag:
+
             targetList = self.GetTaskTargetList(context, taskType, threshold)
             if self.exploreNums > 0:
                 self.check = False  # 存在目标，到达地图边界就需要再次从左上角开始检查
@@ -453,9 +470,16 @@ class TSD_explore(CustomAction):
 
         # # 开始探索
         for key in taskList:
+
             if taskList[key]["enabled"] == True:
                 logger.info(f"开始执行【{ taskList[key]['name'] }】任务")
+                self.fleet_list = (
+                    self.default_fleets if key == "explore" else self.fight_fleets
+                )  # 如果是探索任务，使用全部舰队
                 while self.checkTargetExist(context, key, taskList[key]["threshold"]):
+                    if context.tasker.stopping:
+                        logger.info("检测到停止任务, 开始退出agent")
+                        return CustomAction.RunResult(success=False)
                     self.runTask(context, key)
                 logger.info(f"【{ taskList[key]['name'] }】任务执行完毕")
             else:
