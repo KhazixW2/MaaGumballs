@@ -262,7 +262,9 @@
     "MarsBossReward_Select5": {
         "recognition": "TemplateMatch",
         "template": [
-            "fight/Mars/MarsBossReward_MAG.png"
+            "fight/Mars/MarsBossReward_MAG.png",
+            "fight/Mars/MarsBossReward_Other3.png",
+            "fight/Mars/MarsBossReward_Other5.png"
         ],
         "roi": [
             35,
@@ -652,7 +654,8 @@
         "post_delay": 1500,
         "timeout": 2000,
         "next": [
-            "Mars_Exchange_Shop_Add_Equipment_Choose"
+            "Mars_Exchange_Shop_Add_Equipment_Choose",
+            "Mars_Exchange_Shop_Add_Equipment_Choose_2"
         ]
     },
     "Mars_Exchange_Shop_Add_Equipment_Choose": {
@@ -669,9 +672,6 @@
             356,
             584,
             523
-        ],
-        "on_error": [
-            "Mars_Exchange_Shop_Add_Equipment_Choose_2"
         ],
         "action": "Click",
         "post_delay": 1500,

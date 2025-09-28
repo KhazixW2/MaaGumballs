@@ -152,7 +152,7 @@ class Mars101(CustomAction):
         elif (self.layers >= 61 and self.layers <= 63) and self.isTitle_L61 == False:
             fightUtils.title_learn("魔法", 1, "魔法学徒", 1, context)
             fightUtils.title_learn("魔法", 2, "黑袍法师", 1, context)
-            fightUtils.title_learn("魔法", 3, "咒术师", 3, context)
+            fightUtils.title_learn("魔法", 3, "咒术师", 2, context)
             fightUtils.title_learn("魔法", 4, "土系大师", 1, context)
             fightUtils.title_learn("魔法", 5, "位面先知", 1, context)
             fightUtils.title_learn_branch("魔法", 5, "魔力强化", 3, context)
@@ -610,9 +610,13 @@ class Mars101(CustomAction):
         # 添加开场检查血量，防止意外
         if (self.layers > self.target_leave_layer_para - 20) and self.layers % 10 != 0:
             self.Check_DefaultStatus(context)
+            # 去掉地震
             if not fightUtils.checkBuffStatus("寒冰护盾", context):
                 fightUtils.cast_magic("水", "寒冰护盾", context)
-            fightUtils.cast_magic("土", "地震术", context)
+                if self.layers > self.target_leave_layer_para - 10:
+                    fightUtils.cast_magic("水", "极光屏障", context)
+                else:
+                    fightUtils.cast_magic("水", "寒冰护盾", context)
 
         # self.Check_DefaultEquipment(context)
         return True
@@ -655,6 +659,7 @@ class Mars101(CustomAction):
         context.run_task("Fight_ReturnMainWindow")
         for _ in range(3):
             fightUtils.cast_magic_special("生命颂歌", context)
+        fightUtils.title_learn("魔法", 3, "咒术师", 1, context)
         if fightUtils.title_check("巨龙", context):
             fightUtils.title_learn("巨龙", 1, "亚龙血统", 3, context)
             fightUtils.title_learn("巨龙", 2, "初级龙族血统", 3, context)
@@ -671,8 +676,7 @@ class Mars101(CustomAction):
         if self.target_earthgate_para >= 0:
             self.gotoSpecialLayer(context)
             fightUtils.cast_magic("土", "石肤术", context)
-            if not fightUtils.cast_magic("暗", "死亡波纹", context):
-                fightUtils.cast_magic("火", "末日审判", context)
+            fightUtils.cast_magic("暗", "死亡波纹", context)
 
             self.Control_tenpecentHP(context)
             # 增加截图调试
@@ -998,7 +1002,7 @@ class Mars101(CustomAction):
     def handle_UseMagicAssist_event(self, context: Context):
         if (
             self.isGetMagicAssist
-            and self.layers > self.target_leave_layer_para - 29
+            and self.layers > self.target_leave_layer_para - 19
             and self.isUseMagicAssist == False
         ):
             logger.info("开启魔法助手帮助推图")
@@ -1015,22 +1019,25 @@ class Mars101(CustomAction):
         # self.handle_perfect_event(context)
         fightUtils.handle_dragon_event("马尔斯", context)
         self.Check_DefaultStatus(context)
-        if self.layers > 100 and (self.layers - 1) % 10 == 0 and self.useDemon < 3:
+        if (
+            self.layers > self.target_leave_layer_para - 29
+            and (self.layers - 1) % 10 == 0
+            and self.useDemon < 3
+        ):
             fightUtils.openBagAndUseItem("小恶魔", True, context)
             self.useDemon += 1
 
         image = context.tasker.controller.post_screencap().wait().get()
         self.handle_MarsBody_event(context, image)
 
-        if self.layers < self.target_leave_layer_para - 20:
-            # 避免炸弹，反甲和火球
-            self.handle_MarsRuinsShop_event(context, image)
-            self.handle_MarsStatue_event(context)
+        self.handle_MarsRuinsShop_event(context, image)
         self.handle_MarsReward_event(context)
+        context.run_task("Fight_ReturnMainWindow")
+        image = context.tasker.controller.post_screencap().wait().get()
+        self.handle_MarsStatue_event(context)
         self.handle_MarsExchangeShop_event(context, image)
         # 点称号挪到战后，确保购买战利品有足够的探索点
         self.Check_DefaultTitle(context)
-        image = context.tasker.controller.post_screencap().wait().get()
         if context.run_recognition("Fight_FindRespawn", image):
             logger.info("检测到死亡， 尝试小SL")
             fightUtils.Saveyourlife(context)
@@ -1060,6 +1067,8 @@ class Mars101(CustomAction):
             self.handle_before_leave_maze_event(context)
         else:
             if self.isAutoPickup == self.target_autopickup_para:
+                if not context.run_recognition("Fight_OpenedDoor", image):
+                    context.run_task("Mars_Fight_ClearCurrentLayer")
                 logger.info("触发下楼事件")
                 fightUtils.handle_downstair_event(context)
             else:
