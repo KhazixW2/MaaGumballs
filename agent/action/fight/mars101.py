@@ -614,9 +614,8 @@ class Mars101(CustomAction):
             if not fightUtils.checkBuffStatus("寒冰护盾", context):
                 fightUtils.cast_magic("水", "寒冰护盾", context)
                 if self.layers > self.target_leave_layer_para - 10:
-                    fightUtils.cast_magic("水", "极光屏障", context)
-                else:
-                    fightUtils.cast_magic("水", "寒冰护盾", context)
+                    if not fightUtils.cast_magic("水", "极光屏障", context):
+                        fightUtils.cast_magic("水", "寒冰护盾", context)
 
         # self.Check_DefaultEquipment(context)
         return True
