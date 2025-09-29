@@ -1097,6 +1097,7 @@ class Mars101(CustomAction):
         if context.run_recognition("Fight_FindRespawn", image):
             logger.info("检测到死亡， 尝试小SL")
             fightUtils.Saveyourlife(context)
+            fightUtils.check_magic("水", "寒冰护盾", context)
             return False
 
         if context.run_recognition(
