@@ -1125,6 +1125,7 @@ class Mars101(CustomAction):
 
     def gotoSpecialLayer(self, context: Context):
         context.run_task("Fight_ReturnMainWindow")
+        time.sleep(1)
         if context.run_recognition(
             "Mars_GotoSpecialLayer",
             context.tasker.controller.post_screencap().wait().get(),
@@ -1147,6 +1148,7 @@ class Mars101(CustomAction):
 
     def leaveSpecialLayer(self, context: Context):
         context.run_task("Fight_ReturnMainWindow")
+        time.sleep(1)
         if context.run_recognition(
             "Mars_LeaveSpecialLayer",
             context.tasker.controller.post_screencap().wait().get(),
