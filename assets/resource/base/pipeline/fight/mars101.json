@@ -661,11 +661,7 @@
     "Mars_Exchange_Shop_Add_Equipment_Choose": {
         "recognition": "TemplateMatch",
         "template": [
-            "fight/Mars/MarsExchangeShop_Could01.png",
-            "fight/Mars/MarsExchangeShop_Could02.png",
-            "fight/Mars/MarsExchangeShop_Could03.png",
-            "fight/Mars/MarsExchangeShop_Could04.png",
-            "fight/Mars/MarsExchangeShop_Could05.png"
+            "fight/Mars/MarsMagicNecklace.png"
         ],
         "roi": [
             75,
@@ -680,11 +676,7 @@
     "Mars_Exchange_Shop_Add_Equipment_Choose_2": {
         "recognition": "TemplateMatch",
         "template": [
-            "fight/Mars/MarsExchangeShop_Could01.png",
-            "fight/Mars/MarsExchangeShop_Could02.png",
-            "fight/Mars/MarsExchangeShop_Could03.png",
-            "fight/Mars/MarsExchangeShop_Could04.png",
-            "fight/Mars/MarsExchangeShop_Could05.png"
+            "fight/Mars/MarsMagicNecklace.png"
         ],
         "roi": [
             75,

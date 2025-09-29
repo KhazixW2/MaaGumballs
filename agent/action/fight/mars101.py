@@ -1025,6 +1025,8 @@ class Mars101(CustomAction):
         ):
             fightUtils.openBagAndUseItem("小恶魔", True, context)
             self.useDemon += 1
+            if self.useEarthGate < self.target_earthgate_para:
+                self.useEarthGate = self.target_earthgate_para
 
         image = context.tasker.controller.post_screencap().wait().get()
         self.handle_MarsBody_event(context, image)
