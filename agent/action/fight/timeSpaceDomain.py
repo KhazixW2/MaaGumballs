@@ -225,6 +225,10 @@ class TSD_explore(CustomAction):
                 box[0] + box[2] // 2, box[1] + box[3] // 2
             )
             time.sleep(2)
+            if not self.checkClickTarget(context, ["调查","袭击"]):
+                # 未点击到目标，证明因为地图移动导致目标位置变化，重新检查目标
+                logger.info("未点击到目标，重新检查目标")
+                return False
             task1 = None
             if taskEntry[taskType]["pipeline_override"]:
                 task1 = context.run_task(
@@ -244,7 +248,7 @@ class TSD_explore(CustomAction):
             taskEntry["monster"]["pipeline_override"]["TSD_SelectFreeFleetInList"][
                 "expected"
             ] = self.fleet_list[:1]
-            logger.info(f"出战舰队顺序: {self.fleet_list}")
+            # logger.info(f"出战舰队顺序: {self.fleet_list}")
             if inPlanet and self.exploreNums == 0:
                 # 星球小怪任务完成后，返回地图
                 logger.info("该星球已无小怪，返回地图")
@@ -276,6 +280,22 @@ class TSD_explore(CustomAction):
             return True
         return False
 
+    def checkClickTarget(self, context: Context, target:list) -> bool:
+        targetList = context.run_recognition(
+            "checkClickTarget",
+            context.tasker.controller.post_screencap().wait().get(),
+            pipeline_override={
+                "checkClickTarget": {
+                    "recognition": "OCR",
+                    "expected": target,
+                    "roi": [14, 283, 691, 756],
+                    "threshold": 0.8,
+                }
+            }
+        )
+        if targetList and targetList.filterd_results:  # 检测到目标
+            return True
+        return False
     def swipeMapToLeftTop(self, context: Context):
         while True:  # 将地图移动至左上角
             if self.checkBoundary(context, "LeftTop"):
