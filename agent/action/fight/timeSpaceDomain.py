@@ -396,13 +396,14 @@ class TSD_explore(CustomAction):
                                 if self.exploreNums == 0:
                                     logger.info(f"该星球已无小怪，请继续探索")
                                     context.run_task("BackText")  # 返回地图并移动
+                                    # 完成清理，记录星球名称 
+                                    self.planetList.append(
+                                        planetName.filterd_results[0].text
+                                    )
                                     self.swipeMap(context)
                                 else:
                                     logger.info("发现新星球")
                                     flag = False
-                                self.planetList.append(
-                                    planetName.filterd_results[0].text
-                                )
                     else:
                         # 已经探索过4个星球，结束探索
                         logger.info("已探索4个星球，结束探索")
