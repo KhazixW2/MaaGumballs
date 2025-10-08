@@ -497,7 +497,7 @@ class Mars101(CustomAction):
                 ).wait()
             fightUtils.cast_magic_special("生命颂歌", context)
             if self.layers >= 120:
-                fightUtils.cast_magic("水", "冰锥术", context, (boss_x, boss_y))
+                fightUtils.cast_magic("土", "石肤术", context, (boss_x, boss_y))
             fightUtils.cast_magic_special("生命颂歌", context)
 
             actions = []
