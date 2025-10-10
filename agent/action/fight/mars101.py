@@ -1006,14 +1006,21 @@ class Mars101(CustomAction):
     @timing_decorator
     def handle_SpecialLayer_event(self, context: Context, image):
         # 波塞冬不放柱子，用冰锥打裸男
-        if (
-            (30 <= self.layers + 1 <= 120)
-            and ((self.layers + 1) % 10 == 0)
-            and context.run_recognition(
-                "Mars_GotoSpecialLayer",
-                image,
-            )
-        ):
+        if (30 <= self.layers + 1 <= 120) and ((self.layers + 1) % 10 == 0):
+            for _ in range(5):
+                if not context.run_recognition("Mars_GotoSpecialLayer", image):
+                    logger.debug("当前截图中休息室可能被遮挡, 再次截图尝试")
+                    context.run_task(
+                        "WaitStableNode_ForOverride",
+                        pipeline_override={
+                            "WaitStableNode_ForOverride": {
+                                "pre_wait_freezes": {"time": 300}
+                            }
+                        },
+                    )
+                    image = context.tasker.controller.post_screencap().wait().get()
+                else:
+                    break
             logger.info("触发Mars休息室事件")
             if not self.gotoSpecialLayer(context):
                 return False
