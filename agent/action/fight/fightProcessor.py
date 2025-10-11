@@ -496,6 +496,13 @@ class FightProcessor:
                 fail_check_monster_cnt += 1
             else:
                 fail_check_monster_cnt = 0
+
+            context.run_task(
+                "WaitStableNode_ForOverride",
+                pipeline_override={
+                    "WaitStableNode_ForOverride": {"pre_wait_freezes": {"time": 30}}
+                },
+            )
             logger.debug(
                 f"连续检查不到地板轮次: {fail_check_grid_cnt}, 连续检查不到怪物轮次: {fail_check_monster_cnt}"
             )
