@@ -283,7 +283,7 @@ class Mars101(CustomAction):
         TEST_ROUNDS = 3  # 测试伤害的轮次
         MIN_CHANGE_THRESHOLD = 0.01  # 最小血量变化阈值（1%）
         CONSECUTIVE_STALL_LIMIT = 3  # 连续无变化最大次数
-        BLESSING_DAMAGE_MULTIPLIER = 6.5  # 祝福术伤害是石肤术最大伤害的6.5倍
+        BLESSING_DAMAGE_MULTIPLIER = 8  # 祝福术伤害是石肤术最大伤害的8倍
 
         current_hp = self.Get_CurrentHPStatus(context)
         logger.info(f"开始安全压血操作，初始血量: {current_hp:.2%}")
@@ -1033,7 +1033,7 @@ class Mars101(CustomAction):
                         "石肤术",
                         context,
                     )
-                if self.layers <= 120:
+                if self.layers <= 89:
                     if fightUtils.cast_magic(
                         "暗",
                         "死亡波纹",
@@ -1067,7 +1067,8 @@ class Mars101(CustomAction):
     def handle_UseMagicAssist_event(self, context: Context):
         if (
             self.isGetMagicAssist
-            and self.layers > self.target_leave_layer_para - 19
+            # 大于100层就开启魔法助手
+            and self.layers > 100
             and self.isUseMagicAssist == False
         ):
             logger.info("开启魔法助手帮助推图")
@@ -1082,17 +1083,31 @@ class Mars101(CustomAction):
     @timing_decorator
     def handle_postLayers_event(self, context: Context):
         # self.handle_perfect_event(context)
+        # 等待画面稳定
+        context.run_task(
+            "WaitStableNode_ForOverride",
+            pipeline_override={
+                "WaitStableNode_ForOverride": {"pre_wait_freezes": {"time": 100}}
+            },
+        )
         fightUtils.handle_dragon_event("马尔斯", context)
         self.Check_DefaultStatus(context)
         if (
+            # 距离出图楼层还有30层
             self.layers > self.target_leave_layer_para - 29
             and (self.layers - 1) % 10 == 0
             and self.useDemon < 3
         ):
             fightUtils.openBagAndUseItem("小恶魔", True, context)
             self.useDemon += 1
-            if self.useEarthGate < self.target_earthgate_para:
-                self.useEarthGate = self.target_earthgate_para
+            if (
+                self.useEarthGate < self.target_earthgate_para
+                and self.layers >= 100
+                and self.target_leave_layer_para >= 129
+            ):
+                # 把当前的大地次数记作目标大地次数，不要尝试大地，提前出图
+                self.target_earthgate_para = self.useEarthGate
+                self.target_leave_layer_para = 119
 
         image = context.tasker.controller.post_screencap().wait().get()
         self.handle_MarsBody_event(context, image)
@@ -1108,6 +1123,7 @@ class Mars101(CustomAction):
         if context.run_recognition("Fight_FindRespawn", image):
             logger.info("检测到死亡， 尝试小SL")
             fightUtils.Saveyourlife(context)
+            fightUtils.cast_magic("水", "寒冰护盾", context)
             return False
         if not self.handle_SpecialLayer_event(context, image):
             # 如果卡剧情(离开),则返回False, 重新清理该层
@@ -1168,7 +1184,7 @@ class Mars101(CustomAction):
         if context.run_recognition("Fight_FindRespawn", image):
             logger.info("检测到死亡， 尝试小SL")
             fightUtils.Saveyourlife(context)
-            fightUtils.check_magic("水", "寒冰护盾", context)
+            fightUtils.cast_magic("水", "寒冰护盾", context)
             return False
 
         if context.run_recognition(
