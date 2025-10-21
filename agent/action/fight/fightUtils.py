@@ -1057,19 +1057,19 @@ def autoOpenPicup(context: Context):
 
 def Saveyourlife(context: Context):
     checkcount = 0
-    while checkcount < 3:
+    while checkcount < 4:
         TextRecoDetail = context.run_recognition(
-            "Fight_FindRespawn",
+            "Fight_FindRespawnText",
             context.tasker.controller.post_screencap().wait().get(),
             pipeline_override={
-                "Fight_FindRespawn": {
+                "Fight_FindRespawnText": {
                     "roi": [66, 563, 583, 446],
                     "expected": "复活",
                 }
             },
         )
         checkcount += 1
-        time.sleep(0.5)
+        time.sleep(1)
         if TextRecoDetail:
             break
 

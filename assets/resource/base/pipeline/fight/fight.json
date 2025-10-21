@@ -720,14 +720,16 @@
         "next": "Fight_PickUpAll"
     },
     "Fight_FindRespawn": {
-        "recognition": "OCR",
-        "roi": [
-            66,
-            563,
-            583,
-            446
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/UniversalUI/FindRespawn.png"
         ],
-        "expected": "复活",
+        "roi": [
+            424,
+            431,
+            152,
+            159
+        ],
         "action": "DoNothing",
         "timeout": 2000
     },

@@ -446,6 +446,9 @@
         "recognition": "DirectHit",
         "action": "Custom",
         "custom_action": "Mars_Fight_ClearCurrentLayer",
+        "custom_action_param": {
+            "layers": 1
+        },
         "post_delay": 300,
         "timeout": 1000
     },

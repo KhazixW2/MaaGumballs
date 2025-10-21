@@ -28,6 +28,7 @@ class Mars101(CustomAction):
         self.isTitle_L61 = False
         self.isTitle_L86 = False
         self.useEarthGate = 0
+        self.isGetDragonTitle = False
         self.isGetTitanFoot = False
         self.isGetMagicAssist = False
         self.isUseMagicAssist = False
@@ -99,7 +100,14 @@ class Mars101(CustomAction):
             context, context.tasker.controller.post_screencap().wait().get()
         ):
             logger.info("有地板或者怪物残留，再次清层")
-            context.run_task("Mars_Fight_ClearCurrentLayer")
+            context.run_task(
+                "Mars_Fight_ClearCurrentLayer",
+                pipeline_override={
+                    "Mars_Fight_ClearCurrentLayer": {
+                        "custom_action_param": {"layers": self.layers}
+                    }
+                },
+            )
             return True
         logger.info("无地板或者怪物残留")
         return False
@@ -143,8 +151,8 @@ class Mars101(CustomAction):
             self.isTitle_L1 = True
             return True
         elif (self.layers >= 10 and self.layers <= 13) and self.isTitle_L10 == False:
-            fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
-            fightUtils.title_learn("冒险", 2, "勘探家", 3, context)
+            fightUtils.title_learn("冒险", 1, "寻宝者", 1, context)
+            fightUtils.title_learn("冒险", 2, "勘探家", 1, context)
             fightUtils.title_learn("冒险", 3, "符文师", 3, context)
             context.run_task("Fight_ReturnMainWindow")
             self.isTitle_L10 = True
@@ -171,8 +179,8 @@ class Mars101(CustomAction):
             fightUtils.title_learn("魔法", 2, "黑袍法师", 3, context)
             # fightUtils.title_learn("魔法", 3, "咒术师", 3, context)
             # fightUtils.title_learn("魔法", 4, "土系大师", 3, context)
-            # fightUtils.title_learn("冒险", 1, "寻宝者", 3, context)
-            # fightUtils.title_learn("冒险", 2, "勘探家", 3, context)
+            fightUtils.title_learn("冒险", 1, "寻宝者", 2, context)
+            fightUtils.title_learn("冒险", 2, "勘探家", 2, context)
             if self.isTitle_L10 == False:
                 fightUtils.title_learn("冒险", 3, "符文师", 3, context)
                 self.isTitle_L10 = True
@@ -197,6 +205,7 @@ class Mars101(CustomAction):
             else:
                 logger.info("没点恶魔")
             if fightUtils.title_check("巨龙", context):
+                self.isGetDragonTitle = True
                 fightUtils.title_learn("巨龙", 1, "亚龙血统", 3, context)
                 fightUtils.title_learn("巨龙", 2, "初级龙族血统", 3, context)
 
@@ -617,11 +626,9 @@ class Mars101(CustomAction):
             # 在61~63层时释放大地，或者x9(>60)层时释放大地
             or (61 <= self.layers <= 63)
         ) and self.useEarthGate < self.target_earthgate_para:
-            # 识别释放大地时没有拉绳子的洞
+            # 识别是否门关着
             image = context.tasker.controller.post_screencap().wait().get()
-            if context.run_recognition(
-                "FindKeyHole", image
-            ) and context.run_recognition("Fight_ClosedDoor", image):
+            if context.run_recognition("Fight_ClosedDoor", image):
                 logger.info("当前层无法释放大地，跳过")
                 return False
             context.run_task("Fight_ReturnMainWindow")
@@ -650,13 +657,16 @@ class Mars101(CustomAction):
         # 添加开场检查血量，防止意外
         if (self.layers > self.target_leave_layer_para - 20) and self.layers % 10 != 0:
             self.Check_DefaultStatus(context)
-            # 去掉地震
             if not fightUtils.checkBuffStatus("寒冰护盾", context):
-                fightUtils.cast_magic("水", "寒冰护盾", context)
                 if self.layers > self.target_leave_layer_para - 10:
+                    fightUtils.cast_magic("气", "静电场", context)
                     if not fightUtils.cast_magic("水", "极光屏障", context):
                         fightUtils.cast_magic("水", "寒冰护盾", context)
-
+                else:
+                    fightUtils.cast_magic("水", "寒冰护盾", context)
+                    # 在100~110层时释放地震，减少技能消耗，提高清层效率
+        if self.isUseMagicAssist and 100 < self.layers < 110:
+            fightUtils.cast_magic("土", "地震术", context)
         # self.Check_DefaultEquipment(context)
         return True
 
@@ -708,6 +718,9 @@ class Mars101(CustomAction):
             if self.useEarthGate > 1:
                 fightUtils.title_learn("巨龙", 5, "邪龙血统", 1, context)
                 fightUtils.title_learn_branch("巨龙", 5, "攻击强化", 3, context)
+                fightUtils.title_learn_branch(
+                    "巨龙", 5, "攻击强化", 3, context, repeatable=True
+                )
                 fightUtils.title_learn_branch("巨龙", 5, "生命强化", 3, context)
 
         context.run_task("Fight_ReturnMainWindow")
@@ -1006,7 +1019,7 @@ class Mars101(CustomAction):
     @timing_decorator
     def handle_SpecialLayer_event(self, context: Context, image):
         # 波塞冬不放柱子，用冰锥打裸男
-        if (30 <= self.layers + 1 <= 120) and ((self.layers + 1) % 10 == 0):
+        if (30 <= self.layers + 1 <= 150) and ((self.layers + 1) % 10 == 0):
             for _ in range(5):
                 if not context.run_recognition("Mars_GotoSpecialLayer", image):
                     logger.debug("当前截图中休息室可能被遮挡, 再次截图尝试")
@@ -1092,6 +1105,7 @@ class Mars101(CustomAction):
         )
         fightUtils.handle_dragon_event("马尔斯", context)
         self.Check_DefaultStatus(context)
+        # 临时使用， 小恶魔活动结束直接删除即可
         if (
             # 距离出图楼层还有30层
             self.layers > self.target_leave_layer_para - 29
@@ -1101,44 +1115,46 @@ class Mars101(CustomAction):
             fightUtils.openBagAndUseItem("小恶魔", True, context)
             self.useDemon += 1
             if (
-                self.useEarthGate < self.target_earthgate_para
+                self.useEarthGate == 2
+                and self.useEarthGate < self.target_earthgate_para
                 and self.layers >= 100
                 and self.target_leave_layer_para >= 129
             ):
                 # 把当前的大地次数记作目标大地次数，不要尝试大地，提前出图
                 self.target_earthgate_para = self.useEarthGate
                 self.target_leave_layer_para = 119
+        self.handle_MarsReward_event(context)
+        context.run_task("Fight_ReturnMainWindow")
 
         image = context.tasker.controller.post_screencap().wait().get()
         self.handle_MarsBody_event(context, image)
-
         self.handle_MarsRuinsShop_event(context, image)
-        self.handle_MarsReward_event(context)
         context.run_task("Fight_ReturnMainWindow")
-        image = context.tasker.controller.post_screencap().wait().get()
-        self.handle_MarsStatue_event(context)
+        self.handle_MarsStatue_event(context, image)
         self.handle_MarsExchangeShop_event(context, image)
         # 点称号挪到战后，确保购买战利品有足够的探索点
         self.Check_DefaultTitle(context)
+
         if context.run_recognition("Fight_FindRespawn", image):
             logger.info("检测到死亡， 尝试小SL")
             fightUtils.Saveyourlife(context)
-            fightUtils.cast_magic("水", "寒冰护盾", context)
+            fightUtils.cast_magic("土", "石肤术", context)
             return False
+
         if not self.handle_SpecialLayer_event(context, image):
             # 如果卡剧情(离开),则返回False, 重新清理该层
             return False
+
         if self.handle_EarthGate_event(context):
             # 大地成功,需要回到战前准备开始清理该层，大地失败则继续往下走
             return False
-        # if 101 >= self.layers >= 97:
-        #     StatusDetail: dict = fightUtils.checkGumballsStatusV2(context)
-        #     atk = int(StatusDetail["攻击"])
+
         # 检测隐藏冈布奥
         if self.layers >= 90 and context.run_recognition(
             "Mars_HideGumball", context.tasker.controller.post_screencap().wait().get()
         ):
             context.run_task("Mars_HideGumball")
+
         if (
             (self.layers >= self.target_leave_layer_para - 2)
             # 到了99层依然没有获得魔法助手就结算
@@ -1151,7 +1167,14 @@ class Mars101(CustomAction):
         else:
             if self.isAutoPickup == self.target_autopickup_para:
                 if not context.run_recognition("Fight_OpenedDoor", image):
-                    context.run_task("Mars_Fight_ClearCurrentLayer")
+                    context.run_task(
+                        "Mars_Fight_ClearCurrentLayer",
+                        pipeline_override={
+                            "Mars_Fight_ClearCurrentLayer": {
+                                "custom_action_param": {"layers": self.layers}
+                            }
+                        },
+                    )
                 logger.info("触发下楼事件")
                 fightUtils.handle_downstair_event(context)
             else:
@@ -1174,7 +1197,14 @@ class Mars101(CustomAction):
             return True
         # 小怪层探索
         else:
-            context.run_task("Mars_Fight_ClearCurrentLayer")
+            context.run_task(
+                "Mars_Fight_ClearCurrentLayer",
+                pipeline_override={
+                    "Mars_Fight_ClearCurrentLayer": {
+                        "custom_action_param": {"layers": self.layers}
+                    }
+                },
+            )
 
         return True
 
@@ -1184,7 +1214,7 @@ class Mars101(CustomAction):
         if context.run_recognition("Fight_FindRespawn", image):
             logger.info("检测到死亡， 尝试小SL")
             fightUtils.Saveyourlife(context)
-            fightUtils.cast_magic("水", "寒冰护盾", context)
+            fightUtils.cast_magic("土", "石肤术", context)
             return False
 
         if context.run_recognition(
@@ -1199,6 +1229,11 @@ class Mars101(CustomAction):
             "Mars_Inter_Confirm_Fail",
             image,
         ):
+            if context.run_recognition("Fight_FindRespawn", image):
+                logger.info("检测到死亡， 尝试小SL")
+                fightUtils.Saveyourlife(context)
+                fightUtils.cast_magic("土", "石肤术", context)
+                return False
             logger.info("检测到卡离开, 本层重新探索")
             context.run_task("Mars_Inter_Confirm_Fail")
             return False
@@ -1340,6 +1375,16 @@ class Mars_Fight_ClearCurrentLayer(CustomAction):
         context: Context,
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
+        # 读取传入的层数参数（兼容 dict/对象）
+        layers_arg = json.loads(argv.custom_action_param)["layers"]
+        if layers_arg is not None:
+            logger.info(f"Mars_Fight_ClearCurrentLayer 接收到 layers={layers_arg}")
+            try:
+                # 作为变量传入处理器，后续可按需使用
+                self.fightProcessor.layers = layers_arg
+            except Exception:
+                pass
+
         # 进行特殊配置以适应Mars
         self.fightProcessor.grid_count = 40
         self.fightProcessor.targetWish = "马尔斯"

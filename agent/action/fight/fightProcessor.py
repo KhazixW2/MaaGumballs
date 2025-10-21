@@ -21,6 +21,7 @@ class FightProcessor:
     def __init__(self, target_wish="工资"):
         if not hasattr(self, "initialized"):
             super().__init__()
+            self.layers = 1
             self.cols = 5
             self.rows = 6
             self.roi_matrix = []
@@ -31,6 +32,9 @@ class FightProcessor:
             self._grid_lower = [130, 135, 143]
             self._grid_upper = [170, 175, 183]
             self._grid_count = 10
+            self.monster_grid_lower = [190, 61, 53]
+            self.monster_grid_upper = [240, 79, 73]
+            self.monster_grid_count = 20
             self._hit_monster_count = 4
 
             self.max_grid_loop = 20
@@ -420,6 +424,7 @@ class FightProcessor:
                 # 提取左下角和右下角区域
                 left_img = roi_image[h - 15 : h, 0:20].copy()
                 right_img = roi_image[h - 15 : h, w - 20 : w].copy()
+                center_img = roi_image[40:70, 60:90].copy()
 
                 # 使用实例变量中的颜色阈值
                 left_detected = self.bgrColorMatch(
@@ -432,11 +437,22 @@ class FightProcessor:
                     self.grid_count,
                     context,
                 )
+                center_detected = self.bgrColorMatch(
+                    center_img,
+                    self.monster_grid_lower,
+                    self.monster_grid_upper,
+                    self.monster_grid_count,
+                    context,
+                )
 
                 if left_detected or right_detected:
                     context.tasker.controller.post_click(x + w // 2, y + h // 2).wait()
                     self.visited[r][c] += 1
                     checkGridCnt += 1
+                    if self.layers > 110 and center_detected:
+                        # 开启了一个怪物地板
+                        logger.debug("点击了一个怪物地板")
+                        return checkGridCnt
                     # time.sleep(0.03)
         return checkGridCnt
 
