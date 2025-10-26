@@ -36,6 +36,7 @@ class Mars101(CustomAction):
         self.isLeaveMaze = False
         self.isAutoPickup = False
         self.is_demontitle_enable = False
+        self.isDeath = False
         self.useDemon = 0
         self.layers = 1
 
@@ -91,7 +92,7 @@ class Mars101(CustomAction):
         self.layers = tempLayers
         return True
 
-    def Check_GridAndMonster(self, context: Context):
+    def Check_GridAndMonster(self, context: Context, clear=True):
         """
         检查当前层是否有地板或者怪物残留
         """
@@ -99,15 +100,17 @@ class Mars101(CustomAction):
         if processor.checkGirdAndMonster(
             context, context.tasker.controller.post_screencap().wait().get()
         ):
-            logger.info("有地板或者怪物残留，再次清层")
-            context.run_task(
-                "Mars_Fight_ClearCurrentLayer",
-                pipeline_override={
-                    "Mars_Fight_ClearCurrentLayer": {
-                        "custom_action_param": {"layers": self.layers}
-                    }
-                },
-            )
+            if clear:
+                logger.info("有地板或者怪物残留，再次清层")
+                context.run_task(
+                    "Mars_Fight_ClearCurrentLayer",
+                    pipeline_override={
+                        "Mars_Fight_ClearCurrentLayer": {
+                            "custom_action_param": {"layers": self.layers}
+                        }
+                    },
+                )
+            logger.info("有地板或者怪物残留")
             return True
         logger.info("无地板或者怪物残留")
         return False
@@ -272,10 +275,12 @@ class Mars101(CustomAction):
 
     def Control_tenpecentHP(self, context: Context):
         """
-        将目标血量压制到20%以内，确保目标不会死亡。
+        尽可能压低目标血量，同时确保目标不会死亡。
 
-        该函数先使用三次石肤术测试平均伤害，计算祝福术伤害为石肤术最大伤害的7倍，
-        然后根据当前血量选择合适的技能进行压血，如果血量不足以承受任何技能伤害则退出。
+        该函数先使用三次石肤术测试最大伤害，计算祝福术伤害为石肤术最大伤害的8倍，
+        如果当前血量可以接受石肤术或者祝福术的最大伤害则释放对应法术，如果血量不满足则停止压血。
+        
+        整个过程中会记录石肤术和祝福术的实际伤害，并动态修正最大伤害值，以提高压血精度。
 
         Args:
             context: 战斗上下文对象
@@ -286,52 +291,49 @@ class Mars101(CustomAction):
                   10000000: 技能可能被免疫
         """
         # 常量定义
-        TARGET_THRESHOLD = 0.20  # 目标血量阈值：20%
         SAFETY_MARGIN = 0.03  # 安全余量，防止过度压血导致死亡
         MAX_ATTEMPTS = 15  # 最大尝试次数
         TEST_ROUNDS = 3  # 测试伤害的轮次
         MIN_CHANGE_THRESHOLD = 0.01  # 最小血量变化阈值（1%）
         CONSECUTIVE_STALL_LIMIT = 3  # 连续无变化最大次数
         BLESSING_DAMAGE_MULTIPLIER = 8  # 祝福术伤害是石肤术最大伤害的8倍
+        DAMAGE_HISTORY_SIZE = 3  # 保留最近几次伤害记录用于计算平均值
 
         current_hp = self.Get_CurrentHPStatus(context)
         logger.info(f"开始安全压血操作，初始血量: {current_hp:.2%}")
 
-        # 如果已经在目标范围内，直接返回
-        if current_hp <= TARGET_THRESHOLD:
-            logger.info(
-                f"血量已在 {int(TARGET_THRESHOLD * 100)}% 以内: {current_hp:.2%}"
-            )
-            return current_hp
-
         # 测试石肤术伤害
-        avg_damage, max_damage = self._test_stoneskin_damage(context, TEST_ROUNDS)
-        if avg_damage is None:
+        _, max_stoneskin_damage = self._test_stoneskin_damage(context, TEST_ROUNDS)
+        if max_stoneskin_damage is None:
             logger.warning("测试未造成伤害，可能被免疫")
             return 10000000  # 测试失败，返回特殊值
 
-        # 计算祝福术伤害（基于最大伤害的7倍）
-        blessing_damage = max_damage * BLESSING_DAMAGE_MULTIPLIER
+        # 计算祝福术伤害（基于石肤术最大伤害的8倍）
+        blessing_damage = max_stoneskin_damage * BLESSING_DAMAGE_MULTIPLIER
 
         logger.info(
-            f"测试完成 - 石肤术平均伤害: {avg_damage:.2%}, 最大伤害: {max_damage:.2%}, "
-            f"祝福术预计伤害: {blessing_damage:.2%}"
+            f"测试完成 - 石肤术初始最大伤害: {max_stoneskin_damage:.2%}, "
+            f"祝福术初始预计伤害: {blessing_damage:.2%}"
         )
+
+        # 伤害记录
+        stoneskin_damage_history = []  # 石肤术伤害历史
+        blessing_damage_history = []   # 祝福术伤害历史
 
         # 执行压血循环
         attempts = 0
         consecutive_no_change = 0
 
-        while current_hp > TARGET_THRESHOLD and attempts < MAX_ATTEMPTS:
-            # 计算距离目标还需要多少伤害
-            hp_to_reduce = current_hp - TARGET_THRESHOLD - SAFETY_MARGIN
-
+        while attempts < MAX_ATTEMPTS:
+            # 计算安全可减少的血量（保留安全边界）
+            safe_hp_to_reduce = current_hp - SAFETY_MARGIN
+            
             # 检查是否可以使用祝福术
-            if blessing_damage <= hp_to_reduce:
+            if blessing_damage <= safe_hp_to_reduce:
                 # 祝福术伤害适中，不会导致死亡
                 prev_hp = current_hp
                 logger.info(
-                    f"使用祝福术，当前血量: {current_hp:.2%}, 预计伤害: {blessing_damage:.2%}"
+                    f"使用祝福术，当前血量: {current_hp:.2%}, 预计最大伤害: {blessing_damage:.2%}"
                 )
 
                 fightUtils.cast_magic("光", "祝福术", context)
@@ -341,13 +343,31 @@ class Mars101(CustomAction):
                 if current_hp <= 0:
                     logger.error("目标在压血过程中死亡，使用技能: 祝福术")
                     return -1
+                
+                # 记录实际伤害并更新最大伤害值
+                actual_damage = prev_hp - current_hp
+                if actual_damage > 0:
+                    blessing_damage_history.append(actual_damage)
+                    # 保持历史记录在指定大小
+                    if len(blessing_damage_history) > DAMAGE_HISTORY_SIZE:
+                        blessing_damage_history.pop(0)
+                    
+                    # 更新祝福术最大伤害估计（使用历史最大值）
+                    new_max_blessing = max(blessing_damage_history)
+                    if new_max_blessing > blessing_damage:
+                        logger.info(f"祝福术最大伤害上调: {blessing_damage:.2%} -> {new_max_blessing:.2%}")
+                        blessing_damage = new_max_blessing
+                    elif new_max_blessing < blessing_damage * 0.8:  # 如果实际伤害明显小于预期，下调预期
+                        logger.info(f"祝福术最大伤害下调: {blessing_damage:.2%} -> {new_max_blessing:.2%}")
+                        blessing_damage = new_max_blessing
+                    # 祝福术伤害调整不影响石肤术伤害预期
 
             # 检查是否可以使用石肤术
-            elif avg_damage <= hp_to_reduce:
+            elif max_stoneskin_damage <= safe_hp_to_reduce:
                 # 石肤术伤害适中，不会导致死亡
                 prev_hp = current_hp
                 logger.info(
-                    f"使用石肤术，当前血量: {current_hp:.2%}, 预计伤害: {avg_damage:.2%}"
+                    f"使用石肤术，当前血量: {current_hp:.2%}, 预计最大伤害: {max_stoneskin_damage:.2%}"
                 )
 
                 fightUtils.cast_magic("土", "石肤术", context)
@@ -357,11 +377,26 @@ class Mars101(CustomAction):
                 if current_hp <= 0:
                     logger.error("目标在压血过程中死亡，使用技能: 石肤术")
                     return -1
+                
+                # 记录实际伤害并更新最大伤害值
+                actual_damage = prev_hp - current_hp
+                if actual_damage > 0:
+                    stoneskin_damage_history.append(actual_damage)
+                    # 保持历史记录在指定大小
+                    if len(stoneskin_damage_history) > DAMAGE_HISTORY_SIZE:
+                        stoneskin_damage_history.pop(0)
+                    
+                    # 更新石肤术最大伤害估计（使用历史最大值）
+                    new_max_stoneskin = max(stoneskin_damage_history)
+                    if new_max_stoneskin > max_stoneskin_damage:
+                        logger.info(f"石肤术最大伤害上调: {max_stoneskin_damage:.2%} -> {new_max_stoneskin:.2%}")
+                        max_stoneskin_damage = new_max_stoneskin
+                        # 不再使用石肤术的数据更新祝福术的伤害预期
 
-            # 如果两种技能都可能导致死亡或低于阈值，则退出
+            # 如果两种技能都可能导致死亡，则退出
             else:
                 logger.info(
-                    f"无法安全压血，当前血量: {current_hp:.2%}, 石肤术伤害: {avg_damage:.2%}, 祝福术伤害: {blessing_damage:.2%}"
+                    f"无法安全压血，当前血量: {current_hp:.2%}, 石肤术最大伤害: {max_stoneskin_damage:.2%}, 祝福术最大伤害: {blessing_damage:.2%}"
                 )
                 return current_hp
 
@@ -384,20 +419,17 @@ class Mars101(CustomAction):
                     )
                     return current_hp
 
-            # 检查是否已达到目标
-            if current_hp <= TARGET_THRESHOLD:
-                logger.info(f"已达到目标血量: {current_hp:.2%}，停止压血")
-                break
-
         # 最终检查
-        if current_hp <= TARGET_THRESHOLD:
-            logger.info(f"压血成功，最终血量: {current_hp:.2%}，总施法次数: {attempts}")
-            return current_hp
+        if stoneskin_damage_history or blessing_damage_history:
+            logger.info(f"压血完成，最终血量: {current_hp:.2%}，总施法次数: {attempts}")
+            if stoneskin_damage_history:
+                logger.info(f"石肤术伤害记录: {[f'{d:.2%}' for d in stoneskin_damage_history]}, 最终最大伤害: {max_stoneskin_damage:.2%}")
+            if blessing_damage_history:
+                logger.info(f"祝福术伤害记录: {[f'{d:.2%}' for d in blessing_damage_history]}, 最终最大伤害: {blessing_damage:.2%}")
         else:
-            logger.warning(
-                f"已达最大尝试次数({MAX_ATTEMPTS})，未能将血量压至 {int(TARGET_THRESHOLD * 100)}% 以内，当前血量: {current_hp:.2%}"
-            )
-            return current_hp
+            logger.info(f"压血完成，最终血量: {current_hp:.2%}，总施法次数: {attempts}，未记录到有效伤害")
+        
+        return current_hp
 
     def _test_stoneskin_damage(self, context: Context, test_rounds: int) -> tuple:
         """测试石肤术的平均伤害和最大伤害。
@@ -662,6 +694,7 @@ class Mars101(CustomAction):
                     fightUtils.cast_magic("气", "静电场", context)
                     if not fightUtils.cast_magic("水", "极光屏障", context):
                         fightUtils.cast_magic("水", "寒冰护盾", context)
+                        fightUtils.cast_magic("水", "寒冰护盾", context)
                 else:
                     fightUtils.cast_magic("水", "寒冰护盾", context)
                     # 在100~110层时释放地震，减少技能消耗，提高清层效率
@@ -760,8 +793,28 @@ class Mars101(CustomAction):
         # 这里进夹层压血
         if self.target_earthgate_para >= 0:
             self.gotoSpecialLayer(context)
-            fightUtils.cast_magic("土", "石肤术", context)
-            self.Control_tenpecentHP(context)
+            death = None
+
+            for i in range(12):
+                fightUtils.cast_magic("光", "祝福术", context)
+                death = context.run_recognition(
+                    "Fight_FindRespawn",
+                    context.tasker.controller.post_screencap().wait().get(),
+                )
+                if death:
+                    logger.info(f"已死亡，准备出图")
+                    self.isDeath = True
+                    context.run_task("Screenshot")
+                    break
+
+                if i > 5 and not self.Check_GridAndMonster(context, False):
+                    logger.info(f"怪物不在了，无法死亡，走正常流程离开")
+                    context.run_task("Fight_ReturnMainWindow")
+                    self.leaveSpecialLayer(context)
+                    context.run_task("Fight_ReturnMainWindow")
+                    context.run_task("Screenshot")
+                    break
+
             # 增加截图调试
             context.run_task(
                 "WaitStableNode_ForOverride",
@@ -769,14 +822,18 @@ class Mars101(CustomAction):
                     "WaitStableNode_ForOverride": {"pre_wait_freezes": {"time": 100}}
                 },
             )
-            context.run_task("Screenshot")
-            self.leaveSpecialLayer(context)
-            context.run_task("Fight_ReturnMainWindow")
 
-        logger.info("可以出图了")
+            if death:
+                logger.info("可以出图了")
+                context.run_task("Fight_FindLeaveText")
+                # 等待6秒
+                time.sleep(6)
+                if context.run_recognition(
+                    "ConfirmButton",
+                    context.tasker.controller.post_screencap().wait().get(),
+                ):
+                    context.run_task("ConfirmButton")
 
-        # 增加截图调试
-        context.run_task("Screenshot")
         self.isLeaveMaze = True
         # 到这可以出图了
 
@@ -961,10 +1018,17 @@ class Mars101(CustomAction):
                         }
                     },
                 )
+                img = context.tasker.controller.post_screencap().wait().get()
                 if context.run_recognition(
                     "Mars_Inter_Confirm_Success",
-                    context.tasker.controller.post_screencap().wait().get(),
+                    img,
                 ):
+                    context.run_task("Mars_Inter_Confirm_Success")
+                elif context.run_recognition("Mars_Inter_Confirm_Pickup", img):
+                    context.run_task("Mars_Inter_Confirm_Pickup")
+                    time.sleep(2)
+                    context.run_task("Mars_Inter_Confirm_Success")
+                    time.sleep(2)
                     context.run_task("Mars_Inter_Confirm_Success")
                 else:
                     logger.info("可能在夹层中有怪物没有清理")
@@ -1138,6 +1202,7 @@ class Mars101(CustomAction):
         if context.run_recognition("Fight_FindRespawn", image):
             logger.info("检测到死亡， 尝试小SL")
             fightUtils.Saveyourlife(context)
+            fightUtils.cast_magic("水", "治疗术", context)
             fightUtils.cast_magic("土", "石肤术", context)
             return False
 
@@ -1214,6 +1279,7 @@ class Mars101(CustomAction):
         if context.run_recognition("Fight_FindRespawn", image):
             logger.info("检测到死亡， 尝试小SL")
             fightUtils.Saveyourlife(context)
+            fightUtils.cast_magic("水", "治疗术", context)
             fightUtils.cast_magic("土", "石肤术", context)
             return False
 
@@ -1232,6 +1298,7 @@ class Mars101(CustomAction):
             if context.run_recognition("Fight_FindRespawn", image):
                 logger.info("检测到死亡， 尝试小SL")
                 fightUtils.Saveyourlife(context)
+                fightUtils.cast_magic("水", "治疗术", context)
                 fightUtils.cast_magic("土", "石肤术", context)
                 return False
             logger.info("检测到卡离开, 本层重新探索")
@@ -1255,11 +1322,22 @@ class Mars101(CustomAction):
         ):
 
             mars_gotoSpecialLayer_detail = context.run_task("Mars_GotoSpecialLayer")
-            if mars_gotoSpecialLayer_detail.nodes:
-                for node in mars_gotoSpecialLayer_detail.nodes:
-                    if node.name == "Mars_Inter_Confirm_Fail":
-                        logger.info("进入休息室失败, 需要重新清理当前层")
-                        return False
+            for _ in range(10):
+                if context.run_recognition(
+                    "Mars_GotoSpecialLayer_Confirm",
+                    context.tasker.controller.post_screencap().wait().get(),
+                ):
+                    context.run_task("Mars_GotoSpecialLayer_Confirm")
+                    break
+                if context.run_recognition(
+                    "Mars_Inter_Confirm_Fail",
+                    context.tasker.controller.post_screencap().wait().get(),
+                ):
+                    context.run_task("Mars_Inter_Confirm_Fail")
+                    logger.info("进入休息室失败, 需要重新清理当前层")
+                    return False
+                time.sleep(1)
+
             while not context.run_recognition(
                 "Mars_LeaveSpecialLayer",
                 context.tasker.controller.post_screencap().wait().get(),
@@ -1351,7 +1429,6 @@ class Mars101(CustomAction):
                 break
 
         logger.info(f"马尔斯探索结束，当前到达{self.layers}层")
-
         context.run_task("Fight_LeaveMaze")
         # 获取并打印统计信息
         stats = fightUtils.get_time_statistics()
@@ -1378,7 +1455,7 @@ class Mars_Fight_ClearCurrentLayer(CustomAction):
         # 读取传入的层数参数（兼容 dict/对象）
         layers_arg = json.loads(argv.custom_action_param)["layers"]
         if layers_arg is not None:
-            logger.info(f"Mars_Fight_ClearCurrentLayer 接收到 layers={layers_arg}")
+            # logger.info(f"Mars_Fight_ClearCurrentLayer 接收到 layers={layers_arg}")
             try:
                 # 作为变量传入处理器，后续可按需使用
                 self.fightProcessor.layers = layers_arg

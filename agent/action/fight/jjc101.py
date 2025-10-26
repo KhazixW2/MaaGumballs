@@ -688,6 +688,11 @@ class JJC_CalEarning(CustomAction):
             context.tasker.controller.post_click(360, 640).wait()
             time.sleep(0.5)
             context.tasker.controller.post_click(360, 640).wait()
+            if context.run_recognition(
+                "ConfirmButton", context.tasker.controller.post_screencap().wait().get()
+            ):
+                context.run_task("ConfirmButton")
+                break
         image = context.tasker.controller.post_screencap().wait().get()
         if recoDetail := context.run_recognition(
             "CallEarning_Reco",

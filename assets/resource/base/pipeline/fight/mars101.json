@@ -302,7 +302,8 @@
             "fight/Mars/MarsBody2.png",
             "fight/Mars/MarsBody3.png",
             "fight/Mars/MarsBody7.png",
-            "fight/Mars/MarsSlabStone.png"
+            "fight/Mars/MarsSlabStone.png",
+            "fight/UniversalUI/墓碑.png"
         ],
         "roi": [
             4,
@@ -316,6 +317,7 @@
         "timeout": 2000,
         "next": [
             "Mars_Inter_Confirm_Success",
+            "Mars_Inter_Confirm_Pickup",
             "Mars_Inter_Confirm_Fail"
         ]
     },
@@ -348,7 +350,23 @@
             "浸泡",
             "斩断",
             "抄写",
-            "唤醒法师"
+            "唤醒法师",
+            "确定"
+        ],
+        "roi": [
+            29,
+            545,
+            652,
+            394
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000
+    },
+    "Mars_Inter_Confirm_Pickup": {
+        "recognition": "OCR",
+        "expected": [
+            "拾取"
         ],
         "roi": [
             29,
@@ -739,11 +757,7 @@
             839
         ],
         "action": "Click",
-        "timeout": 2000,
-        "next": [
-            "Mars_GotoSpecialLayer_Confirm",
-            "Mars_Inter_Confirm_Fail"
-        ]
+        "timeout": 2000
     },
     "Mars_GotoSpecialLayer_Confirm": {
         "recognition": "OCR",

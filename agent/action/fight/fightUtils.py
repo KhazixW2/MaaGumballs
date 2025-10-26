@@ -87,7 +87,8 @@ def cast_magic(Type: str, MagicName: str, context: Context, TargetPos: tuple = (
         "Fight_Magic_Elemental",
         pipeline_override={
             "Fight_Magic_Elemental": {
-                "next": [MagicType[Type], "Fight_FindDragon", "Fight_FindRespawn"]
+                "next": [MagicType[Type], "Fight_FindDragon", "Fight_FindRespawn"],
+                "pre_delay": 100,
             }
         },
     )

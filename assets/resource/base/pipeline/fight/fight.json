@@ -65,8 +65,8 @@
             "Communicating",
             "ConfirmButton",
             "Fight_LeaveMaze_StopButton",
-            "BackText",
-            "Fight_LeaveMaze_Leave"
+            "Fight_LeaveMaze_Leave",
+            "BackText"
         ]
     },
     "Fight_CalEarning": {
@@ -754,5 +754,34 @@
         "pre_delay": 10,
         "post_delay": 10,
         "timeout": 1000
+    },
+    "Fight_FindLeaveText": {
+        "recognition": "OCR",
+        "roi": [
+            70,
+            567,
+            593,
+            449
+        ],
+        "expected": "离开",
+        "action": "Click",
+        "post_delay": 1000,
+        "threshold": 0.8,
+        "timeout": 3000,
+        "next": "Fight_FindEndGameText"
+    },
+    "Fight_FindEndGameText": {
+        "recognition": "OCR",
+        "roi": [
+            70,
+            567,
+            593,
+            449
+        ],
+        "expected": "结束探险",
+        "action": "Click",
+        "post_delay": 1000,
+        "threshold": 0.8,
+        "timeout": 3000
     }
 }
