@@ -554,6 +554,7 @@
         "action": "Click",
         "timeout": 2000,
         "next": [
+            "Mars_Statue_OpenBagChoose_First",
             "Mars_Statue_OpenBagChoose"
         ]
     },
@@ -565,6 +566,23 @@
             532,
             1,
             1
+        ],
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "Mars_Statue_Offer"
+        ]
+    },
+    "Mars_Statue_OpenBagChoose_First": {
+        "recognition": "TemplateMatch",
+        "action": "Click",
+        "template": [
+            "fight/Mars/MarsBossReward_MP.png",
+            "fight/Mars/MarsBossReward_Other1.png",
+            "fight/Mars/MarsBossReward_Other2.png",
+            "fight/Mars/MarsBossReward_Other4.png",
+            "fight/Mars/MarsBossReward_Other6.png",
+            "fight/Mars/MarsBossReward_Other8.png"
         ],
         "post_delay": 1000,
         "timeout": 2000,
