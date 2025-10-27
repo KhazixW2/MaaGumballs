@@ -59,34 +59,40 @@
         "next": [
             "TSD_CheckInTSD"
         ],
-        "interrupt":[
+        "interrupt": [
             "TSD_CheckInOD"
         ]
     },
-    "TSD_CheckInTSD":{
+    "TSD_CheckInTSD": {
         "recognition": "OCR",
         "expected": [
             "时空域"
         ],
         "roi": [
-            153,726,82,35
+            153,
+            726,
+            82,
+            35
         ],
         "post_delay": 2000,
-        "next":[
+        "next": [
             "TSD_Explore"
         ]
     },
-    "TSD_CheckInOD":{
+    "TSD_CheckInOD": {
         "recognition": "OCR",
         "expected": [
             "秩序域"
         ],
         "roi": [
-            153,726,82,35
+            153,
+            726,
+            82,
+            35
         ],
         "action": "StopTask",
         "focus": {
-            "succeeded":"[color:red]这不是时空域，请冒险者大人快来看看~~[/color]"
+            "succeeded": "[color:red]这不是时空域，请冒险者大人快来看看~~[/color]"
         }
     },
     "TSD_Explore": {
@@ -218,10 +224,10 @@
             "调查"
         ],
         "roi": [
-            14,
-            283,
-            691,
-            756
+            12,
+            181,
+            703,
+            969
         ],
         "action": "Click",
         "post_delay": 2000,
@@ -231,9 +237,14 @@
     },
     "TSD_SelectFreeFleetInList": {
         "recognition": "OCR",
-        "expected": ["深渊"],
+        "expected": [
+            "深渊"
+        ],
         "roi": [
-            44, 164, 627, 537
+            44,
+            164,
+            627,
+            537
         ],
         "action": "Click",
         "post_delay": 1500
@@ -283,10 +294,10 @@
             "袭击"
         ],
         "roi": [
-            14,
-            283,
-            691,
-            756
+            12,
+            181,
+            703,
+            969
         ],
         "action": "Click",
         "post_delay": 1000,
@@ -381,14 +392,17 @@
     "TSD_CheckMonsterPlanetTask": {
         "enabled": false
     },
-    "TSD_SelectCancelButton":{
+    "TSD_SelectCancelButton": {
         "recognition": "OCR",
-        "expected":[
-             "取消"
+        "expected": [
+            "取消"
         ],
         "threshold": 0.8,
         "roi": [
-            383,690,254,98
+            383,
+            690,
+            254,
+            98
         ],
         "action": "Click",
         "post_delay": 500,
