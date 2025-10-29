@@ -1,13 +1,11 @@
 from maa.context import Context
-from utils import logger
+from utils import logger, send_message
 from plyer import notification
 
 import math
 import re
 import time
-import cv2
-import numpy as np
-
+from functools import wraps
 
 # 神龙许愿ROI [77,465,570,553]
 # 神龙许愿list = ["我要获得钻石", "我要神奇的果实", "我要更多的伙伴", "我要获得巨龙之力", "我要学习龙语魔法", "我要变得更强", "我要变得富有", "我要最凶残的装备", "我要更多的伙伴", "我要大量的矿石", "我要你的收藏品", "我要您的碎片"]
@@ -20,6 +18,7 @@ MagicType: dict = {
     "光": "Fight_ClickLightMagicPage",
     "暗": "Fight_ClickDarkMagicPage",
 }
+
 
 EquipmentType: dict = {
     "腰带": [56, 262, 138, 120],
@@ -44,8 +43,10 @@ def send_alert(title, message):
         logger.error(f"通知发送失败：{str(e)}")
 
 
-# 从字符串中识别并返回数字
 def extract_num(input_string):
+    """
+    从字符串中识别并返回数字
+    """
     match = re.search(r"(\d+)", input_string)
     if match:
         return int(match.group(1))
@@ -53,47 +54,15 @@ def extract_num(input_string):
         return 0
 
 
-# 从字符串中识别并返回有“层”这个文字的前缀数字
 def extract_num_layer(input_string):
+    """
+    从字符串中识别并返回有“层”这个文字的前缀数字
+    """
     match = re.search(r"(\d+)层", input_string)
     if match:
         return int(match.group(1))
     else:
         return 0
-
-
-# 初始化地板的 ROI 列表
-def calRoiList():
-    start_x, start_y = 15, 222
-    width, height = 138, 126
-    cols, rows = 5, 6
-
-    roi_list = []
-
-    for r in range(rows):
-        for c in range(cols):
-            x = start_x + c * width
-            y = start_y + r * height
-            roi = [x, y, width, height]
-            roi_list.append(roi)
-    return roi_list
-
-
-# 假设存在一个辅助函数用于判断两个 ROI 区域是否重叠或者大部分重叠
-# 这里需要根据实际的 ROI 数据结构实现具体逻辑
-def is_roi_in_or_mostly_in(roi1, roi2):
-    # 简单示例：假设 ROI 是 (x, y, width, height) 元组
-    # 计算两个 ROI 的交集面积
-    x1 = max(roi1[0], roi2[0])
-    y1 = max(roi1[1], roi2[1])
-    x2 = min(roi1[0] + roi1[2], roi2[0] + roi2[2])
-    y2 = min(roi1[1] + roi1[3], roi2[1] + roi2[3])
-    if x2 > x1 and y2 > y1:
-        intersection_area = (x2 - x1) * (y2 - y1)
-        roi1_area = roi1[2] * roi1[3]
-        # 判断交集面积是否超过 roi1 面积的一半
-        return intersection_area / roi1_area >= 0.5
-    return False
 
 
 def cast_magic(Type: str, MagicName: str, context: Context, TargetPos: tuple = (0, 0)):
@@ -112,11 +81,15 @@ def cast_magic(Type: str, MagicName: str, context: Context, TargetPos: tuple = (
         >>> cast_magic("火", "火球术", context)
         True
     """
-
+    logger.info(f"准备施放魔法:{MagicName}")
     # run
     context.run_task(
         "Fight_Magic_Elemental",
-        pipeline_override={"Fight_Magic_Elemental": {"next": [MagicType[Type]]}},
+        pipeline_override={
+            "Fight_Magic_Elemental": {
+                "next": [MagicType[Type], "Fight_FindDragon", "Fight_FindRespawn"]
+            }
+        },
     )
 
     image = context.tasker.controller.post_screencap().wait().get()
@@ -156,6 +129,47 @@ def cast_magic(Type: str, MagicName: str, context: Context, TargetPos: tuple = (
     return True
 
 
+def check_magic(Type: str, MagicName: str, context: Context):
+    """施放指定类型的魔法
+
+    Args:
+        Type: 魔法的类型，如 '火', '土', '气' 等
+        MagicName: 具体的魔法名称，如 '祝福术', '石肤术' 等
+        context: 游戏上下文对象，包含当前状态信息
+
+    Returns:
+        执行结果，存在返回 True, 失败返回 False
+
+    Example:
+        >>> cast_magic("火", "火球术", context)
+        True
+    """
+
+    # run
+    context.run_task(
+        "Fight_Magic_Elemental",
+        pipeline_override={
+            "Fight_Magic_Elemental": {
+                "next": [MagicType[Type], "Fight_FindDragon", "Fight_FindRespawn"]
+            }
+        },
+    )
+
+    image = context.tasker.controller.post_screencap().wait().get()
+    if context.run_recognition(
+        "Fight_Magic_Cast",
+        image,
+        pipeline_override={"Fight_Magic_Cast": {"expected": MagicName}},
+    ):
+        logger.info(f"找到了魔法:{MagicName}")
+        context.run_task("BackText")
+    else:
+        logger.info(f"没有找到对应的魔法:{MagicName}")
+        context.run_task("BackText")
+        return False
+    return True
+
+
 def cast_magic_special(MagicName: str, context: Context):
     """施放特殊类型的魔法
 
@@ -172,23 +186,73 @@ def cast_magic_special(MagicName: str, context: Context):
     """
 
     # run
+    magic_special_type = [(632, 328), (632, 430), (632, 539)]
     context.run_task("Fight_Magic_Special")
-    image = context.tasker.controller.post_screencap().wait().get()
-    if context.run_recognition(
-        "Fight_Magic_Special_Cast",
-        image,
-        pipeline_override={"Fight_Magic_Special_Cast": {"expected": MagicName}},
-    ):
-        context.run_task(
+    # 多尝试几页，来适配更多类型特殊魔法
+    count = 0
+    while count <= 3:
+        image = context.tasker.controller.post_screencap().wait().get()
+        if context.run_recognition(
             "Fight_Magic_Special_Cast",
+            image,
             pipeline_override={"Fight_Magic_Special_Cast": {"expected": MagicName}},
-        )
-        logger.info(f"施放魔法:{MagicName}")
-    else:
-        logger.info(f"没有找到对应的魔法:{MagicName}")
-        context.run_task("BackText")
-        return False
-    return True
+        ):
+            context.run_task(
+                "Fight_Magic_Special_Cast",
+                pipeline_override={"Fight_Magic_Special_Cast": {"expected": MagicName}},
+            )
+            logger.info(f"施放魔法:{MagicName}")
+            return True
+        else:
+            if count < 3:
+                x, y = magic_special_type[count]
+                context.tasker.controller.post_click(x, y).wait()
+                time.sleep(1)
+        count += 1
+    logger.info(f"没有找到对应的魔法:{MagicName}")
+    context.run_task("BackText")
+    return False
+
+
+def check_magic_special(MagicName: str, context: Context):
+    """确认特殊类型的魔法是否存在
+
+    Args:
+        MagicName: 具体的魔法名称，如 '天眼', '大闹天宫' 等
+        context: 游戏上下文对象，包含当前状态信息
+
+    Returns:
+        执行结果，成功返回 True, 失败返回 False
+
+    Example:
+        >>> cast_magic_special("天眼", context)
+        True
+    """
+
+    # run
+    magic_special_type = [(632, 328), (632, 430), (632, 539)]
+    context.run_task("Fight_Magic_Special")
+    # 多尝试几页，来适配更多类型特殊魔法
+    count = 0
+    while count <= 3:
+        image = context.tasker.controller.post_screencap().wait().get()
+        if context.run_recognition(
+            "Fight_Magic_Special_Cast",
+            image,
+            pipeline_override={"Fight_Magic_Special_Cast": {"expected": MagicName}},
+        ):
+            logger.info(f"找到了魔法:{MagicName}")
+            context.run_task("BackText")
+            return True
+        else:
+            if count < 3:
+                x, y = magic_special_type[count]
+                context.tasker.controller.post_click(x, y).wait()
+                time.sleep(1)
+        count += 1
+    logger.info(f"没有找到对应的魔法:{MagicName}")
+    context.run_task("BackText")
+    return False
 
 
 def title_learn(
@@ -214,11 +278,8 @@ def title_learn(
         context.run_task(
             "TitlePanel_Learnable",
             pipeline_override={
-                "TitlePanel_Learnable_Next": {
-                    "roi": titileRect[titleLevel],
-                },
-                "TitlePanel_Learnable_Fnish": {
-                    "roi": titileRect[titleLevel],
+                "TitlePanel_Learnable_Click": {
+                    "target": titileRect[titleLevel],
                 },
                 "TitlePanel_TitleCheck_New": {
                     "expected": titleName,
@@ -235,12 +296,45 @@ def title_learn(
     return True
 
 
+def title_check(titleType: str, context: Context):
+    """检查是否存在目标称号系列"""
+    isSuccess = False
+    context.run_task("Fight_ReturnMainWindow")
+    context.run_task("TitlePanel_Open")
+    time.sleep(1)
+    checkcount = 0
+    while checkcount < 3:
+        if context.run_recognition(
+            "TitlePanel_CurrentPanel_Check",
+            context.tasker.controller.post_screencap().wait().get(),
+            pipeline_override={
+                "TitlePanel_CurrentPanel_Check": {
+                    "recognition": "OCR",
+                    "roi": [40, 986, 435, 108],
+                    "expected": titleType,
+                    "timeout": 2000,
+                }
+            },
+        ):
+            isSuccess = True
+            context.run_task("Fight_ReturnMainWindow")
+            break
+
+        else:
+            context.tasker.controller.post_click(433, 1037).wait()
+            checkcount += 1
+            time.sleep(1)
+    context.run_task("Fight_ReturnMainWindow")
+    return isSuccess
+
+
 def title_learn_branch(
     titleType: str,
     titleLevel: int,
     titleName: str,
     expectedLevel: int,
     context: Context,
+    repeatable: bool = False,
 ):
 
     # 对应几级称号的坐标
@@ -252,22 +346,24 @@ def title_learn_branch(
         [418, 842, 123, 147],
         [530, 847, 133, 147],
     ]
+    if not repeatable:
+        titleName_roi = [54, 463, 623, 550]
+    else:
+        titleName_roi = [122, 649, 491, 249]
 
     for i in range(0, expectedLevel):
         logger.info(f"学习{titleType}系 {i+1}级{titleName}")
         context.run_task(
             "TitlePanel_Learnable",
             pipeline_override={
-                "TitlePanel_Learnable_Next": {
-                    "roi": titileRect[titleLevel],
-                },
-                "TitlePanel_Learnable_Fnish": {
-                    "roi": titileRect[titleLevel],
+                "TitlePanel_Learnable_Click": {
+                    "target": titileRect[titleLevel],
                 },
                 "TitlePanel_TitleCheck_New": {
                     "expected": titleName,
-                    "roi": [54, 463, 623, 550],
+                    "roi": titleName_roi,
                     "target_offset": [0, 0, 0, 0],
+                    "order_by": "Vertical",
                 },
                 "TitlePanel_Series": {"expected": titleType},
                 "TitlePanel_Panel": {"expected": titleType},
@@ -422,7 +518,12 @@ def disassembleEquipment(
 
 
 def findItem(
-    equipmentName: str, isUse: bool, context: Context, dst_x: int = 0, dst_y: int = 0
+    equipmentName: str,
+    isUse: bool,
+    context: Context,
+    dst_x: int = 0,
+    dst_y: int = 0,
+    threshold: float = 0.9,
 ):
     """检查是否存在目标装备"""
 
@@ -448,6 +549,7 @@ def findItem(
             pipeline_override={
                 "Bag_FindItem": {
                     "template": equipment_path,
+                    "threshold": threshold,
                 },
             },
         )
@@ -481,6 +583,19 @@ def findItem(
             return False
 
     return True
+
+
+def openBagAndUseItem(
+    equipmentName: str,
+    isUse: bool,
+    context: Context,
+):
+    context.run_task("Fight_ReturnMainWindow")
+    OpenDetail = context.run_task("Bag_Open")
+    if OpenDetail:
+        time.sleep(1)
+        findItem(equipmentName, isUse, context)
+    time.sleep(1)
 
 
 def pair_by_distance(detections, max_distance=200):
@@ -562,9 +677,9 @@ def checkBuffStatus(buffName: str, context: Context):
             }
         },
     ):
-        logger.info(f"已发现: {buffName}")
+        logger.info(f"已发现: {buffName} buff")
         return True
-    logger.info(f"未发现: {buffName}")
+    logger.info(f"未发现: {buffName} buff")
     return False
 
 
@@ -584,7 +699,8 @@ def checkGumballsStatusV2(context: Context):
             "魔法值": "225/225"
         }
     """
-    status = {
+    # 默认状态值
+    default_status = {
         "攻击": "50",
         "魔力": "50",
         "闪避": "10%",
@@ -595,26 +711,48 @@ def checkGumballsStatusV2(context: Context):
         "降低敌人攻击": "8",
     }
 
-    # 打开状态面包
-    context.run_task("Fight_ReturnMainWindow")
-    context.run_task("Fight_OpenStatusPanel")
+    # 复制默认状态，避免修改原始默认值
+    status = default_status.copy()
 
-    # 检查状态
-    image = context.tasker.controller.post_screencap().wait().get()
-    if reco_detail := context.run_recognition("Fight_CheckStatusText", image):
-        nodes = reco_detail.all_results
-        status = pair_by_distance(nodes, max_distance=200)
-    else:
-        logger.warning("状态识别失败，保持默认值")
+    try:
+        # 打开状态面板
+        context.run_task("Fight_ReturnMainWindow")
+        context.run_task("Fight_OpenStatusPanel")
 
-    # 输出状态字典
-    logger.info(status)
+        # 检查状态
+        image = context.tasker.controller.post_screencap().wait().get()
+        if reco_detail := context.run_recognition("Fight_CheckStatusText", image):
+            try:
+                nodes = reco_detail.all_results
+                new_status = pair_by_distance(nodes, max_distance=200)
 
-    context.run_task("Fight_ReturnMainWindow")
+                # 验证获取的状态值，如果有异常值则使用默认值替代
+                for key, value in new_status.items():
+                    if key not in default_status.keys():
+                        continue
+                    if not value:
+                        logger.warning(f"状态值 '{key}' 识别为空，使用默认值")
+                        continue
+                    status[key] = value
+            except Exception as e:
+                logger.error(f"处理状态数据时出错: {str(e)}")
+            # logger.info(status)
+        else:
+            logger.warning("状态识别失败，保持默认值")
+    except Exception as e:
+        logger.error(f"检查角色状态时发生异常: {str(e)}")
+    finally:
+        # 确保无论如何都会返回主窗口
+        try:
+            context.run_task("Fight_ReturnMainWindow")
+        except Exception as e:
+            logger.error(f"返回主窗口时发生异常: {str(e)}")
+
     return status
 
 
 def dragonwish(targetWish: str, context: Context):
+    logger.info(f"开始许愿: {targetWish}")
     wishlist = []
     min_index = 999
     min_index_wish = ""
@@ -633,19 +771,19 @@ def dragonwish(targetWish: str, context: Context):
             "我要更多的伙伴",
             "我要神奇的果实",
         ]
-    elif targetWish == "神锻":
+    elif targetWish == "马尔斯":
         wishlist = [
+            "我要获得钻石",
+            "我要变得富有",
             "我想获得巨龙之力",
+            "我需要您的碎片",
+            "我要更多的伙伴",
+            "我要最凶残的装备",
+            "我要你的收藏品",
+            "我要大量的矿石",
             "我想学习龙语魔法",
             "我要变得更强",
             "我要神奇的果实",
-            "我要获得钻石",
-            "我要最凶残的装备",
-            "我要你的收藏品",
-            "我要变得富有",
-            "我需要您的碎片",
-            "我要更多的伙伴",
-            "我要大量的矿石",
         ]
     elif targetWish == "测试":
         wishlist = [
@@ -662,7 +800,7 @@ def dragonwish(targetWish: str, context: Context):
             "我想获得巨龙之力",
         ]
     else:
-        logger.error("请输入[工资, 神锻, 测试]中的一个")
+        logger.error("请输入[工资, 马尔斯, 测试]中的一个")
     # 神龙许愿list = ["我要获得钻石", "我要神奇的果实", "我想获得巨龙之力", "我要学习龙语魔法", "我要变得更强","我要最凶残的装备", "我要变得富有", "我要大量的矿石", "我要你的收藏品", "我要您的碎片", "我要更多的伙伴"]
 
     # # 等待8秒，确保界面加载完毕，可以考虑移除
@@ -670,10 +808,10 @@ def dragonwish(targetWish: str, context: Context):
     textdetail = context.run_task("Fight_FindText")
     if textdetail.nodes:
         for result in textdetail.nodes[0].recognition.filterd_results:
-            if result.text.endswith("！"):
+            if result.text.endswith("！") or result.text.endswith("!"):
                 result.text = result.text[:-1]
             cuurent_wish_index = wishlist.index(result.text)
-            logger.info(f"当前许愿: {result.text}")
+            logger.info(f"当前许愿: {result.text}, 当前许愿索引: {cuurent_wish_index}")
             if cuurent_wish_index < min_index:
                 min_index = cuurent_wish_index
                 min_index_wish = result.text
@@ -685,9 +823,9 @@ def dragonwish(targetWish: str, context: Context):
             )
             time.sleep(1)
             context.tasker.controller.post_click(center_x, center_y).wait()
-            time.sleep(2)
+        time.sleep(3)
 
-        logger.info(f"已点击愿望: {min_index_wish}")
+        logger.info(f"已点击愿望: {min_index_wish}, 愿望索引: {min_index}")
         status = True
         while status:
             image = context.tasker.controller.post_screencap().wait().get()
@@ -697,7 +835,7 @@ def dragonwish(targetWish: str, context: Context):
                 pipeline_override={
                     "TextReco": {
                         "recognition": "OCR",
-                        "expected": "神龙",
+                        "expected": ["神龙", "冈布奥"],
                         "roi": [21, 217, 682, 762],
                         "action": "DoNothing",
                     },
@@ -707,9 +845,12 @@ def dragonwish(targetWish: str, context: Context):
             if TextRecoDetail:
                 center_x, center_y = (
                     TextRecoDetail.box[0] + TextRecoDetail.box[2] // 2,
-                    TextRecoDetail.box[1] + TextRecoDetail.box[3] // 2,
+                    TextRecoDetail.box[1] + TextRecoDetail.box[3] // 2 + 10,
                 )
                 context.tasker.controller.post_click(center_x, center_y).wait()
+                logger.debug(
+                    f"识别到神龙或冈布奥, 已点击{(center_x, center_y)}, 识别范围为{TextRecoDetail.best_result.box}"
+                )
                 time.sleep(1)
         # 已点击愿望，等待界面加载
         if min_index_wish in [
@@ -724,7 +865,7 @@ def dragonwish(targetWish: str, context: Context):
         elif min_index_wish in ["我要变得富有"]:
             # 等待地图加载
             time.sleep(10)
-
+            cast_magic("火", "末日审判", context)
             for _ in range(3):
                 if not cast_magic("暗", "死亡波纹", context):
                     if not cast_magic("土", "地刺术", context, (350, 400)):
@@ -774,7 +915,7 @@ def dragonwish(targetWish: str, context: Context):
             image = context.tasker.controller.post_screencap().wait().get()
             if context.run_recognition("ConfirmButton_500ms", image):
                 context.run_task("ConfirmButton_500ms")
-
+            send_message("MaaGB", "冒险者大人，今日钻石已领肥家咯~")
         elif min_index_wish in ["我要大量的矿石"]:
             # 等待地图加载
             time.sleep(10)
@@ -808,6 +949,16 @@ def dragonwish(targetWish: str, context: Context):
 
 
 def Auto_CallDog(context: Context):
+    # 叫狗初始化
+    OpenDetail = context.run_task("Bag_Open")
+    if OpenDetail.nodes:
+        if not checkEquipment("腰带", 2, "电弧束带", context):
+            findEquipment(2, "电弧束带", True, context)
+        if not checkEquipment("宝物", 4, "毁灭者石板", context):
+            findEquipment(4, "毁灭者石板", True, context)
+        context.run_task("Fight_ReturnMainWindow")
+        logger.info(f"叫狗装备检查完成")
+
     # 打开背包
     OpenDetail = context.run_task("Bag_Open")
     if OpenDetail.nodes:
@@ -819,7 +970,7 @@ def Auto_CallDog(context: Context):
 
         # 拖回合
         for i in range(1, 76):
-            context.run_task("JJC_OpenForceOfNature")
+            OpenNatureSwitch(i % 2, context)
         cast_magic("气", "静电场", context)
 
         if cast_magic("火", "毁灭之刃", context):
@@ -851,58 +1002,6 @@ def Auto_CallDog(context: Context):
     return True
 
 
-def rgb_pixel_count(
-    image,
-    lower,
-    upper,
-    count,
-    context: Context,
-    method="opencv",
-) -> int:
-    """
-    RGB颜色空间像素计数
-    :param image: BGR格式图像（需转换）
-    :param roi: 检测区域 [x,y,w,h]
-    :param lower: RGB下限 [R,G,B] (0-255)
-    :param upper: RGB上限 [R,G,B]
-    :return: 匹配像素数量
-    """
-
-    # RGB转BGR
-    lower = [lower[2], lower[1], lower[0]]
-    upper = [upper[2], upper[1], upper[0]]
-
-    if method == "opencv":
-        # 创建三维掩膜
-        lower_bound = np.array(lower, dtype=np.uint8)
-        upper_bound = np.array(upper, dtype=np.uint8)
-        mask = cv2.inRange(image, lower_bound, upper_bound)
-
-        # 统计有效像素数量
-        valid_pixel_count = cv2.countNonZero(mask)
-        return valid_pixel_count if valid_pixel_count > count else 0
-
-    elif recoDetail := context.run_recognition(
-        "GridCheckTemplate",
-        image,
-        pipeline_override={
-            "GridCheckTemplate": {
-                "recognition": "ColorMatch",
-                "method": 4,
-                "lower": lower,
-                "upper": upper,
-                "count": count,
-            }
-        },
-    ):
-        if recoDetail:
-            valid_pixel_count = recoDetail.best_result.count
-            return valid_pixel_count if valid_pixel_count > count else 0
-        return 0
-    else:
-        return 0
-
-
 def PushOne(context: Context):
     context.run_task("Fight_ReturnMainWindow")
     if not cast_magic("水", "治疗术", context):
@@ -914,3 +1013,206 @@ def PushOne(context: Context):
                     logger.info("没有治疗术、寒冰护盾、吸能术，死亡波纹, 无法推序！")
                     return False
     return True
+
+
+def PushOne_defense(context: Context):
+    """
+    防御性的拖回合
+    """
+    if not cast_magic("水", "寒冰护盾", context):
+        if not cast_magic("水", "治疗术", context):
+            if not cast_magic("光", "神恩术", context):
+                if not cast_magic("光", "祝福术", context):
+                    pass
+                else:
+                    logger.info("怎么什么都没有，只能释放闪电火球了")
+                    if not cast_magic("气", "闪电术", context):
+                        cast_magic("火", "火球术", context)
+
+    return True
+
+
+def OpenNatureSwitch(isDefense: bool, context: Context):
+    tempStr: str = "自然守护" if isDefense else "自然之力"
+    context.run_task(
+        "JJC_OpenForceOfNature",
+        pipeline_override={
+            "JJC_OpenForceOfNature_Switch": {
+                "expected": [f"开启{tempStr}"],
+            },
+            "JJC_OpenForceOfNature_Fail": {
+                "expected": [f"关闭{tempStr}"],
+            },
+        },
+    )
+
+
+def autoOpenPicup(context: Context):
+    # 测试中
+    context.tasker.controller.post_touch_down(68, 661)
+    time.sleep(5)
+    context.run_task("Fight_OpenedDoor")
+    context.tasker.controller.post_touch_up()
+
+
+def Saveyourlife(context: Context):
+    checkcount = 0
+    while checkcount < 3:
+        TextRecoDetail = context.run_recognition(
+            "Fight_FindRespawn",
+            context.tasker.controller.post_screencap().wait().get(),
+            pipeline_override={
+                "Fight_FindRespawn": {
+                    "roi": [66, 563, 583, 446],
+                    "expected": "复活",
+                }
+            },
+        )
+        checkcount += 1
+        time.sleep(0.5)
+        if TextRecoDetail:
+            break
+
+    if TextRecoDetail:
+        logger.info("夭寿啦！！！检测到冈布奥倒下啦！")
+        # 小SL, 保住狗命
+        context.run_task("LogoutGame")
+        context.run_task("ReturnMaze")
+    else:
+        logger.info("没有检测到冈布奥倒下！可能没死吧！！继续战斗！！")
+    return True
+
+
+def handle_dragon_event(map_str: str, context: Context):
+    # 检测神龙
+    img = context.tasker.controller.post_screencap().wait().get()
+    if not context.run_recognition("Fight_CheckDragonBall", img):
+        return False
+
+    if context.run_recognition("Fight_FindDragon", img):
+        logger.info("是神龙,俺,俺们有救了！！！")
+        logger.info(f"当前:{map_str}")
+        dragonwish(map_str, context)
+        logger.info("神龙带肥家lo~")
+        return True
+    return False
+
+
+def handle_currentlayer_event(context: Context):
+    context.run_task("Fight_ReturnMainWindow")
+    tempLayers = -1
+    while tempLayers <= 0 and (
+        RunResult := context.run_recognition(
+            "Fight_CheckLayer",
+            context.tasker.controller.post_screencap().wait().get(),
+        )
+    ):
+        tempLayers = extract_num_layer(RunResult.best_result.text)
+        if context.tasker.stopping:
+            logger.info("检测到停止任务, 开始退出agent")
+            return -1
+    return tempLayers
+
+
+def handle_downstair_event(context: Context):
+    temp_layer = handle_currentlayer_event(context)
+    recoDetail = context.run_task("Fight_OpenedDoor")
+    if not recoDetail.nodes and context.run_recognition(
+        "FindKeyHole", context.tasker.controller.post_screencap().wait().get()
+    ):
+        logger.warning("检查到神秘的洞穴捏，请冒险者大人检查！！")
+        send_alert("洞穴警告", "发现神秘洞穴，请及时处理！")
+        send_message(f"MaaGB", "发现神秘洞穴，请及时处理")
+
+        while not context.run_recognition(
+            "Fight_OpenedDoor",
+            context.tasker.controller.post_screencap().wait().get(),
+        ):
+            if context.tasker.stopping:
+                logger.info("检测到停止任务, 开始退出agent")
+                return False
+            time.sleep(3)
+
+        logger.info("冒险者大人已找到钥匙捏，继续探索")
+        context.run_task("Fight_OpenedDoor")
+    # 确认层数更换再返回
+    for _ in range(5):
+        current_layer = handle_currentlayer_event(context)
+        if temp_layer != current_layer and current_layer != -1:
+            return True
+        time.sleep(1)
+    logger.info("由于未知原因, 层数未改变，可能在夹层中")
+    return True
+
+
+def handle_skillShop_event(
+    context: Context, target_skill=["火球术", "闪电术", "死亡波纹"]
+):
+    # 打开技能商店
+    if context.run_recognition(
+        "Fight_SkillShop", context.tasker.controller.post_screencap().wait().get()
+    ):
+        logger.info("触发技能商店")
+
+        context.run_task("Fight_SkillShop")
+        # 拼凑技能路径
+        template_path = ["items/scroll/%s.png" % skill for skill in target_skill]
+        # 技能商店开始购物
+        if recoDetail := context.run_recognition(
+            "SkillShop_Reco",
+            context.tasker.controller.post_screencap().wait().get(),
+            pipeline_override={
+                "SkillShop_Reco": {
+                    "recognition": "TemplateMatch",
+                    "template": template_path,
+                    "roi": [65, 334, 610, 686],
+                    "threshold": 0.8,
+                }
+            },
+        ):
+            logger.info(f"找到商品{len(recoDetail.filterd_results)}个, 开始购物")
+            for result in recoDetail.filterd_results:
+                if result.score < 0.8:
+                    continue
+                box = result.box
+                context.tasker.controller.post_click(
+                    box[0] + box[2] // 2, box[1] + box[3] // 2
+                )
+                time.sleep(0.5)
+                context.run_task("ConfirmButton_500ms")
+        context.run_task("Fight_ReturnMainWindow")
+
+
+# 存储函数执行时间的全局变量
+function_time_records = {}
+
+
+def timing_decorator(func):
+    """装饰器：记录函数执行时间并累积总时长"""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        func_name = func.__name__
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        duration = time.perf_counter() - start_time
+
+        # 更新函数执行时间记录
+        if func_name in function_time_records:
+            function_time_records[func_name]["count"] += 1
+            function_time_records[func_name]["total_time"] += duration
+        else:
+            function_time_records[func_name] = {"count": 1, "total_time": duration}
+
+        return result
+
+    return wrapper
+
+
+# 获取统计信息的函数
+def get_time_statistics():
+    """返回所有函数的执行时间统计信息，返回后清空统计信息"""
+    global function_time_records
+    result = function_time_records
+    function_time_records = {}
+    return result

@@ -10,6 +10,7 @@
     },
     "EntryEden": {
         "post_delay": 1000,
+        "timeout": 2000,
         "threshold": 0.8,
         "recognition": "OCR",
         "expected": [
@@ -25,10 +26,14 @@
         "next": [
             "EntryHall",
             "EntryHall2"
+        ],
+        "on_error": [
+            "TaskFailNotify"
         ]
     },
     "EntryHall2": {
         "post_delay": 1000,
+        "timeout": 2000,
         "recognition": "OCR",
         "doc": "老玩家的战术大厅",
         "expected": "可监控",
@@ -61,24 +66,51 @@
         ],
         "action": "Click",
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "DailyTaskSelect"
         ]
+    },
+    "HallSwipeToUp": {
+        "recognition": "DirectHit",
+        "action": "Swipe",
+        "begin": [
+            458,
+            525,
+            166,
+            48
+        ],
+        "end": [
+            468,
+            888,
+            175,
+            41
+        ],
+        "duration": 500,
+        "post_delay": 1000
+    },
+    "HallSwipeToDown": {
+        "recognition": "DirectHit",
+        "action": "Swipe",
+        "begin": [
+            468,
+            700,
+            175,
+            41
+        ],
+        "end": [
+            458,
+            525,
+            166,
+            48
+        ],
+        "duration": 500,
+        "post_delay": 1000
     },
     "DailyTaskSelect": {
         "recognition": "DirectHit",
         "action": "Custom",
         "custom_action": "DailyTaskSelect",
-        "custom_action_param": {
-            "DailySweep": 1,
-            "WildernessExplore": 1,
-            "SendLizards": 1,
-            "AlchemySignboard": 1,
-            "DailySignIn": 1,
-            "SkyExplore": 1,
-            "RuinsExplore": 1,
-            "CircusTask": 1
-        },
         "next": [
             "ReturnBigMap"
         ],
@@ -89,6 +121,7 @@
         "template": "dailyTask/Sweep.png",
         "action": "Click",
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "DailySweep_Start"
         ],
@@ -106,7 +139,8 @@
             51
         ],
         "action": "Click",
-        "post_delay": 500
+        "post_delay": 500,
+        "timeout": 2000
     },
     "DailySweep_Start": {
         "recognition": "OCR",
@@ -146,6 +180,7 @@
         ],
         "action": "Click",
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "ReturnHall"
         ]
@@ -163,6 +198,7 @@
         ],
         "action": "Click",
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "ReturnHall"
         ]
@@ -177,6 +213,7 @@
             123
         ],
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "ReturnHall"
         ]
@@ -191,7 +228,8 @@
             403
         ],
         "action": "Click",
-        "post_delay": 1000
+        "post_delay": 1000,
+        "timeout": 20000
     },
     "DailySweep_BuyPower": {
         "recognition": "OCR",
@@ -205,7 +243,8 @@
             424
         ],
         "action": "Click",
-        "post_delay": 1000
+        "post_delay": 1000,
+        "timeout": 2000
     },
     "WildernessExplore": {
         "recognition": "TemplateMatch",
@@ -220,6 +259,7 @@
         ],
         "action": "Click",
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "WildernessExploring",
             "WildernessExplored",
@@ -230,6 +270,7 @@
         "recognition": "OCR",
         "expected": "荒野探索中",
         "post_delay": 1000,
+        "timeout": 2000,
         "next": "BackText"
     },
     "WildernessExplored": {
@@ -263,7 +304,7 @@
             176,
             56
         ],
-        "post_delay": 200,
+        "post_delay": 1000,
         "timeout": 2000,
         "action": "Click",
         "next": "BackText"
@@ -273,6 +314,7 @@
         "template": "dailyTask/MagicLizard.png",
         "action": "Click",
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "SendLizards_fail",
             "SendLizards_start",
@@ -281,6 +323,7 @@
     },
     "SendLizards_finish": {
         "post_delay": 1000,
+        "timeout": 2000,
         "recognition": "OCR",
         "expected": "距离下次领取",
         "roi": [
@@ -293,6 +336,7 @@
     },
     "SendLizards_start": {
         "post_delay": 1000,
+        "timeout": 2000,
         "recognition": "OCR",
         "expected": "派遣魔蜥",
         "roi": [
@@ -308,6 +352,7 @@
     },
     "SendLizards_fail": {
         "post_delay": 1000,
+        "timeout": 2000,
         "recognition": "OCR",
         "roi": [
             154,
@@ -328,6 +373,7 @@
         ],
         "action": "Click",
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "AlchemySignboard_Start",
             "AlchemySignboard_fail",
@@ -336,6 +382,7 @@
     },
     "AlchemySignboard_finish": {
         "post_delay": 1000,
+        "timeout": 2000,
         "recognition": "OCR",
         "expected": "距离下次领取",
         "roi": [
@@ -356,7 +403,27 @@
             44
         ],
         "action": "Click",
-        "post_delay": 3000,
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "AlchemySignboard_Confirm"
+        ]
+    },
+    "AlchemySignboard_Confirm": {
+        "recognition": "OCR",
+        "expected": [
+            "确定",
+            "确认"
+        ],
+        "roi": [
+            31,
+            186,
+            662,
+            872
+        ],
+        "action": "Click",
+        "post_delay": 2000,
+        "timeout": 2000,
         "next": [
             "Shop_ShoppingRewards",
             "ReturnHall"
@@ -364,6 +431,7 @@
     },
     "AlchemySignboard_fail": {
         "post_delay": 1000,
+        "timeout": 2000,
         "recognition": "OCR",
         "roi": [
             154,
@@ -381,6 +449,7 @@
         "template": "dailyTask/SignIn.png",
         "action": "Click",
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "DailySigned",
             "DailySignIn_start"
@@ -398,6 +467,7 @@
             60
         ],
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "ReturnHall"
         ]
@@ -415,6 +485,7 @@
             65
         ],
         "post_delay": 1000,
+        "timeout": 2000,
         "action": "Click",
         "next": [
             "ReturnHall"
@@ -425,6 +496,7 @@
         "template": "dailyTask/SkyExplore.png",
         "action": "Click",
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "SkyExplore_Start"
         ]
@@ -433,6 +505,7 @@
         "recognition": "OCR",
         "expected": "自动探索",
         "post_delay": 1000,
+        "timeout": 2000,
         "action": "Click",
         "roi": [
             270,
@@ -456,6 +529,7 @@
             204
         ],
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "ReturnHall"
         ]
@@ -470,6 +544,7 @@
             113
         ],
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "ReturnHall"
         ]
@@ -484,6 +559,7 @@
             75
         ],
         "post_delay": 1000,
+        "timeout": 2000,
         "action": "Click",
         "next": [
             "ReturnHall"
@@ -500,6 +576,7 @@
         ],
         "action": "Click",
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "RuinsExplore_MineCar"
         ]
@@ -515,6 +592,7 @@
         ],
         "action": "Click",
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "RuinsExplore_Resource"
         ]
@@ -531,6 +609,7 @@
             255
         ],
         "post_delay": 1000,
+        "timeout": 2000,
         "action": "Click",
         "next": [
             "RuinsExplore_Nothing",
@@ -550,6 +629,7 @@
             70
         ],
         "post_delay": 1000,
+        "timeout": 2000,
         "action": "Click",
         "next": [
             "ReturnHall"
@@ -568,6 +648,7 @@
             248
         ],
         "post_delay": 1000,
+        "timeout": 2000,
         "action": "Click"
     },
     "RuinsExplore_EntryFight": {
@@ -582,6 +663,7 @@
             248
         ],
         "post_delay": 1000,
+        "timeout": 2000,
         "action": "Click",
         "next": "RuinsExplore_Fight"
     },
@@ -597,6 +679,7 @@
             60
         ],
         "post_delay": 2000,
+        "timeout": 2000,
         "action": "Click",
         "next": [
             "ReturnHall"
@@ -613,6 +696,7 @@
         ],
         "action": "Click",
         "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "CircusTask_Failed",
             "CircusTask_ObtainReward",
@@ -621,6 +705,7 @@
     },
     "CircusTask_Failed": {
         "post_delay": 1000,
+        "timeout": 2000,
         "recognition": "OCR",
         "roi": [
             37,
@@ -637,6 +722,7 @@
     },
     "CircusTask_Start": {
         "post_delay": 3000,
+        "timeout": 2000,
         "recognition": "OCR",
         "roi": [
             37,
@@ -648,13 +734,27 @@
             "QUEST0/2",
             "0/2"
         ],
-        "action": "Click",
-        "target": [
-            49,
-            648,
-            625,
-            134
+        "next": [
+            "CircusTask_Fighting"
         ],
+        "on_error": [
+            "TaskFailNotify"
+        ]
+    },
+    "CircusTask_Fighting": {
+        "timeout": 2000,
+        "post_delay": 3000,
+        "recognition": "OCR",
+        "roi": [
+            91,
+            536,
+            346,
+            238
+        ],
+        "expected": [
+            "扫荡"
+        ],
+        "action": "Click",
         "next": [
             "CircusTask_Finish"
         ],
@@ -666,6 +766,8 @@
         ]
     },
     "CircusTask_Finish": {
+        "timeout": 1000,
+        "post_delay": 1000,
         "recognition": "OCR",
         "expected": [
             "扫荡完成"
@@ -685,6 +787,7 @@
     },
     "CircusTask_ObtainReward": {
         "post_delay": 1000,
+        "timeout": 2000,
         "recognition": "OCR",
         "roi": [
             37,
@@ -767,5 +870,149 @@
         "next": [
             "drawReward"
         ]
+    },
+    "WeeklyRaid": {
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/WeeklyRaid.png",
+        "threshold": 0.8,
+        "roi": [
+            47,
+            262,
+            625,
+            846
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "WeeklyRaid_Fighting"
+        ]
+    },
+    "WeeklyRaid_Fighting": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "custom_action": "WeeklyRaidFighting"
+    },
+    "WeeklyRaid_Check": {
+        "recognition": "OCR",
+        "expected": [
+            "永恒王座"
+        ],
+        "roi": [
+            38,
+            159,
+            653,
+            212
+        ],
+        "post_delay": 1000,
+        "timeout": 2000
+    },
+    "WeeklyRaid_MonsterCheck": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "dailyTask/weeklyRaid/永恒王座冈布奥1.png",
+            "dailyTask/weeklyRaid/永恒王座冈布奥2.png",
+            "dailyTask/weeklyRaid/永恒王座冈布奥3.png",
+            "dailyTask/weeklyRaid/永恒王座冈布奥4.png",
+            "dailyTask/weeklyRaid/永恒王座冈布奥5.png",
+            "dailyTask/weeklyRaid/永恒王座冈布奥6.png",
+            "dailyTask/weeklyRaid/永恒王座冈布奥7.png"
+        ],
+        "threshold": 0.85,
+        "roi": [
+            47,
+            262,
+            625,
+            846
+        ]
+    },
+    "WeeklyRaid_Attack": {
+        "recognition": "OCR",
+        "expected": [
+            "袭击"
+        ],
+        "roi": [
+            5,
+            1122,
+            303,
+            157
+        ],
+        "action": "Click",
+        "post_delay": 3000,
+        "timeout": 5000,
+        "next": [
+            "WeeklyRaid_Attack_Skip"
+        ]
+    },
+    "WeeklyRaid_Attack_Skip": {
+        "recognition": "OCR",
+        "expected": [
+            "跳过"
+        ],
+        "action": "Click",
+        "roi": [
+            511,
+            1136,
+            193,
+            126
+        ],
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "WeeklyRaid_Attack_Success"
+        ],
+        "on_error": "TaskFailNotify"
+    },
+    "WeeklyRaid_Attack_Success": {
+        "recognition": "OCR",
+        "expected": [
+            "战斗胜利"
+        ],
+        "roi": [
+            89,
+            245,
+            570,
+            484
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "WeeklyRaid_Attack_Reward"
+        ]
+    },
+    "WeeklyRaid_Attack_Reward": {
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/weeklyRaid/永恒王座彩蛋.png",
+        "roi": [
+            158,
+            625,
+            546,
+            386
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "ConfirmButton_500ms",
+            "WeeklyRaid_Attack_Reward"
+        ]
+    },
+    "WeeklyRaid_SwipeToRight": {
+        "action": "Swipe",
+        "begin": [
+            430,
+            600,
+            10,
+            10
+        ],
+        "end": [
+            344,
+            600,
+            10,
+            10
+        ],
+        "post_delay": 1000,
+        "timeout": 2000
     }
 }

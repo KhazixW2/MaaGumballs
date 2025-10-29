@@ -1,0 +1,11 @@
+{
+    "StartGumballs": {
+        "post_delay": 8000,
+        "action": "StartApp",
+        "package": "com.tencent.tmgp.gumballs2"
+    },
+    "StopGumballs": {
+        "action": "StopApp",
+        "package": "com.tencent.tmgp.gumballs2"
+    }
+}

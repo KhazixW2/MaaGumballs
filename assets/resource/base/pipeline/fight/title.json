@@ -6,9 +6,8 @@
         ],
         "interrupt": [
             "ConfirmButton_500ms",
-            "TitlePanel_Series",
             "TitlePanel_Open",
-            "BackText_500ms"
+            "BackText_700ms"
         ]
     },
     "TitlePanel_Open": {
@@ -30,48 +29,14 @@
         ],
         "threshold": 0.8,
         "post_delay": 1200,
-        "timeout": 2000
-    },
-    "TitlePanel_ReturnPanel": {
+        "timeout": 2000,
         "next": [
-            "TitlePanel_Panel"
+            "TitlePanel_Series",
+            "TitlePanel_Open"
         ],
         "interrupt": [
-            "ConfirmButton_500ms",
-            "BackText_500ms"
+            "TitlePanel_Series_ChangePage"
         ]
-    },
-    "TitlePanel_Panel": {
-        "recognition": "OCR",
-        "expected": "系称号",
-        "roi": [
-            68,
-            770,
-            297,
-            81
-        ],
-        "post_delay": 400,
-        "timeout": 2000
-    },
-    "TitlePanel_CurrentPanel": {
-        "recognition": "OCR",
-        "expected": "冒险系",
-        "roi": [
-            68,
-            770,
-            297,
-            81
-        ],
-        "next": [
-            "TitlePanel_Learnable_Next",
-            "TitlePanel_Learnable_Fnish"
-        ],
-        "interrupt": [
-            "TitlePanel_ReturnPanel"
-        ],
-        "pre_delay": 300,
-        "post_delay": 500,
-        "timeout": 2000
     },
     "TitlePanel_Series": {
         "recognition": "OCR",
@@ -84,36 +49,95 @@
         ],
         "action": "Click",
         "post_delay": 500,
+        "timeout": 3000
+    },
+    "TitlePanel_Series_ChangePage": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            433,
+            1037,
+            10,
+            10
+        ],
+        "post_delay": 1000
+    },
+    "TitlePanel_ReturnPanel": {
+        "next": [
+            "TitlePanel_Panel"
+        ],
+        "interrupt": [
+            "ConfirmButton_500ms",
+            "BackText_700ms"
+        ],
+        "timeout": 2000
+    },
+    "TitlePanel_Panel": {
+        "recognition": "OCR",
+        "expected": "系称号",
+        "roi": [
+            68,
+            770,
+            297,
+            81
+        ],
+        "post_delay": 400,
+        "interrupt": [
+            "ConfirmButton_500ms"
+        ],
+        "timeout": 2000
+    },
+    "TitlePanel_CurrentPanel": {
+        "recognition": "OCR",
+        "expected": "冒险系",
+        "roi": [
+            68,
+            770,
+            297,
+            81
+        ],
+        "next": [
+            "TitlePanel_Learnable_Click"
+        ],
+        "interrupt": [
+            "TitlePanel_ReturnPanel"
+        ],
+        "pre_delay": 300,
+        "post_delay": 500,
         "timeout": 2000
     },
     "TitlePanel_Learnable_Fnish": {
         "recognition": "TemplateMatch",
         "roi": [
-            53,
-            843,
+            169,
             138,
-            152
+            387,
+            127
         ],
         "template": [
-            "fight/UniversalUI/star_3.png",
-            "fight/UniversalUI/Moon_3.png"
+            "fight/UniversalUI/new_Star_3.png",
+            "fight/UniversalUI/new_Moon_3.png"
         ],
         "action": "DoNothing",
+        "threshold": 0.9,
+        "next": [
+            "BackText_700ms"
+        ],
         "post_delay": 200,
         "timeout": 2000
     },
-    "TitlePanel_Learnable_Next": {
+    "TitlePanel_Learnable_Check": {
         "recognition": "TemplateMatch",
         "template": [
-            "fight/UniversalUI/GreyStar.png",
-            "fight/UniversalUI/Title_Learnable.png",
-            "fight/UniversalUI/GreyMoon.png"
+            "fight/UniversalUI/new_GreyStar.png",
+            "fight/UniversalUI/new_GreyMoon.png",
+            "fight/UniversalUI/new_Title.png"
         ],
         "roi": [
-            199,
-            875,
-            89,
-            84
+            169,
+            138,
+            387,
+            127
         ],
         "threshold": 0.9,
         "order_by": "Score",
@@ -122,6 +146,22 @@
             "TitlePanel_TitleCheck_New",
             "TitlePanel_TitleLearn",
             "TitlePanel_CurrentPanel"
+        ],
+        "post_delay": 300,
+        "timeout": 2000
+    },
+    "TitlePanel_Learnable_Click": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            53,
+            843,
+            138,
+            152
+        ],
+        "next": [
+            "TitlePanel_Learnable_Check",
+            "TitlePanel_Learnable_Fnish"
         ],
         "post_delay": 300,
         "timeout": 2000
@@ -165,7 +205,7 @@
             287
         ],
         "action": "Click",
-        "post_delay": 700,
+        "post_delay": 1000,
         "timeout": 2000,
         "next": [
             "TitlePanel_TitleLearn_Fail",

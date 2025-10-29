@@ -1,0 +1,411 @@
+{
+    "TSD_Entry": {
+        "next": [
+            "TSD_GetInDomain"
+        ],
+        "interrupt": [
+            "TSD_BackToBigMap"
+        ],
+        "post_delay": 1000
+    },
+    "TSD_BackToBigMap": {
+        "recognition": "OCR",
+        "expected": [
+            "返回"
+        ],
+        "roi": [
+            617,
+            1235,
+            87,
+            37
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000
+    },
+    "TSD_GetInDomain": {
+        "recognition": "OCR",
+        "expected": [
+            "外域"
+        ],
+        "roi": [
+            617,
+            1235,
+            87,
+            37
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "TSD_GetInDomain_Confirm"
+        ]
+    },
+    "TSD_GetInDomain_Confirm": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/time_space_domain/domain1.png",
+            "fight/time_space_domain/domain2.png"
+        ],
+        "roi": [
+            213,
+            567,
+            277,
+            216
+        ],
+        "action": "Click",
+        "post_delay": 3000,
+        "timeout": 2000,
+        "next": [
+            "TSD_CheckInTSD"
+        ],
+        "interrupt": [
+            "TSD_CheckInOD"
+        ]
+    },
+    "TSD_CheckInTSD": {
+        "recognition": "OCR",
+        "expected": [
+            "时空域"
+        ],
+        "roi": [
+            153,
+            726,
+            82,
+            35
+        ],
+        "post_delay": 2000,
+        "next": [
+            "TSD_Explore"
+        ]
+    },
+    "TSD_CheckInOD": {
+        "recognition": "OCR",
+        "expected": [
+            "秩序域"
+        ],
+        "roi": [
+            153,
+            726,
+            82,
+            35
+        ],
+        "action": "StopTask",
+        "focus": {
+            "succeeded": "[color:red]这不是时空域，请冒险者大人快来看看~~[/color]"
+        }
+    },
+    "TSD_Explore": {
+        "action": "Custom",
+        "custom_action": "TSD_explore",
+        "custom_action_param": {
+            "fleet_nums": 4
+        },
+        "post_delay": 500,
+        "timeout": 2000
+    },
+    "TSD_ReturnFleet": {
+        "next": [
+            "TSD_checkTargetFleetFree"
+        ],
+        "post_delay": 100,
+        "timeout": 2000,
+        "interrupt": [
+            "TSD_View",
+            "TSD_EndExploit",
+            "TSD_WithdrawFleet",
+            "BackText"
+        ]
+    },
+    "TSD_checkFreeFleet": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/time_space_domain/fleetFree.png"
+        ],
+        "roi": [
+            130,
+            199,
+            60,
+            51
+        ],
+        "threshold": 0.8,
+        "action": "DoNothing"
+    },
+    "TSD_checkTargetFleetFree": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/time_space_domain/rocket.png",
+            "fight/time_space_domain/fleetFree.png"
+        ],
+        "roi": [
+            130,
+            199,
+            60,
+            51
+        ],
+        "threshold": 0.8,
+        "action": "DoNothing"
+    },
+    "TSD_ClickFleet": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            130,
+            199,
+            60,
+            51
+        ],
+        "post_delay": 1000,
+        "timeout": 500
+    },
+    "TSD_View": {
+        "recognition": "OCR",
+        "expected": [
+            "查看"
+        ],
+        "roi": [
+            14,
+            283,
+            691,
+            756
+        ],
+        "action": "Click",
+        "post_delay": 2000,
+        "timeout": 2000
+    },
+    "TSD_EndExploit": {
+        "recognition": "OCR",
+        "expected": [
+            "结束开采"
+        ],
+        "roi": [
+            127,
+            832,
+            465,
+            138
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 500
+    },
+    "TSD_WithdrawFleet": {
+        "recognition": "OCR",
+        "expected": [
+            "撤回舰队"
+        ],
+        "roi": [
+            51,
+            1183,
+            157,
+            56
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 500
+    },
+    "TSD_EndExplore": {
+        "recognition": "OCR",
+        "expected": [
+            "结束探索"
+        ],
+        "roi": [
+            127,
+            832,
+            465,
+            138
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 500
+    },
+    "TSD_Investigate": {
+        "recognition": "OCR",
+        "expected": [
+            "调查"
+        ],
+        "roi": [
+            12,
+            181,
+            703,
+            969
+        ],
+        "action": "Click",
+        "post_delay": 2000,
+        "next": [
+            "TSD_SelectFreeFleetInList"
+        ]
+    },
+    "TSD_SelectFreeFleetInList": {
+        "recognition": "OCR",
+        "expected": [
+            "深渊"
+        ],
+        "roi": [
+            44,
+            164,
+            627,
+            537
+        ],
+        "action": "Click",
+        "post_delay": 1500
+    },
+    "TSD_checkTargetFlying": {
+        "recognition": "TemplateMatch",
+        "template": "fight/time_space_domain/rocket.png",
+        "roi": [
+            130,
+            199,
+            60,
+            51
+        ],
+        "threshold": 0.8
+    },
+    "TSD_closeUnionMsgBox": {
+        "recognition": "TemplateMatch",
+        "template": "fight/time_space_domain/unionMsgButton.png",
+        "roi": [
+            18,
+            1027,
+            106,
+            105
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 500
+    },
+    "TSD_getPowerNumber": {
+        "recognition": "OCR",
+        "recognition_doc": "DetectNumberWithRegex",
+        "expected": "\\d+",
+        "roi": [
+            0,
+            0,
+            1920,
+            1080
+        ],
+        "replace": [
+            "\\.|\\,",
+            ""
+        ]
+    },
+    "TSD_ClearMonster": {
+        "recognition": "OCR",
+        "expected": [
+            "袭击"
+        ],
+        "roi": [
+            12,
+            181,
+            703,
+            969
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "TSD_ClickFleetButton"
+        ],
+        "interrupt": [
+            "TSD_SelectCancelButton",
+            "ClickCenterBelow_500ms"
+        ]
+    },
+    "TSD_ClickFleetButton": {
+        "recognition": "OCR",
+        "expected": [
+            "派遣舰队"
+        ],
+        "roi": [
+            36,
+            1114,
+            261,
+            162
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000,
+        "next": [
+            "TSD_SelectFreeFleetInList"
+        ]
+    },
+    "TSD_ClickAttackButton": {
+        "recognition": "OCR",
+        "expected": [
+            "袭击"
+        ],
+        "roi": [
+            81,
+            822,
+            581,
+            210
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000
+    },
+    "TSD_SelectHighestFleet": {
+        "recognition": "OCR",
+        "expected": [
+            "深渊"
+        ],
+        "roi": [
+            49,
+            175,
+            238,
+            520
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000,
+        "next": [
+            "TSD_ClickAttackButton"
+        ],
+        "interrupt": [
+            "BackText"
+        ]
+    },
+    "TSD_CheckTargetFleetRun": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/time_space_domain/rocket.png",
+            "fight/time_space_domain/spade.png",
+            "fight/time_space_domain/tent.png"
+        ],
+        "roi": [
+            130,
+            199,
+            60,
+            51
+        ],
+        "threshold": 0.8,
+        "action": "DoNothing"
+    },
+    "TSD_CheckExploreTask": {
+        "enabled": false
+    },
+    "TSD_CheckMonsterTask": {
+        "enabled": false
+    },
+    "TSD_CheckMonsterBossTask": {
+        "enabled": false
+    },
+    "TSD_CheckMonsterPlanetTask": {
+        "enabled": false
+    },
+    "TSD_SelectCancelButton": {
+        "recognition": "OCR",
+        "expected": [
+            "取消"
+        ],
+        "threshold": 0.8,
+        "roi": [
+            383,
+            690,
+            254,
+            98
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000
+    }
+}

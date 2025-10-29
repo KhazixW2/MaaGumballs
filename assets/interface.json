@@ -59,23 +59,38 @@
             ]
         },
         {
-            "name": "港台服",
+            "name": "hk_tw",
             "path": [
                 "{PROJECT_DIR}/resource/base",
                 "{PROJECT_DIR}/resource/hk_tw"
             ]
-        },        
+        },
         {
-            "name": "测试服",
+            "name": "test",
             "path": [
                 "{PROJECT_DIR}/resource/base",
                 "{PROJECT_DIR}/resource/test"
+            ]
+        },
+        {
+            "name": "tencent",
+            "path": [
+                "{PROJECT_DIR}/resource/base",
+                "{PROJECT_DIR}/resource/tencent"
+            ]
+        },
+        {
+            "name": "9u",
+            "path": [
+                "{PROJECT_DIR}/resource/base",
+                "{PROJECT_DIR}/resource/9u"
             ]
         }
     ],
     "agent": {
         "child_exec": "python",
         "child_args": [
+            "-u",
             "{PROJECT_DIR}/agent/main.py"
         ]
     },
@@ -88,9 +103,9 @@
                 "## 自动化黑盒测试工具用户许可协议",
                 "",
                 "### 第一条 定义",
-                "- **本软件**：指该自动化黑盒测试工具",
-                "- **用户**：指使用本软件的个人或实体",
-                "- **第三方应用**：指本软件测试的目标应用程序",
+                "- **本软件**:指该自动化黑盒测试工具",
+                "- **用户**:指使用本软件的个人或实体",
+                "- **第三方应用**:指本软件测试的目标应用程序",
                 "",
                 "### 第二条 使用授权",
                 "用户获得使用本软件的非独占、不可转让的许可。",
@@ -102,7 +117,7 @@
                 "- 用户承担因使用本软件而产生的所有责任",
                 "",
                 "### 第四条 免责条款",
-                "- 本软件按\"现状\"提供，不提供任何明示或暗示的保证",
+                "- 本软件按\"现状\"提供,不提供任何明示或暗示的保证",
                 "- 开发者不对用户使用本软件造成的任何损失承担责任",
                 "- 用户理解并接受使用本软件的风险",
                 "",
@@ -114,118 +129,282 @@
             "name": "每日收菜",
             "entry": "DailyTask",
             "option": [
-                "扫荡时使用钻石购买体力"
+                "扫荡时使用钻石购买体力",
+                "开启每日签到",
+                "开启荒野探索",
+                "开启马戏团任务",
+                "开启每日扫荡",
+                "开启派遣魔蜥",
+                "开启领取炼金招牌",
+                "开启天空扫荡",
+                "开启遗迹扫荡"
             ],
-            "doc": "每日收菜,需要在大地图主界面"
+            "doc": [
+                "### 每日收菜注意事项",
+                "  - 如果需要使用钻石购买体力，请确保账户有足够的钻石余额"
+            ]
         },
         {
-            "name": "联盟奖励",
-            "entry": "UnionReward_Start",
-            "doc": "一键完成联盟所有的任务,并领取联盟礼包奖励"
+            "name": "领取奖励",
+            "entry": "Reward_Execute",
+            "doc": [
+                "### 领取奖励说明",
+                "   - 一键扫荡联盟所有的任务,并领取联盟礼包奖励",
+                "   - 一键领取好友礼物"
+            ]
         },
         {
             "name": "商店自动购物",
             "entry": "Shop",
-            "doc": "自动购买商店内的物品,只购买旅行商人金币货物,天空商店的遗迹碎片商品,佣兵一键50换5(需要有足够的碎片)"
+            "doc": [
+                "### 商店购买介绍",
+                "   - 旅行商人只购买金币商品  ",
+                "   - 天空商店只够买遗迹碎片商品  ",
+                "   - 佣兵商店一键50换5(需要有足够的碎片)  "
+            ]
         },
         {
-            "name": "一键领取好友礼物",
-            "entry": "ObtainFriendReward",
-            "doc": "一键完成领取好友礼物,并领取奖励,完成后回到大地图"
+            "name": "自动天空",
+            "entry": "AutoSky",
+            "doc": [
+                "### 工作内容",
+                "- **第一步**:从大地图点击左下角进入伊甸，再从伊甸进入雷达界面",
+                "- **第二步**:不断切换目标，寻找飞艇，怪物或浮岛并完成战斗或探索",
+                "- **第三步**:返回伊甸，执行自动探索，消耗能量，返回雷达界面，重复进行第二步",
+                "",
+                "### 结束条件",
+                "- **1**:遇到之前挑战失败的战斗目标，说明需要用户手动调整飞艇配置，消耗探索点或添加石头再打，此时会直接停止本任务",
+                "- **2**:发现克隆体阵亡，会取消战斗结果避免损失克隆体，此时会直接停止本任务",
+                "- **3**:自动探索触发后，未检测到成功界面，说明雷达界面已经满了，或者能量不够了，此时会直接停止本任务",
+                "- **4**:完成一定轮次后，停止任务，避免意料之外的情况导致无限循环",
+                ""
+            ]
         },
         {
             "name": "刷竞技场",
             "entry": "JJC",
+            "option": [
+                "自动肉鸽时使用钻石购买体力"
+            ],
+            "pipeline_override": {
+                "Select_WorldTree_InputBox_Text": {
+                    "input_text": "二郎神"
+                },
+                "Select_Drug_Next": {
+                    "template": "items/狼人药剂.png"
+                },
+                "Select_Artifact_Next": {
+                    "template": "equipments/7level/冒险家竖琴.png"
+                },
+                "select_InputBox_Text1": {
+                    "input_text": "自然之子"
+                },
+                "select_InputBox_Text2": {
+                    "input_text": "贵族"
+                }
+            },
+            "repeatable": true,
+            "repeat_count": 1,
             "doc": [
                 "## MaaGB全自动竞技场说明",
                 "### 自动执行功能说明",
                 "1. **竞技场与阵容**  ",
                 "   - 自动从大地图进入竞技场  ",
-                "   - 自动启用默认阵容：二郎神 + 自然之子（灵魂链接） + 贵族（灵魂链接）  ",
-                "   - 自动选择狼人药剂与冒险家的竖琴并进入迷宫（特别关注狼人药剂可跨楼层识别）  ",
+                "   - 自动启用默认阵容:二郎神 + 自然之子(灵魂链接) + 贵族(灵魂链接)  ",
+                "   - 自动选择狼人药剂与冒险家的竖琴并进入迷宫(特别关注狼人药剂可跨楼层识别)  ",
                 "",
                 "2. **楼层操作**  ",
-                "   - 自动召唤狗（27/28/29层）  ",
-                "   - 自动装备土系魔法书（≥30层的*1层）  ",
-                "   - 自动点称号（1/27/63/89层）  ",
-                "   - 自动释放自然之子技能保护狗（*1/*9层）  ",
-                "   - 自动检查状态并使用恢复药剂（≥50层的*1/*9层）  ",
+                "   - 自动召唤狗(36/37/38/39层)  ",
+                "   - 自动装备土系魔法书、执政官铠甲、次元靴和挂坠(≥30层的*1层)  ",
+                "   - 自动点称号(1/36/63层)  ",
+                "   - 自动释放自然之子技能保护狗,大于60层以后(*1/*9层)  ",
+                "   - 自动检查状态并使用恢复药剂(≥50层的*1/*9层)  ",
                 "   - 自动处理斯巴达尸体/角斗场/工资事件  ",
-                "   - 自动隔层释放地震术保护狗（≥85层）  ",
+                "   - 自动隔层释放地震术保护狗(≥85层)  ",
+                "   - 自动识别技能商店并购买需要的技能(待增强   ",
                 "",
                 "3. **Boss与迷宫策略**  ",
-                "   - 自动控制Boss战：  ",
-                "     - ≤55层：狗独立击杀角斗场Boss  ",
-                "     - 75层：灯芯拖回合拿观众奖励（85/95层跳过观众）  ",
-                "     - 70/80层：冰锥术冻结击杀  ",
-                "     - 90层：优先使用时停（无时停则按80层逻辑）  ",
+                "   - 自动控制Boss战:  ",
+                "     - ≤55层:狗独立击杀角斗场Boss  ",
+                "     - 75层:灯芯拖回合拿观众奖励(85/95层跳过观众)  ",
+                "     - 70/80层:冰锥术冻结击杀  ",
+                "     - 90层:优先使用时停(无时停则按80层逻辑)  ",
                 "   - 96层自动拿隐藏并结算  ",
                 "",
                 "---",
                 "",
                 "### 需用户手动操作事项",
                 "▶️ **开局准备**  ",
-                "   - 手动选择二郎神出战  ",
                 "   - 准备狼人药剂并标特别关注  ",
                 "   - 备好自然之子与贵族冈布奥  ",
-                "▶️ **关键设置**  ",
-                "   - 手动开启自动拾取（可2/3层暂停任务后补开）  ",
+                "   - 必须要有重装卡车挂树,否则85层后会暴毙  ",
                 "▶️ **注意事项**  ",
-                "   - 不处理隐秘洞穴小游戏（需手动探索拿钥匙）  ",
+                "   - 不处理隐秘洞穴小游戏(需手动探索拿钥匙)  ",
                 "   - 遇异常时提供截图/录屏/maa.log文件反馈  ",
+                "   - 肉鸽模式里，如果是笔记本电脑则必须开启性能模式, 省电模式出现的bug将不会解决  ",
                 "",
-                "> 流程：大地图进竞技场 → 选二郎神 → 开自动拾取 → 处理钥匙小游戏 → 启动全自动"
+                "> 流程:大地图进竞技场 → 选二郎神 → 处理钥匙小游戏 → 启动全自动",
+                "> 笔者是根据mumu1080*1920 dpi 480开发的, 设备型号为Samsung GalaxyS24,请在出现问题时检查配置"
             ]
         },
         {
             "name": "自动叫狗",
             "entry": "Fight_CallDog_Func",
-            "doc": "该节点不点称号，仅吃狼人药剂叫狗"
+            "doc": "该节点不点称号,仅吃狼人药剂叫狗"
         },
         {
-            "name": "黑永恒",
-            "entry": "GoDownstairsTrick",
-            "doc": "黑永恒,需要V2ray应用,需要一张地震术,9/19层最好穿上铠甲来保证地震术可以翻开所有地板。下楼之前确保目标装备栏不要装备上除目标准备以外的装备,即在黑永恒时头,手,武器以及披风位置不要装备除永恒套的其他装备。"
-        },
-        {
-            "name": "黑日光",
-            "entry": "SunlightTrick",
+            "name": "马尔斯(测试)",
+            "entry": "Mars",
+            "repeatable": true,
+            "repeat_count": 1,
             "option": [
-                "接受星光"
+                "自动肉鸽时使用钻石购买体力",
+                "是否启用手记开启恶魔系称号",
+                "目标出图楼层",
+                "目标大地数量",
+                "开启自动拾取",
+                "魔法系冈布奥选择"
             ],
-            "doc": "黑日光,翻找蓝尸体或者破碎武器,默认只接受日光,要求佩戴骨戒,通过释放治疗术,冰盾,死波和吸能术来推序。默认循环30轮。"
+            "pipeline_override": {
+                "Select_WorldTree_InputBox_Text": {
+                    "input_text": "仿生人"
+                },
+                "Select_Drug_Next": {
+                    "template": "items/电能试剂.png"
+                },
+                "Select_Artifact_Next": {
+                    "template": "equipments/7level/冒险家竖琴.png"
+                },
+                "select_InputBox_Text1": {
+                    "input_text": "太阳冈布奥"
+                }
+            },
+            "doc": [
+                "## MAAGB自动玛尔斯流程",
+                "### 自动执行功能说明",
+                "1. **玛尔斯阵容**  ",
+                "   - 自动从大地图进入玛尔斯神殿  ",
+                "   - 自动启用默认阵容：仿生人 + 太阳(灵魂链接) + 天启者(灵魂链接)  ",
+                "   - 自动选择电能药剂与冒险家的竖琴并进入迷宫",
+                "     >  [!tip]",
+                "     >",
+                "     > 1. 特别关注电能药剂，并自行制作好电能药剂",
+                "     >",
+                "     > 2. 如果在局内，直接接管局内开始",
+                "",
+                "2. **楼层操作**  ",
+                "   - 自动点称号(1/58/76层)",
+                "   - 自动释放大地之门(50以后*9层)  ",
+                "   - 自动检查状态并使用恢复法术(≥50层的*1/5/*9层)  ",
+                "   - 自动处理玛尔斯石碑、宝箱奖励、各类商人事件",
+                "   - 神龙工资事件",
+                "",
+                "3. **Boss与迷宫策略**  ",
+                "   - 小怪层清理主要靠AAA,不使用技能",
+                "   - Boss战先放1根柱子, 祝福, 然后清理小怪,释放剩下柱子,AAAA,中间穿插冰锥",
+                "   - 在目标出图楼层九柱武器大师证件出图结算  ",
+                "---",
+                "",
+                "### 需用户手动操作事项",
+                "",
+                "▶️ **开局准备**  ",
+                "   - 手动选择仿生人冈布奥出战  ",
+                "   - 准备电能药剂并标特别关注  ",
+                "   - 备好太阳冈布奥与天启者冈布奥  ",
+                "▶️ **关键设置**  ",
+                "   - 设置目标出图楼层(会在到达目标出图楼层之后的所有x9层尝试出图)",
+                "   - 设置目标大地数量(设置为2时不能确保拿到2张大地, 只是会去尝试使用第二张大地)",
+                "   - 设置是否开启自动拾取(目前触控方式minitouch小概率出现点击失效, adbinput没有发现此问题但是adbinput无法开启自动拾取, 请自行选择触控方式和自动拾取配置项)",
+                "     ▶️ **注意事项**  ",
+                "   - 不处理隐秘洞穴小游戏(需手动探索拿钥匙)  ",
+                "   - 遇异常时提供截图/录屏/maa.log文件反馈  ",
+                "   - 肉鸽模式里，如果是笔记本电脑则必须开启性能模式, **省电模式出现的bug将不会解决**  ",
+                "",
+                "> 流程：大地图进玛尔斯神殿 → 选仿生人 → 处理钥匙小游戏 → 启动全自动",
+                "> 笔者是根据mumu1080*1920 dpi 480开发的, 设备型号为Samsung GalaxyS24,请在出现问题时检查配置"
+            ]
         },
         {
-            "name": "黑水池",
-            "entry": "PoolTrick",
-            "doc": "黑水池,浸泡铠甲期望增加攻击,要求佩戴骨戒,通过释放治疗术,冰盾,死波和吸能术来推序。默认循环30轮"
-        },
-        {
-            "name": "神锻测序(测试)",
-            "entry": "Find_Stove_Sequence",
+            "name": "神锻系列",
+            "entry": "DivineForgeLand_Start",
             "option": [
-                "目标日光数及自动熔设定"
+                "选择神锻任务",
+                "接受星光",
+                "目标日光数及自动熔设定",
+                "黑装备类型"
             ],
             "doc": [
-                "### 使用前请检查",
+                "## 神锻系列说明",
+                "▶️ **选项说明**  ",
+                "   - **选择神锻任务**: 选择黑日光、黑水池、黑永恒和神锻测序融序一系列任务（目前神锻系列除黑永恒外放弃维护，等待确切的分享消息再做打算）",
+                "   - **接受星光**: 选择黑日光任务时，接受星光奖励",
+                "   - **目标日光数及自动熔设定**: 选择神锻测序——融序任务时，设置目标日光数及自动熔设定",
                 "",
-                "- **锻火刻印状态**：确保已熔（熔炼第一个六星会获得）",
-                "- **装备要求**：最好穿上铠甲后再使用",
+                "▶️ **黑装备**  ",
+                "   - 需要V2ray应用并配置好飞行模式  ",
+                "   - 需要一张地震术,9/19层最好穿上铠甲来保证地震术可以翻开所有地板  ",
+                "   - 目前支持大部分套装，默认为永恒套，需要其他的记得在选项中选择",
+                "   - 白珍珠和黑珍珠建议不要去黑，可能会得不到想要的！",
+                "   - 下楼之前，确保你需要黑的位置，即黑永恒时头,手,武器以及披风位置, 不要装备除永恒套的其他装备  ",
+                "",
+                "▶️ **黑日光**  ",
+                "   - 蓝尸体或者破碎武器,默认只接受日光  ",
+                "   - 要求佩戴骨戒,通过释放治疗术,冰盾,死波和吸能术来推序  ",
+                "   - 暂时还不支持进洞  ",
+                "",
+                "▶️ **黑水池**  ",
+                "   - 黑水池,浸泡铠甲期望增加攻击  ",
+                "   - 要求佩戴骨戒,通过释放治疗术,冰盾,死波和吸能术来推序  ",
+                "",
+                "▶️ **神锻测序——融序**  ",
+                "- **锻火刻印状态**:确保已熔(熔炼第一个六星会获得)",
+                "- **装备要求**:最好穿上铠甲后再使用",
                 "- **低星装备位置**:",
                 "  - 必须位于装备背包第3页的第一个格子",
-                "  - 必须是装备（不能是风箱等非装备物品）",
+                "  - 必须是装备(不能是风箱等非装备物品)",
                 "  - 该装备后不能有非装备物品",
                 "- **数量要求**:确保超过101件低星装备",
                 "",
-                "### 自动熔炼规则",
+                "- **自动熔炼规则**",
                 "- **测序条件**:当6星序列中日光数满足要求时完整测序,否则停止",
-                "- **熔炼策略**：优先使用符合测序列表的最低星装备",
+                "- **熔炼策略**:优先使用符合测序列表的最低星装备",
                 "- **退出条件**:",
                 "  - 用完所有3星/6星装备",
                 "  - 日光位置异常不出日光",
-                "",
-                "### 重要提示",
-                "**最后请务必自行检查日光是否符合预期**"
+                ">",
+                "> **最后请务必自行检查日光是否符合预期**",
+                ""
+            ]
+        },
+        {
+            "name": "时空域(测试)",
+            "entry": "TSD_Entry",
+            "option": [
+                "是否探索废墟等事件",
+                "是否清理主地图小怪",
+                "是否清理主地图BOSS",
+                "是否清理星球小怪",
+                "出战舰队数量"
+            ],
+            "doc": [
+                "### 介绍",
+                "时空域自动探索,目前支持探索废墟类事件，清理主地图小怪及BOSS",
+                "### 使用前检查",
+                "- 确保已开启外域及时空域,并且大地图右下角按钮是【外域】,且已进入时空域",
+                "- 在选项勾选此次要完成的任务",
+                "- 根据自身舰队战力情况，选择出战舰队数量，会根据战力大小选择舰队",
+                "- 地图BOSS由最高战力舰队出战",
+                "### 其他",
+                "特殊事件、空间奇点及星球内部事件,后续提供支持"
+            ]
+        },
+        {
+            "name": "自动兑换密令",
+            "entry": "AutoCdk",
+            "advanced": "AutoCdkText",
+            "doc": [
+                "### 自动兑换密令",
+                " - 直接输入密令，密令之间使用, ; / 分开"
             ]
         },
         {
@@ -234,104 +413,55 @@
             "doc": "注意: 该node只在完成所有任务后,仅退出游戏"
         }
     ],
+    "advanced": {
+        "AutoCdkText": {
+            "field": [
+                "密令文本"
+            ],
+            "type": [
+                "string"
+            ],
+            "doc": "自动兑换密令功能,输入密令之间使用, ; / 分开",
+            "pipeline_override": {
+                "Cdk_Sources": {
+                    "focus": "{密令文本}"
+                }
+            }
+        }
+    },
     "option": {
-        "刷取次数": {
+        "选择神锻任务": {
+            "default_case": "黑水池",
             "cases": [
                 {
-                    "name": "1",
+                    "name": "黑水池",
                     "pipeline_override": {
-                        "TL01_Start_Count": {
-                            "custom_action_param": {
-                                "count": 0,
-                                "target_count": 1,
-                                "next_node": [
-                                    "BackText"
-                                ]
-                            }
+                        "DivineForgeLand_Start": {
+                            "next": "PoolTrick"
                         }
                     }
                 },
                 {
-                    "name": "2",
+                    "name": "黑日光",
                     "pipeline_override": {
-                        "TL01_Start_Count": {
-                            "custom_action_param": {
-                                "count": 0,
-                                "target_count": 2,
-                                "next_node": [
-                                    "BackText"
-                                ]
-                            }
+                        "DivineForgeLand_Start": {
+                            "next": "SunlightTrick"
                         }
                     }
                 },
                 {
-                    "name": "3",
+                    "name": "黑装备",
                     "pipeline_override": {
-                        "TL01_Start_Count": {
-                            "custom_action_param": {
-                                "count": 0,
-                                "target_count": 3,
-                                "next_node": [
-                                    "BackText"
-                                ]
-                            }
+                        "DivineForgeLand_Start": {
+                            "next": "GoDownstairsTrick"
                         }
                     }
                 },
                 {
-                    "name": "4",
+                    "name": "神锻测序——融序",
                     "pipeline_override": {
-                        "TL01_Start_Count": {
-                            "custom_action_param": {
-                                "count": 0,
-                                "target_count": 4,
-                                "next_node": [
-                                    "BackText"
-                                ]
-                            }
-                        }
-                    }
-                },
-                {
-                    "name": "5",
-                    "pipeline_override": {
-                        "TL01_Start_Count": {
-                            "custom_action_param": {
-                                "count": 0,
-                                "target_count": 5,
-                                "next_node": [
-                                    "BackText"
-                                ]
-                            }
-                        }
-                    }
-                },
-                {
-                    "name": "10",
-                    "pipeline_override": {
-                        "TL01_Start_Count": {
-                            "custom_action_param": {
-                                "count": 0,
-                                "target_count": 10,
-                                "next_node": [
-                                    "BackText"
-                                ]
-                            }
-                        }
-                    }
-                },
-                {
-                    "name": "20",
-                    "pipeline_override": {
-                        "TL01_Start_Count": {
-                            "custom_action_param": {
-                                "count": 0,
-                                "target_count": 20,
-                                "next_node": [
-                                    "BackText"
-                                ]
-                            }
+                        "DivineForgeLand_Start": {
+                            "next": "Find_Stove_Sequence"
                         }
                     }
                 }
@@ -357,6 +487,195 @@
                             "custom_action_param": {
                                 "accept_sunlight": false
                             }
+                        }
+                    }
+                }
+            ]
+        },
+        "开启每日签到": {
+            "default_case": "yes",
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "DailySignIn": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "DailySignIn": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "开启荒野探索": {
+            "default_case": "yes",
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "WildernessExplore": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "WildernessExplore": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "开启马戏团任务": {
+            "default_case": "yes",
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "CircusTask": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "CircusTask": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "开启每日扫荡": {
+            "default_case": "yes",
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "DailySweep": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "DailySweep": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "开启派遣魔蜥": {
+            "default_case": "yes",
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "SendLizards": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "SendLizards": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "开启领取炼金招牌": {
+            "default_case": "yes",
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "AlchemySignboard": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "AlchemySignboard": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "开启天空扫荡": {
+            "default_case": "yes",
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "SkyExplore": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "SkyExplore": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "开启遗迹扫荡": {
+            "default_case": "yes",
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "RuinsExplore": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "RuinsExplore": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "开启天空周副本": {
+            "default_case": "yes",
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "WeeklyRaid": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "WeeklyRaid": {
+                            "enabled": true
                         }
                     }
                 }
@@ -392,6 +711,159 @@
                             "expected": [
                                 "取消"
                             ]
+                        }
+                    }
+                }
+            ]
+        },
+        "自动肉鸽时使用钻石购买体力": {
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "PowerBuy": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "PowerBuy": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "开启自动拾取": {
+            "default_case": "no",
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "Fight_PickUpAll_Emptyfloor": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "Fight_PickUpAll_Emptyfloor": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "魔法系冈布奥选择": {
+            "cases": [
+                {
+                    "name": "天启者",
+                    "pipeline_override": {
+                        "select_InputBox_Text2": {
+                            "input_text": "天启者"
+                        }
+                    }
+                },
+                {
+                    "name": "波塞冬",
+                    "pipeline_override": {
+                        "select_InputBox_Text2": {
+                            "input_text": "波塞冬"
+                        }
+                    }
+                }
+            ]
+        },
+        "目标出图楼层": {
+            "cases": [
+                {
+                    "name": "109",
+                    "pipeline_override": {
+                        "Mars_Target_Layer_Setting": {
+                            "expected": "109"
+                        }
+                    }
+                },
+                {
+                    "name": "119",
+                    "pipeline_override": {
+                        "Mars_Target_Layer_Setting": {
+                            "expected": "119"
+                        }
+                    }
+                },
+                {
+                    "name": "129",
+                    "pipeline_override": {
+                        "Mars_Target_Layer_Setting": {
+                            "expected": "129"
+                        }
+                    }
+                },
+                {
+                    "name": "139",
+                    "pipeline_override": {
+                        "Mars_Target_Layer_Setting": {
+                            "expected": "139"
+                        }
+                    }
+                },
+                {
+                    "name": "149",
+                    "pipeline_override": {
+                        "Mars_Target_Layer_Setting": {
+                            "expected": "149"
+                        }
+                    }
+                }
+            ]
+        },
+        "目标大地数量": {
+            "cases": [
+                {
+                    "name": "0",
+                    "pipeline_override": {
+                        "Mars_Target_Earthgate_Setting": {
+                            "expected": "0"
+                        }
+                    }
+                },
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "Mars_Target_Earthgate_Setting": {
+                            "expected": "1"
+                        }
+                    }
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "Mars_Target_Earthgate_Setting": {
+                            "expected": "2"
+                        }
+                    }
+                }
+            ]
+        },
+        "是否启用手记开启恶魔系称号": {
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "Mars_Astrological_Title_Setting": {
+                            "expected": "false"
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "Mars_Astrological_Title_Setting": {
+                            "expected": "true"
                         }
                     }
                 }
@@ -495,6 +967,266 @@
                             "custom_action_param": {
                                 "target_sunlight": 21,
                                 "auto_melt": 6
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "黑装备类型": {
+            "default_case": "永恒套",
+            "cases": [
+                {
+                    "name": "永恒套",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "永恒套"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "龙鳞套",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "龙鳞套"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "神谕套",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "神谕套"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "魔导士套",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "魔导士套"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "骑士套",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "骑士套"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "学徒套",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "学徒套"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "火系",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "火系"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "水系",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "水系"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "土系",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "土系"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "气系",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "气系"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "光系",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "光系"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "暗系",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "暗系"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "贵族套",
+                    "pipeline_override": {
+                        "GoDownstairsTrick": {
+                            "custom_action_param": {
+                                "equipment": "贵族套"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "是否探索废墟等事件": {
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "TSD_CheckExploreTask": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "TSD_CheckExploreTask": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "是否清理主地图小怪": {
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "TSD_CheckMonsterTask": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "TSD_CheckMonsterTask": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "是否清理主地图BOSS": {
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "TSD_CheckMonsterBossTask": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "TSD_CheckMonsterBossTask": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "是否清理星球小怪": {
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "TSD_CheckMonsterPlanetTask": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "TSD_CheckMonsterPlanetTask": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "出战舰队数量": {
+            "default_case": "1",
+            "cases": [
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "TSD_Explore": {
+                            "custom_action_param": {
+                                "fleet_nums": 1
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "TSD_Explore": {
+                            "custom_action_param": {
+                                "fleet_nums": 2
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "3",
+                    "pipeline_override": {
+                        "TSD_Explore": {
+                            "custom_action_param": {
+                                "fleet_nums": 3
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "4",
+                    "pipeline_override": {
+                        "TSD_Explore": {
+                            "custom_action_param": {
+                                "fleet_nums": 4
                             }
                         }
                     }

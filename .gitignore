@@ -450,7 +450,7 @@ tools/ImageCropper/**/*.png
 
 config
 debug
-
+.venv
 grid
 grid/*
 

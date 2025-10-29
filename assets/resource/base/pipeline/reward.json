@@ -1,4 +1,9 @@
 {
+    "Reward_Execute": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "custom_action": "Reward_Execute"
+    },
     "UnionReward_Start": {
         "next": [
             "CheckUnionWindows_Next"
@@ -47,10 +52,10 @@
         "recognition": "OCR",
         "expected": "联盟礼包",
         "roi": [
-            145,
-            728,
-            440,
-            190
+            107,
+            484,
+            423,
+            470
         ],
         "post_delay": 1000,
         "timeout": 2000,
@@ -96,10 +101,10 @@
         "recognition": "OCR",
         "expected": "联盟任务",
         "roi": [
-            145,
-            728,
-            440,
-            190
+            107,
+            484,
+            423,
+            470
         ],
         "post_delay": 1000,
         "timeout": 2000,
@@ -194,5 +199,210 @@
         ],
         "post_delay": 1000,
         "timeout": 2000
+    },
+    "AutoCdk": {
+        "action": "Custom",
+        "custom_action": "AutoCdk"
+    },
+    "Cdk_Start": {
+        "next": [
+            "Cdk_Select_CdkEntrance",
+            "Cdk_MainSettingsEntrance"
+        ],
+        "interrupt": [
+            "ReturnBigMap"
+        ],
+        "post_delay": 1000
+    },
+    "Cdk_MainSettingsEntrance": {
+        "template": "utils/MainSettingsEntrance.png",
+        "recognition": "TemplateMatch",
+        "threshold": 0.8,
+        "roi": [
+            486,
+            0,
+            233,
+            189
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "Cdk_Select_CdkEntrance"
+        ],
+        "interrupt": [
+            "BackText"
+        ]
+    },
+    "Cdk_Select_CdkEntrance": {
+        "template": "utils/CdkEntrance.png",
+        "recognition": "TemplateMatch",
+        "threshold": 0.8,
+        "roi": [
+            82,
+            484,
+            561,
+            514
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "Cdk_Window"
+        ],
+        "interrupt": [
+            "BackText"
+        ]
+    },
+    "Cdk_Window": {
+        "recognition": "OCR",
+        "expected": "冈布奥密令",
+        "roi": [
+            128,
+            182,
+            481,
+            491
+        ],
+        "post_delay": 500,
+        "timeout": 2000,
+        "next": [
+            "Cdk_Select_Textbox"
+        ],
+        "interrupt": [
+            "Cdk_Select_CdkEntrance",
+            "BackText"
+        ]
+    },
+    "Cdk_Select_Textbox": {
+        "recognition": "OCR",
+        "expected": [
+            "请输入密令"
+        ],
+        "roi": [
+            128,
+            832,
+            460,
+            138
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 3000,
+        "next": [
+            "Cdk_TextInputAction"
+        ],
+        "interrupt": [
+            "Cdk_Select_CdkEntrance",
+            "BackText"
+        ]
+    },
+    "Cdk_TextInputAction": {
+        "action": "InputText",
+        "input_text": "山山子来啦！",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "Cdk_Text_Confirm"
+        ],
+        "interrupt": [
+            "Cdk_Select_CdkEntrance",
+            "BackText"
+        ]
+    },
+    "Cdk_Text_Confirm": {
+        "recognition": "OCR",
+        "expected": [
+            "确定",
+            "确认"
+        ],
+        "roi": [
+            0,
+            0,
+            0,
+            0
+        ],
+        "action": "Click",
+        "post_delay": 2500,
+        "timeout": 10000,
+        "next": [
+            "ConfirmButton",
+            "Cdk_CheckResult_True",
+            "Cdk_CheckResult_False",
+            "Cdk_CheckResult_Error"
+        ],
+        "interrupt": [
+            "Cdk_Select_CdkEntrance",
+            "BackText"
+        ]
+    },
+    "Cdk_CheckResult_True": {
+        "recognition": "OCR",
+        "expected": [
+            "不得不说",
+            "一个大忙",
+            "你的奖励",
+            "又对了"
+        ],
+        "roi": [
+            128,
+            526,
+            395,
+            107
+        ],
+        "post_delay": 2500,
+        "timeout": 2000,
+        "action": "DoNothing",
+        "focus": {
+            "succeeded": "[color:Blue]密令兑换成功，赞美放牛的~[/color]"
+        }
+    },
+    "Cdk_CheckResult_False": {
+        "recognition": "OCR",
+        "expected": [
+            "已经领取过了",
+            "浑水摸鱼"
+        ],
+        "roi": [
+            128,
+            526,
+            395,
+            107
+        ],
+        "post_delay": 2500,
+        "timeout": 2000,
+        "action": "DoNothing",
+        "focus": {
+            "succeeded": "[color:Green]密令已经兑换过了哦~[/color]"
+        }
+    },
+    "Cdk_CheckResult_Error": {
+        "recognition": "OCR",
+        "expected": [
+            "口令错误",
+            "再回去想想",
+            "聊天机器人",
+            "这里行不通",
+            "口令很陌生",
+            "你很有想法",
+            "错误的口令",
+            "有些特别",
+            "区域限制",
+            "无法使用"
+        ],
+        "roi": [
+            128,
+            526,
+            395,
+            107
+        ],
+        "post_delay": 2500,
+        "timeout": 2000,
+        "action": "StopTask",
+        "focus": {
+            "succeeded": "[color:Tomato]密令识别错误,请冒险者大人来看看哦~[/color]"
+        }
+    },
+    "Cdk_Sources": {
+        "doc": "这里默认为空，需要用户输入兑换码兑换码之间使用, ; / 分开",
+        "focus": ""
     }
 }

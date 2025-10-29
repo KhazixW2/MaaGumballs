@@ -18,7 +18,8 @@ jobs:
       - uses: MirrorChyan/uploading-action@v1
         with:
           filetype: latest-release
-          filename: "MaaGumballs-${{ matrix.os }}-${{ matrix.arch }}-*.zip"
+          filename: ${{ matrix.os == 'win' && format('MaaGumballs-{0}-{1}-*.zip', matrix.os, matrix.arch) || format('MaaGumballs-{0}-{1}-*.tar.gz', matrix.os, matrix.arch) }}
+
           mirrorchyan_rid: MaaGB
 
           github_token: ${{ secrets.GITHUB_TOKEN }}

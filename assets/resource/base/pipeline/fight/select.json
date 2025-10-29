@@ -20,6 +20,144 @@
         "post_delay": 500,
         "timeout": 2000
     },
+    "Select_MainCharacter": {
+        "next": "Select_WorldTree",
+        "interrupt": [
+            "Communicating",
+            "ConfirmButton",
+            "FlipPage",
+            "BackText"
+        ]
+    },
+    "Select_WorldTree": {
+        "recognition": "OCR",
+        "roi": [
+            12,
+            1127,
+            277,
+            152
+        ],
+        "expected": "冈布奥",
+        "action": "Click",
+        "post_delay": 1500,
+        "timeout": 3000,
+        "next": [
+            "Select_WorldTree_SearchButton"
+        ],
+        "interrupt": [
+            "Select_CharacterIndex"
+        ]
+    },
+    "Select_CharacterIndex": {
+        "recognition": "OCR",
+        "roi": [
+            66,
+            1178,
+            148,
+            78
+        ],
+        "expected": "图鉴",
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 3000
+    },
+    "Select_WorldTree_SearchButton": {
+        "recognition": "TemplateMatch",
+        "template": "fight/UniversalUI/searchButton.png",
+        "action": "Click",
+        "roi": [
+            536,
+            116,
+            150,
+            140
+        ],
+        "post_delay": 500,
+        "timeout": 2000,
+        "next": [
+            "Select_WorldTree_InputBox_Click",
+            "Select_WorldTree_SearchButton"
+        ]
+    },
+    "Select_WorldTree_InputBox_Click": {
+        "recognition": "OCR",
+        "expected": [
+            "输入"
+        ],
+        "roi": [
+            54,
+            308,
+            611,
+            228
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 3000,
+        "next": [
+            "Select_WorldTree_InputBox_Text"
+        ]
+    },
+    "Select_WorldTree_InputBox_Text": {
+        "recognition": "DirectHit",
+        "action": "InputText",
+        "input_text": "二郎神",
+        "post_delay": 1000,
+        "timeout": 3000,
+        "next": [
+            "Select_WorldTree_Search"
+        ]
+    },
+    "Select_WorldTree_Search": {
+        "recognition": "OCR",
+        "expected": [
+            "搜索"
+        ],
+        "roi": [
+            298,
+            823,
+            123,
+            80
+        ],
+        "action": "Click",
+        "post_delay": 3000,
+        "timeout": 3000,
+        "next": [
+            "Select_WorldTree_InputBox_Success",
+            "Select_WorldTree_InputBox_Fail"
+        ]
+    },
+    "Select_WorldTree_InputBox_Success": {
+        "recognition": "OCR",
+        "roi": [
+            242,
+            1124,
+            240,
+            152
+        ],
+        "expected": "出战",
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 3000,
+        "next": [
+            "ReturnBigMap"
+        ]
+    },
+    "Select_WorldTree_InputBox_Fail": {
+        "inverse": true,
+        "recognition": "OCR",
+        "roi": [
+            242,
+            1124,
+            240,
+            152
+        ],
+        "expected": "出战",
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 3000,
+        "next": [
+            "ReturnBigMap"
+        ]
+    },
     "Select_Gumball_1": {
         "recognition": "DirectHit",
         "action": "Click",
@@ -61,10 +199,10 @@
         "post_delay": 500,
         "timeout": 2000,
         "next": [
-            "Seleect_InputBox_Click"
+            "select_InputBox_Click"
         ]
     },
-    "Seleect_InputBox_Click": {
+    "select_InputBox_Click": {
         "recognition": "OCR",
         "expected": [
             "输入"
@@ -79,20 +217,30 @@
         "post_delay": 500,
         "timeout": 2000,
         "next": [
-            "Seleect_InputBox_Text"
+            "select_InputBox_Text1"
         ]
     },
-    "Seleect_InputBox_Text": {
+    "select_InputBox_Text1": {
         "recognition": "DirectHit",
-        "action": "Text",
+        "action": "InputText",
         "input_text": "自然之子",
         "post_delay": 500,
         "timeout": 2000,
         "next": [
-            "Seleect_InputBox_Search"
+            "select_InputBox_Search"
         ]
     },
-    "Seleect_InputBox_Search": {
+    "select_InputBox_Text2": {
+        "recognition": "DirectHit",
+        "action": "InputText",
+        "input_text": "贵族",
+        "post_delay": 500,
+        "timeout": 2000,
+        "next": [
+            "select_InputBox_Search"
+        ]
+    },
+    "select_InputBox_Search": {
         "recognition": "OCR",
         "expected": [
             "搜索"
@@ -107,11 +255,11 @@
         "post_delay": 500,
         "timeout": 2000,
         "next": [
-            "Seleect_InputBox_Success",
-            "Seleect_InputBox_Fail"
+            "select_InputBox_Success",
+            "select_InputBox_Fail"
         ]
     },
-    "Seleect_InputBox_Success": {
+    "select_InputBox_Success": {
         "recognition": "TemplateMatch",
         "template": "fight/UniversalUI/GumballStar.png",
         "roi": [
@@ -124,11 +272,11 @@
         "post_delay": 500,
         "timeout": 2000,
         "next": [
-            "Seleect_InputBox_Deselect",
-            "Seleect_InputBox_Select"
+            "select_InputBox_Deselect",
+            "select_InputBox_Select"
         ]
     },
-    "Seleect_InputBox_Fail": {
+    "select_InputBox_Fail": {
         "recognition": "OCR",
         "expected": [
             "未能找到"
@@ -143,7 +291,7 @@
         "post_delay": 500,
         "timeout": 2000
     },
-    "Seleect_InputBox_Select": {
+    "select_InputBox_Select": {
         "recognition": "OCR",
         "expected": [
             "选择"
@@ -158,7 +306,7 @@
         "post_delay": 500,
         "timeout": 2000
     },
-    "Seleect_InputBox_Deselect": {
+    "select_InputBox_Deselect": {
         "recognition": "OCR",
         "expected": [
             "取消"

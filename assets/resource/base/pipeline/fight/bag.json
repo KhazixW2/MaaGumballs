@@ -110,7 +110,7 @@
         ],
         "action": "DoNothing",
         "post_delay": 1000,
-        "threshold": 0.8,
+        "threshold": 0.9,
         "timeout": 2000
     },
     "Bag_FindItem": {
@@ -124,7 +124,7 @@
         ],
         "action": "Click",
         "post_delay": 1000,
-        "threshold": 0.8,
+        "threshold": 0.9,
         "timeout": 2000
     },
     "Bag_LoadItem": {
@@ -162,6 +162,7 @@
             0
         ],
         "action": "Click",
+        "order_by": "Score",
         "post_delay": 1000,
         "threshold": 0.8,
         "timeout": 2000
@@ -200,6 +201,7 @@
             0
         ],
         "action": "Click",
+        "order_by": "Score",
         "post_delay": 1000,
         "threshold": 0.8,
         "timeout": 2000

@@ -33,15 +33,15 @@ class SaveLoad_little(CustomAction):
 
 @AgentServer.custom_action("GoDownstairsTrick_Test")
 class GoDownstairsTrick_Test(CustomAction):
-    # 这里检查永恒套装
-    def CheckEternalSuit(self, context: Context, image, tartget_equipment_path):
+    # 这里检查套装
+    def CheckEternalSuit(self, context: Context, image, target_equipment_path):
         checkEternalDetail = context.run_recognition(
             "CheckEternalSuit",
             image,
             pipeline_override={
                 "CheckEternalSuit": {
                     "recognition": "TemplateMatch",
-                    "template": [tartget_equipment_path],
+                    "template": [target_equipment_path],
                     "roi": [30, 68, 665, 590],
                     "threshold": 0.7,
                 }
@@ -55,90 +55,176 @@ class GoDownstairsTrick_Test(CustomAction):
         context: Context,
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
-        # 这里检查永恒套装
-        logger.info("黑永恒 检查是否有目标装备")
+        equipment = json.loads(argv.custom_action_param)["equipment"]
+        equipmentsList: dict = {
+            "永恒套": {
+                "永恒腕轮": "equipments/5level/永恒腕轮.png",
+                "永恒披风": "equipments/5level/永恒披风.png",
+                "永恒王冠": "equipments/5level/永恒王冠.png",
+                "永恒之球": "equipments/5level/永恒之球.png",
+            },
+            "神谕套": {
+                "神谕手套": "equipments/5level/神谕手套.png",
+                "神谕之甲": "equipments/5level/神谕之甲.png",
+                "神谕之盔": "equipments/5level/神谕之盔.png",
+                "神谕束带": "equipments/5level/神谕束带.png",
+            },
+            "魔导士套": {
+                "魔导士挂坠": "equipments/5level/魔导士挂坠.png",
+                "魔导士斗篷": "equipments/5level/魔导士斗篷.png",
+                "魔导士之靴": "equipments/5level/魔导士之靴.png",
+                "魔导士指轮": "equipments/5level/魔导士指轮.png",
+            },
+            "龙鳞套": {
+                "龙鳞护腕": "equipments/4level/龙鳞护腕.png",
+                "龙鳞甲": "equipments/4level/龙鳞甲.png",
+                "龙鳞盔": "equipments/4level/龙鳞盔.png",
+                "龙鳞腰带": "equipments/4level/龙鳞腰带.png",
+            },
+            "命运套": {
+                "坚韧战靴": "equipments/4level/坚韧战靴.png",
+                "勇气腰带": "equipments/4level/勇气腰带.png",
+                "正义铠甲": "equipments/4level/正义铠甲.png",
+                "忠诚勋章": "equipments/4level/忠诚勋章.png",
+            },
+            "骑士套": {
+                "骑士手套": "equipments/1level/骑士手套.png",
+                "骑士盔甲": "equipments/1level/骑士盔甲.png",
+                "骑士头盔": "equipments/1level/骑士头盔.png",
+                "骑士腰带": "equipments/1level/骑士腰带.png",
+            },
+            "学徒套": {
+                "学徒项链": "equipments/1level/学徒项链.png",
+                "学徒披风": "equipments/1level/学徒披风.png",
+                "学徒鞋子": "equipments/1level/学徒鞋子.png",
+                "学徒戒指": "equipments/1level/学徒戒指.png",
+            },
+            "火系": {
+                "火术士项链": "equipments/1level/火术士项链.png",
+                "灼眼者面罩": "equipments/2level/",
+                "火蜥蜴腕轮": "equipments/3level/火蜥蜴腕轮.png",
+                "毁灭者石板": "equipments/4level/毁灭者石板.png",
+                "末日指轮": "equipments/5level/末日指轮.png",
+            },
+            "水系": {
+                "水精灵披风": "equipments/1level/水精灵披风.png",
+                "冰霜之瓶": "equipments/2level/冰霜之瓶.png",
+                "海妖之眼": "equipments/3level/海妖之眼.png",
+                "泉水项链": "equipments/4level/泉水项链.png",
+                "曙光战甲": "equipments/5level/曙光战甲.png",
+            },
+            "土系": {
+                "花岗岩手套": "equipments/1level/花岗岩手套.png",
+                "黑曜石铠甲": "equipments/2level/黑曜石铠甲.png",
+                "荆棘之球": "equipments/3level/荆棘之球.png",
+                "重力之源": "equipments/4level/重力之源.png",
+                "土元素之靴": "equipments/5level/土元素之靴.png",
+            },
+            "气系": {
+                "闪电之靴": "equipments/1level/闪电之靴.png",
+                "电弧束带": "equipments/2level/电弧束带.png",
+                "蓝宝石胸甲": "equipments/3level/蓝宝石胸甲.png",
+                "泰坦之盔": "equipments/4level/泰坦之盔.png",
+                "时光沙漏": "equipments/5level/时光沙漏.png",
+            },
+            "光系": {
+                "白珍珠": "equipments/1level/白珍珠.png",
+                "神官披肩": "equipments/2level/神官披肩.png",
+                "信仰之戒": "equipments/3level/信仰之戒.png",
+                "圣裁官手套": "equipments/4level/圣裁官手套.png",
+                "教皇腰带": "equipments/5level/教皇腰带.png",
+            },
+            "暗系": {
+                "黑珍珠": "equipments/1level/黑珍珠.png",
+                "幽魂靴": "equipments/2level/幽魂靴.png",
+                "黑巫术腰带": "equipments/3level/黑巫术腰带.png",
+                "巫毒斗篷": "equipments/4level/巫毒斗篷.png",
+                "杀戮护符": "equipments/5level/杀戮护符.png",
+            },
+            "贵族套": {
+                "贵族丝带": "equipments/1level/贵族丝带.png",
+                "礼仪戒指": "equipments/2level/礼仪戒指.png",
+                "天鹅绒斗篷": "equipments/3level/天鹅绒斗篷.png",
+            },
+            "真理套": {
+                "真理挂坠": "equipments/3level/真理挂坠.png",
+                "真理披肩": "equipments/3level/真理披肩.png",
+                "真理之戒": "equipments/3level/真理之戒.png",
+                "真理之靴": "equipments/3level/真理之靴.png",
+            },
+            "法师套": {
+                "法师斗篷": "equipments/2level/法师斗篷.png",
+                "法师护符": "equipments/2level/法师护符.png",
+                "法师戒指": "equipments/2level/法师戒指.png",
+                "法师鞋": "equipments/2level/法师鞋.png",
+            },
+            "暗影套": {
+                "暗影护腕": "equipments/3level/暗影护腕.png",
+                "暗影铠甲": "equipments/3level/暗影铠甲.png",
+                "暗影头盔": "equipments/3level/暗影头盔.png",
+                "暗影腰带": "equipments/3level/暗影腰带.png",
+            },
+            "秩序套": {
+                "秩序铠甲": "equipments/2level/秩序铠甲.png",
+                "秩序手套": "equipments/2level/秩序手套.png",
+                "秩序头盔": "equipments/2level/秩序头盔.png",
+                "秩序腰带": "equipments/2level/秩序腰带.png",
+            },
+        }
+        # 这里检查套装
+        logger.info(f"黑装备-{equipment} 检查是否有目标装备")
         context.run_task("OpenEquipmentPackage")
         img = context.tasker.controller.post_screencap().wait().get()
-        before_gloves = self.CheckEternalSuit(
-            context, img, "equipments/5level/永恒腕轮.png"
-        )
-        before_cloak = self.CheckEternalSuit(
-            context, img, "equipments/5level/永恒披风.png"
-        )
-        before_helmet = self.CheckEternalSuit(
-            context, img, "equipments/5level/永恒王冠.png"
-        )
-        before_weapon = self.CheckEternalSuit(
-            context, img, "equipments/5level/永恒之球.png"
-        )
-        context.run_task("BackText")
+        targetList: dict = {}
+        for key in equipmentsList[equipment]:
+            targetList[key] = self.CheckEternalSuit(
+                context, img, equipmentsList[equipment][key]
+            )
 
+        context.run_task("BackText")
+        logger.info(f"targetList: {targetList}")
         for i in range(101):
             if context.tasker.stopping:
                 logger.info("检测到停止任务, 开始退出agent")
                 return CustomAction.RunResult(success=False)
 
-            logger.info(f"黑永恒第{i}次尝试")
+            logger.info(f"黑装备-{equipment} 第{ i+1 }次尝试")
             context.run_task("Save_Status")
             context.run_task("StartAppV2")
             context.run_task("Fight_OpenedDoor")
             fightUtils.cast_magic("土", "地震术", context)
             context.run_task("KillChestMonster")
 
-            logger.info("黑永恒 检查是否黑到目标装备")
+            logger.info(f"黑装备-{equipment} 检查是否黑到目标装备")
             context.run_task("OpenEquipmentPackage")
             time.sleep(1)
             img_2 = context.tasker.controller.post_screencap().wait().get()
             temp = 0
-            if not before_gloves:
-                after_gloves = self.CheckEternalSuit(
-                    context, img_2, "equipments/5level/永恒腕轮.png"
-                )
-                if after_gloves:
-                    temp += 1
-            else:
-                after_gloves = before_gloves
-            if not before_cloak:
-                after_cloak = self.CheckEternalSuit(
-                    context, img_2, "equipments/5level/永恒披风.png"
-                )
-                if after_cloak:
-                    temp += 1
-            else:
-                after_cloak = before_cloak
-            if not before_helmet:
-                after_helmet = self.CheckEternalSuit(
-                    context, img_2, "equipments/5level/永恒王冠.png"
-                )
-                if after_helmet:
-                    temp += 1
-            else:
-                after_helmet = before_helmet
-            if not before_weapon:
-                after_weapon = self.CheckEternalSuit(
-                    context, img_2, "equipments/5level/永恒之球.png"
-                )
-                if after_weapon:
-                    temp += 1
-            else:
-                after_weapon = before_weapon
+            for key in targetList:
+                if not targetList[key]:
+                    afterResult = self.CheckEternalSuit(
+                        context, img_2, equipmentsList[equipment][key]
+                    )
+                    if afterResult:
+                        logger.info(f"黑装备-{equipment} 检查到目标装备-{key}")
+                        temp += 1
 
             context.run_task("BackText")
 
             if temp >= 1:
-                logger.info("黑永恒成功，恢复网络，可以暂离保存")
+                logger.info(f"黑装备-{equipment} 成功，恢复网络，可以暂离保存")
                 context.run_task("StopAppV2")
                 time.sleep(1)
                 context.run_task("Save_Status")
                 return CustomAction.RunResult(success=True)
 
             else:
-                logger.info("黑永恒失败, 小SL然后联网进行下一次尝试")
+                logger.info(f"黑装备-{equipment} 失败, 小SL然后联网进行下一次尝试")
                 context.run_task("LogoutGame")
                 context.run_task("StopAppV2")
                 context.run_task("ReturnMaze")
 
-        logger.warning("黑永恒失败")
+        logger.warning(f"黑装备-{equipment} 失败")
         return CustomAction.RunResult(success=False)
 
 

@@ -1,0 +1,11 @@
+{
+    "StartGumballs": {
+        "post_delay": 8000,
+        "action": "StartApp",
+        "package": "com.qcplay.slimegogogo.uc"
+    },
+    "StopGumballs": {
+        "action": "StopApp",
+        "package": "com.qcplay.slimegogogo.uc"
+    }
+}

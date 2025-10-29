@@ -1,4 +1,8 @@
-maafw==4.3.2
+maafw==4.5.3
 loguru>=0.7.0
 opencv-python>=4.10
 plyer>=2.1.0
+psutil>=7.0.0
+cryptography>=45.0.5
+requests>=2.31.0
+pillow>=11.0.0

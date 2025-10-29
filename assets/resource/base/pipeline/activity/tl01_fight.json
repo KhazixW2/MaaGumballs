@@ -1,0 +1,210 @@
+{
+    "TL01_Start": {
+        "recognition": "TemplateMatch",
+        "template": "fight/TL01/entry.png",
+        "roi": [
+            333,
+            273,
+            156,
+            690
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 1500,
+        "next": [
+            "TL01_EntryMaze"
+        ],
+        "interrupt": [
+            "TL01_SelectEasy_Interrupt",
+            "TL01_SelectEasy",
+            "TL01_BuyPower",
+            "ConfirmButton",
+            "ClickCenter"
+        ]
+    },
+    "TL01_SelectEasy": {
+        "recognition": "OCR",
+        "expected": "简单模式",
+        "roi": [
+            52,
+            330,
+            621,
+            553
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 500
+    },
+    "TL01_SelectEasy_Interrupt": {
+        "recognition": "OCR",
+        "expected": "进入联动迷宫",
+        "roi": [
+            152,
+            649,
+            423,
+            88
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 500
+    },
+    "TL01_BuyPower": {
+        "recognition": "OCR",
+        "expected": "购买",
+        "roi": [
+            151,
+            704,
+            426,
+            73
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 500
+    },
+    "TL01_EntryMaze": {
+        "recognition": "OCR",
+        "expected": "进入迷宫",
+        "roi": [
+            173,
+            867,
+            398,
+            87
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 500,
+        "next": [
+            "TL01_EntryMazeUpdate",
+            "TL01_Fighting"
+        ]
+    },
+    "TL01_EntryMazeUpdate": {
+        "recognition": "OCR",
+        "expected": "更换",
+        "roi": [
+            102,
+            701,
+            223,
+            70
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 500,
+        "next": [
+            "TL01_EntryMaze"
+        ]
+    },
+    "TL01_Fighting": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "pre_delay": 7000,
+        "custom_action": "TL01_Fighting_Test",
+        "post_delay": 500,
+        "timeout": 200
+    },
+    "TL01_checkfight": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            21,
+            217,
+            682,
+            762
+        ],
+        "template": [
+            "fight/TL01/m1.png",
+            "fight/TL01/m2.png"
+        ],
+        "action": "Click",
+        "threshold": 0.7,
+        "timeout": 100
+    },
+    "TL01_checkBossMons": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            314,
+            277,
+            94,
+            69
+        ],
+        "template": [
+            "fight/TL01/m3.png"
+        ],
+        "action": "DoNothing",
+        "next": [
+            "TL01_checkClosedDoor"
+        ],
+        "on_error": [
+            "Fight_CheckOpenedDoor"
+        ],
+        "timeout": 1500
+    },
+    "Fight_CheckOpenedDoor": {
+        "recognition": "TemplateMatch",
+        "template": "fight/TL01/opened_door1.png",
+        "roi": [
+            148,
+            625,
+            555,
+            371
+        ],
+        "pre_delay": 3000,
+        "action": "Click",
+        "post_delay": 500,
+        "next": [],
+        "threshold": 0.7,
+        "timeout": 200
+    },
+    "TL01_checkClosedDoor": {
+        "recognition": "TemplateMatch",
+        "template": "fight/TL01/closed_door1.png",
+        "roi": [
+            562,
+            871,
+            136,
+            90
+        ],
+        "action": "DoNothing",
+        "next": [
+            "TL01_AttckBoss"
+        ],
+        "timeout": 1000
+    },
+    "TL01_AttckBoss": {
+        "action": "Click",
+        "target": [
+            242,
+            547,
+            251,
+            186
+        ],
+        "next": [
+            "TL01_checkClosedDoor",
+            "Fight_CheckOpenedDoor"
+        ],
+        "post_delay": 200
+    },
+    "TL01_clearfightLayer": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "custom_action": "CheckGrid",
+        "post_delay": 300,
+        "timeout": 1000,
+        "next": [
+            "Fight_OpenedDoor"
+        ],
+        "interrupt": [
+            "Fight_OpenRewardBox",
+            "BackText",
+            "Fight_CheckOpenedDoor"
+        ]
+    },
+    "TL01_Start_Count": {
+        "action": "Custom",
+        "custom_action": "CountTask",
+        "custom_action_param": {
+            "count": 0,
+            "target_count": 2,
+            "next_node": []
+        }
+    }
+}

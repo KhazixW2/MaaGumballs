@@ -33,6 +33,21 @@
         "post_delay": 500,
         "timeout": 500
     },
+    "BackText_700ms": {
+        "recognition": "OCR",
+        "expected": [
+            "返回"
+        ],
+        "roi": [
+            494,
+            1173,
+            184,
+            75
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 500
+    },
     "FlipPage": {
         "recognition": "OCR",
         "expected": "下一页",
@@ -54,7 +69,7 @@
         ],
         "action": "Click",
         "post_delay": 500,
-        "timeout": 500
+        "timeout": 1000
     },
     "ConfirmButton": {
         "recognition": "OCR",
@@ -70,11 +85,11 @@
         ],
         "action": "Click",
         "post_delay": 1000,
-        "timeout": 500
+        "timeout": 1000
     },
     "ConfirmButton_Select": {
         "recognition": "TemplateMatch",
-        "template": "fight\\UniversalUI\\Select_ConfirmButton.png",
+        "template": "fight/UniversalUI/Select_ConfirmButton.png",
         "action": "Click",
         "roi": [
             60,
@@ -106,6 +121,17 @@
             149
         ],
         "post_delay": 200
+    },
+    "ClickCenterBelow_500ms": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            332,
+            958,
+            39,
+            44
+        ],
+        "post_delay": 500
     },
     "ReturnHall": {
         "recognition": "DirectHit",
@@ -152,31 +178,32 @@
         "expected": "商店"
     },
     "PowerLack": {
-        "post_delay": 1000,
         "recognition": "OCR",
         "expected": "体力不足",
         "roi": [
-            22,
-            414,
-            696,
-            447
+            157,
+            432,
+            381,
+            412
         ],
-        "action": "DoNothing",
+        "post_delay": 1000,
+        "timeout": 2000,
         "next": [
             "PowerBuy"
         ]
     },
     "PowerBuy": {
-        "post_delay": 1000,
         "recognition": "OCR",
         "expected": "购买",
         "roi": [
-            37,
-            669,
-            651,
-            145
+            151,
+            704,
+            426,
+            73
         ],
-        "action": "Click"
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000
     },
     "drawReward": {
         "recognition": "OCR",
@@ -236,5 +263,35 @@
         ],
         "duration": 1000,
         "post_delay": 1000
+    },
+    "MapIsTop": {
+        "recognition": "TemplateMatch",
+        "template": "fight/UniversalUI/Erathia_Entry.png",
+        "action": "DoNothing",
+        "next": [
+            "MapMoveToBottom"
+        ],
+        "interrupt": [
+            "MapSwipeUpToDown"
+        ],
+        "timeout": 2000
+    },
+    "MapMoveToBottom": {
+        "recognition": "TemplateMatch",
+        "template": "fight/UniversalUI/Vforum_Entry.png",
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "Enabled_Qmsg": {
+        "enabled": false
+    },
+    "TaskFailNotify": {
+        "focus": {
+            "succeeded": "[color:Tomato]识别错误,请冒险者大人来看看哦~[/color]"
+        }
+    },
+    "CountTask_RunNode": {
+        "doc": "这是count的辅助节点，搭配count action使用",
+        "next": "Activity_Start"
     }
 }

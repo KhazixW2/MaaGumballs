@@ -1,7 +1,21 @@
 {
     "LogoutGame": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "utils/SettingButton.png"
+        ],
         "next": [
             "LogoutGame_Next"
+        ],
+        "action": "Click",
+        "pre_delay": 1000,
+        "threshold": 0.9,
+        "post_delay": 1000,
+        "roi": [
+            588,
+            3,
+            131,
+            121
         ]
     },
     "LogoutGame_Next": {

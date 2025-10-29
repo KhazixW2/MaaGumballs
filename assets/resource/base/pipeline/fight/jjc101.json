@@ -5,7 +5,7 @@
             "JJC_Fighting"
         ],
         "interrupt": [
-            "GameLoading",
+            "AlchemyReward",
             "MapSwipeDownToUp"
         ]
     },
@@ -18,14 +18,18 @@
             202,
             884
         ],
-        "action": "Click",
+        "action": "Custom",
+        "custom_action": "Fight_PreWar",
         "post_delay": 1000,
         "timeout": 1500,
         "next": [
             "JJC_Select"
         ],
         "interrupt": [
-            "Select_MainWindow"
+            "PowerLack",
+            "Select_MainWindow",
+            "ConfirmButton",
+            "ClickCenterBelow_500ms"
         ]
     },
     "JJC_Select": {
@@ -78,14 +82,8 @@
         "recognition": "DirectHit",
         "action": "Custom",
         "custom_action": "JJC_Fight_ClearCurrentLayer",
-        "post_delay": 300,
-        "timeout": 1000,
-        "next": [],
-        "interrupt": [
-            "Fight_OpenRewardBox",
-            "BackText",
-            "Fight_CheckOpenedDoor"
-        ]
+        "post_delay": 200,
+        "timeout": 1000
     },
     "Fight_ClearCurrentLayer_time_stop": {
         "recognition": "DirectHit",
@@ -157,6 +155,7 @@
         "expected": [
             "翻找",
             "查看",
+            "确定",
             "离开",
             "刻上名字"
         ],
@@ -225,7 +224,8 @@
     "JJC_OpenForceOfNature": {
         "recognition": "TemplateMatch",
         "template": [
-            "fight/JJC/自然之子技能.png"
+            "fight/JJC/自然之子技能.png",
+            "fight/JJC/自然之子_春回大地.png"
         ],
         "roi": [
             449,
@@ -237,7 +237,8 @@
         "post_delay": 100,
         "timeout": 2000,
         "next": [
-            "JJC_OpenForceOfNature_Switch"
+            "JJC_OpenForceOfNature_Switch",
+            "JJC_OpenForceOfNature_Fail"
         ]
     },
     "JJC_OpenForceOfNature_Switch": {
@@ -257,6 +258,24 @@
         "timeout": 2000,
         "next": [
             "ClickCenter_200ms"
+        ]
+    },
+    "JJC_OpenForceOfNature_Fail": {
+        "recognition": "OCR",
+        "expected": [
+            "关闭自然之力"
+        ],
+        "roi": [
+            87,
+            652,
+            554,
+            287
+        ],
+        "action": "DoNothing",
+        "post_delay": 200,
+        "timeout": 2000,
+        "next": [
+            "BackText_500ms"
         ]
     }
 }

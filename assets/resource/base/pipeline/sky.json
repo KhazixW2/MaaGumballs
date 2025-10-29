@@ -1,0 +1,405 @@
+{
+    "AutoSky": {
+        "action": "Custom",
+        "custom_action": "AutoSky"
+    },
+    "AutoSky_Start": {
+        "doc": "如果在外面，就进伊甸,如果已经在后续循环，可能处于其他位置，都检查一遍",
+        "post_delay": 500,
+        "timeout": 2000,
+        "next": [
+            "AutoSky_EntryEden",
+            "AutoSky_EntryHall2",
+            "AutoSky_EntryHall",
+            "AutoSky_SkyExplore",
+            "AutoSky_Enter_Radar_Interface",
+            "AutoSky_CheckExplorationInfo"
+        ],
+        "on_error": [
+            "TaskFailNotify"
+        ]
+    },
+    "AutoSky_ReturnBigMap": {
+        "doc": "自动天空特别定制的返回大地图,添加了取消了点击确定按钮",
+        "recognition": "DirectHit",
+        "next": [
+            "CheckBigMap"
+        ],
+        "interrupt": [
+            "AutoSky_TroopLoss_Backtext",
+            "BackText",
+            "AutoSky_Exit_Radar_Interface",
+            "Communicating"
+        ]
+    },
+    "AutoSky_EntryEden": {
+        "post_delay": 500,
+        "timeout": 2000,
+        "threshold": 0.8,
+        "recognition": "OCR",
+        "expected": [
+            "伊甸"
+        ],
+        "roi": [
+            0,
+            1140,
+            240,
+            139
+        ],
+        "action": "Click",
+        "next": [
+            "AutoSky_EntryHall",
+            "AutoSky_EntryHall2"
+        ]
+    },
+    "AutoSky_EntryHall2": {
+        "post_delay": 500,
+        "timeout": 2000,
+        "recognition": "OCR",
+        "doc": "老玩家的战术大厅",
+        "expected": "可监控",
+        "roi": [
+            105,
+            477,
+            129,
+            126
+        ],
+        "action": "Click",
+        "target": true,
+        "target_offset": [
+            0,
+            0,
+            0,
+            -63
+        ],
+        "next": [
+            "AutoSky_SkyExplore"
+        ]
+    },
+    "AutoSky_EntryHall": {
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/Entryhall.png",
+        "roi": [
+            56,
+            310,
+            649,
+            504
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000,
+        "next": [
+            "AutoSky_SkyExplore"
+        ]
+    },
+    "AutoSky_SkyExplore": {
+        "recognition": "TemplateMatch",
+        "doc": "这一步是点击战术大厅里的飞艇图案进入快捷探索界面,下一步直接进入雷达界面",
+        "template": "dailyTask/SkyExplore.png",
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000,
+        "next": [
+            "AutoSky_Enter_Radar_Interface"
+        ]
+    },
+    "AutoSky_SkyExplore_Start": {
+        "recognition": "OCR",
+        "doc": "这一步是在快捷探索界面点击自动探索按钮",
+        "expected": "自动探索",
+        "post_delay": 500,
+        "timeout": 2000,
+        "action": "Click",
+        "roi": [
+            270,
+            898,
+            140,
+            47
+        ],
+        "next": []
+    },
+    "AutoSky_SkyExplore_Confirm_Finish": {
+        "recognition": "TemplateMatch",
+        "doc": "这里加一步确认",
+        "template": "dailyTask/AutoSky_SkyExplore_Confirm_Finish.png",
+        "roi": [
+            303,
+            240,
+            106,
+            86
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 5000,
+        "next": [
+            "AutoSky_SkyExplore_Finish"
+        ]
+    },
+    "AutoSky_SkyExplore_Finish": {
+        "recognition": "OCR",
+        "doc": "识别到返回，说明本次自动探索消耗了能量，需要再次进入雷达界面检测一下有没有可以打的",
+        "expected": "返回",
+        "roi": [
+            494,
+            1173,
+            184,
+            75
+        ],
+        "post_delay": 500,
+        "timeout": 2000,
+        "action": "Click",
+        "next": [
+            "AutoSky_Enter_Radar_Interface"
+        ],
+        "interrupt": [
+            "BackText"
+        ]
+    },
+    "AutoSky_Enter_Radar_Interface": {
+        "recognition": "TemplateMatch",
+        "doc": "点击这个小按钮进入雷达界面",
+        "template": "dailyTask/AutoSky_Enter_Radar_Interface.png",
+        "roi": [
+            589,
+            495,
+            38,
+            41
+        ],
+        "order_by": "Vertical",
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000,
+        "next": [
+            "AutoSky_CheckExplorationInfo"
+        ]
+    },
+    "AutoSky_CheckExplorationInfo": {
+        "recognition": "OCR",
+        "doc": "确定已经来到了雷达界面",
+        "expected": "探索信息",
+        "roi": [
+            0,
+            649,
+            193,
+            159
+        ],
+        "post_delay": 500,
+        "timeout": 5000,
+        "next": []
+    },
+    "AutoSky_ChangeTarget": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            589,
+            1124,
+            106,
+            39
+        ],
+        "post_delay": 2000,
+        "timeout": 2000
+    },
+    "AutoSky_RiftDetection": {
+        "recognition": "OCR",
+        "expected": "时空裂痕",
+        "roi": [
+            0,
+            265,
+            184,
+            240
+        ],
+        "post_delay": 200,
+        "timeout": 1000
+    },
+    "AutoSky_EventDetection": {
+        "recognition": "OCR",
+        "expected": [
+            "探索",
+            "袭击"
+        ],
+        "roi": [
+            470,
+            203,
+            249,
+            317
+        ],
+        "timeout": 2000,
+        "next": [
+            "AutoSky_ExploreEventDetection",
+            "AutoSky_CombatEventDetection"
+        ]
+    },
+    "AutoSky_ExploreEventDetection": {
+        "recognition": "OCR",
+        "expected": "探索",
+        "roi": [
+            470,
+            203,
+            249,
+            317
+        ],
+        "action": "Click",
+        "post_delay": 200,
+        "timeout": 5000
+    },
+    "AutoSky_CombatEventDetection": {
+        "recognition": "OCR",
+        "expected": "袭击",
+        "roi": [
+            470,
+            203,
+            249,
+            317
+        ],
+        "action": "Click",
+        "post_delay": 3500,
+        "timeout": 10000,
+        "next": [
+            "AutoSky_SkipDetection",
+            "AutoSky_Lost"
+        ]
+    },
+    "AutoSky_SkipDetection": {
+        "recognition": "OCR",
+        "doc": "这一步是跳过飞艇战斗，但不能放在interrupt里面，否则可能会多点导致退出雷达界面,点击跳过后检查是否有战死的克隆体",
+        "expected": "跳过",
+        "roi": [
+            482,
+            1101,
+            230,
+            168
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 5000,
+        "next": [
+            "AutoSky_TroopLoss",
+            "AutoSky_CheckExplorationInfo"
+        ],
+        "interrupt": [
+            "ClickCenter_200ms"
+        ]
+    },
+    "AutoSky_Lost": {
+        "recognition": "OCR",
+        "doc": "出现这个界面，说明遇到打不过的了要用logger给用户提示并退出任务",
+        "expected": "继续袭击",
+        "roi": [
+            191,
+            574,
+            117,
+            42
+        ],
+        "post_delay": 1000,
+        "timeout": 5000
+    },
+    "AutoSky_TroopLoss": {
+        "recognition": "OCR",
+        "doc": "出现这个界面，说明克隆体死了，要用logger给用户提示并退出任务",
+        "expected": "克隆体战损",
+        "roi": [
+            244,
+            368,
+            224,
+            71
+        ],
+        "post_delay": 1000,
+        "timeout": 3000
+    },
+    "AutoSky_TroopLoss_Backtext": {
+        "recognition": "OCR",
+        "doc": "点击退出克隆体战损界面，这个roi我设置的很大，从屏幕中间一直到最底下，因为我不知道如果死的多了这个“取消结算”按钮的位置会不会变得靠下",
+        "expected": "取消结算",
+        "roi": [
+            258,
+            801,
+            213,
+            443
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 1000
+    },
+    "AutoSky_Exit_Radar_Interface": {
+        "recognition": "TemplateMatch",
+        "doc": "点击这个小按钮进离开雷达界面",
+        "template": "dailyTask/AutoSky_Exit_Radar_Interface.png",
+        "roi": [
+            606,
+            1203,
+            41,
+            45
+        ],
+        "action": "Click",
+        "post_delay": 200,
+        "timeout": 2000
+    },
+    "AutoSky_CheckTargetNum": {
+        "doc": "检测右下角目标数",
+        "recognition": "OCR",
+        "expected": "\\d+",
+        "roi": [
+            619,
+            1125,
+            33,
+            32
+        ],
+        "action": "DoNothing",
+        "post_delay": 200,
+        "timeout": 2000
+    },
+    "AutoSky_Enter_Clone": {
+        "next": [
+            "AutoSky_Enter_Clone_Start"
+        ]
+    },
+    "AutoSky_Enter_Clone_Start": {
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/AutoSky_Enter_Clone.png",
+        "roi": [
+            432,
+            1116,
+            261,
+            154
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "AutoSky_Enter_CloneClosed",
+            "AutoSky_Enter_CloneOpened"
+        ]
+    },
+    "AutoSky_Enter_CloneClosed": {
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/ClosedButton.png",
+        "roi": [
+            432,
+            746,
+            228,
+            280
+        ],
+        "action": "DoNothing",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "BackText_500ms"
+        ]
+    },
+    "AutoSky_Enter_CloneOpened": {
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/OpenButton.png",
+        "roi": [
+            432,
+            746,
+            228,
+            280
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "BackText_500ms"
+        ]
+    }
+}

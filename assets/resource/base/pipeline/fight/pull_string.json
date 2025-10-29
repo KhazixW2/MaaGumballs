@@ -5,7 +5,8 @@
             "utils/KeyHole.png",
             "utils/KeyHole_1.png",
             "utils/KeyHole_2.png",
-            "utils/KeyHole_3.png"
+            "utils/KeyHole_3.png",
+            "utils/KeyHole_4.png"
         ],
         "action": "Click",
         "roi": [
@@ -15,6 +16,7 @@
             741
         ],
         "post_delay": 1000,
+        "threshold": 0.6,
         "on_error": "PushOne"
     },
     "GetKeyFromHole": {

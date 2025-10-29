@@ -1,4 +1,9 @@
 {
+    "DivineForgeLand_Start": {
+        "next": [
+            "PoolTrick"
+        ]
+    },
     "GoDownstairsTrick": {
         "recognition": "DirectHit",
         "action": "Custom",
@@ -109,7 +114,9 @@
     "ClickEquipmentChest": {
         "recognition": "TemplateMatch",
         "template": [
-            "utils/EquipmentChest.png"
+            "utils/EquipmentChest.png",
+            "utils/EquipmentWoodenChest.png",
+            "utils/EquipmentSilverChest.png"
         ],
         "post_delay": 1000,
         "action": "Click"

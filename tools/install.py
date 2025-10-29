@@ -2,9 +2,13 @@ from pathlib import Path
 import shutil
 import sys
 import json
+import os
+
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(script_dir)
 
 from configure import configure_ocr_model
-
 
 working_dir = Path(__file__).parent.parent
 install_path = working_dir / Path("install")
@@ -81,8 +85,12 @@ def install_agent():
 
     if sys.platform.startswith("win"):
         interface["agent"]["child_exec"] = r"{PROJECT_DIR}/python/python.exe"
+    elif sys.platform.startswith("darwin"):
+        interface["agent"]["child_exec"] = r"{PROJECT_DIR}/python/bin/python3"
+    elif sys.platform.startswith("linux"):
+        interface["agent"]["child_exec"] = r"python3"
 
-    interface["agent"]["child_args"] = [r"{PROJECT_DIR}/agent/main.py", "-u"]
+    interface["agent"]["child_args"] = ["-u", r"{PROJECT_DIR}/agent/main.py"]
 
     with open(install_path / "interface.json", "w", encoding="utf-8") as f:
         json.dump(interface, f, ensure_ascii=False, indent=4)
