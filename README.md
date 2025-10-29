@@ -46,6 +46,7 @@
 - [新手上路](./docs/zh_cn/manual/新手上路.md)(**使用前必看**)
 - [功能介绍](./docs/zh_cn/manual/功能介绍.md)
 - [MaaPiCli使用说明](./docs/zh_cn/manual/MaaPiCli.md)
+- [外部通知](./docs/zh_cn/manual/外部通知.md)
 - [连接设置](./docs/zh_cn/manual/连接设置.md)
 - [常见问题](./docs/zh_cn/manual/常见问题.md)
 - [Mirror酱使用说明](./docs/zh_cn/manual/Mirror酱.md)
