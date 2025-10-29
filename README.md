@@ -48,6 +48,7 @@
 - [MaaPiCli使用说明](./docs/zh_cn/manual/MaaPiCli.md)
 - [连接设置](./docs/zh_cn/manual/连接设置.md)
 - [常见问题](./docs/zh_cn/manual/常见问题.md)
+- [外部通知](./docs/zh_cn/manual/外部通知.md)
 - [Mirror酱使用说明](./docs/zh_cn/manual/Mirror酱.md)
 
 ## 开发相关
