@@ -8,7 +8,8 @@
             "ConfirmButton_500ms",
             "TitlePanel_Open",
             "BackText_700ms"
-        ]
+        ],
+        "post_delay": 500
     },
     "TitlePanel_Open": {
         "recognition": "TemplateMatch",
@@ -199,10 +200,10 @@
             "强化"
         ],
         "roi": [
-            290,
-            745,
-            138,
-            287
+            221,
+            695,
+            272,
+            316
         ],
         "action": "Click",
         "post_delay": 1000,

@@ -888,6 +888,9 @@ def dragonwish(targetWish: str, context: Context):
                 context.run_task("ConfirmButton_500ms")
             # 等待拾取结束
         elif min_index_wish in ["我要更多的伙伴"]:
+            # 等待地图加载
+            time.sleep(10)
+            # 不清理怪物就离开，避免因为层数太高进来导致死亡
             context.run_task("Fight_ReturnMainWindow")
             time.sleep(2)
             context.tasker.controller.post_click(646, 939).wait()

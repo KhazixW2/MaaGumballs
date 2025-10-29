@@ -359,7 +359,9 @@ class FightProcessor:
         else:
             self.isCheckDragon = False
 
-    def checkGirdAndMonster(self, context: Context, img=None) -> bool:
+    def checkGirdAndMonster(
+        self, context: Context, img=None, checkMonster=True, checkGrid=True
+    ) -> bool:
         """
         检查当前地图是否存在地板或怪物
         :param context: 上下文对象
@@ -388,7 +390,7 @@ class FightProcessor:
                     self.grid_count,
                     context,
                 )
-                if left_detected or right_detected:
+                if (left_detected or right_detected) and checkGrid:
                     return True
 
                 # 检查怪物
@@ -401,7 +403,7 @@ class FightProcessor:
                     self.monster_count,
                     context,
                 )
-                if monster_detected:
+                if monster_detected and checkMonster:
                     return True
 
         return False
