@@ -103,6 +103,12 @@ class Mars101(CustomAction):
         :param checkMonster: 是否检查怪物
         :return: 是否存在地板或者怪物
         """
+        context.run_task(
+            "WaitStableNode_ForOverride",
+            pipeline_override={
+                "WaitStableNode_ForOverride": {"pre_wait_freezes": {"time": 200}}
+            },
+        )
         processor = fightProcessor.FightProcessor()
         if processor.checkGirdAndMonster(
             context,
@@ -126,6 +132,7 @@ class Mars101(CustomAction):
                 logger.info("有地板残留")
             return True
         logger.info("无地板或者怪物残留")
+        context.run_task("Screenshot")
         return False
 
     def Check_DefaultEquipment(self, context: Context):
@@ -1134,7 +1141,10 @@ class Mars101(CustomAction):
             logger.info("触发Mars休息室事件")
             if not self.gotoSpecialLayer(context):
                 return False
-            context.run_task("Mars_Shower")
+            if self.isUseMagicAssist:
+                fightUtils.cast_magic("土", "石肤术", context)
+            if self.layers < 100:
+                context.run_task("Mars_Shower")
             context.run_task("Mars_EatBread")
             if self.target_magicgumball_para == "波塞冬":
                 if self.layers >= 99:
