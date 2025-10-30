@@ -1147,12 +1147,6 @@ class Mars101(CustomAction):
                 context.run_task("Mars_Shower")
             context.run_task("Mars_EatBread")
             if self.target_magicgumball_para == "波塞冬":
-                if self.layers >= 99:
-                    fightUtils.cast_magic(
-                        "土",
-                        "石肤术",
-                        context,
-                    )
                 if self.layers <= 89:
                     if fightUtils.cast_magic(
                         "暗",
@@ -1370,7 +1364,7 @@ class Mars101(CustomAction):
             context.tasker.controller.post_screencap().wait().get(),
         ):
 
-            mars_gotoSpecialLayer_detail = context.run_task("Mars_GotoSpecialLayer")
+            context.run_task("Mars_GotoSpecialLayer")
             for _ in range(10):
                 if context.run_recognition(
                     "Mars_GotoSpecialLayer_Confirm",
