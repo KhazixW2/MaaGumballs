@@ -132,7 +132,7 @@ class Mars101(CustomAction):
                 logger.info("有地板残留")
             return True
         logger.info("无地板或者怪物残留")
-        context.run_task("Screenshot")
+        # context.run_task("Screenshot")
         return False
 
     def Check_DefaultEquipment(self, context: Context):
@@ -835,7 +835,7 @@ class Mars101(CustomAction):
             self.gotoSpecialLayer(context)
             death = None
 
-            for i in range(12):
+            for i in range(15):
                 fightUtils.cast_magic("光", "祝福术", context)
                 death = context.run_recognition(
                     "Fight_FindRespawn",
@@ -847,7 +847,8 @@ class Mars101(CustomAction):
                     context.run_task("Screenshot")
                     break
 
-                if i > 5 and not self.Check_GridAndMonster(context, False):
+                if i > 10 and not self.Check_GridAndMonster(context, False):
+                    context.run_task("Screenshot")
                     logger.info(f"怪物不在了，无法死亡，走正常流程离开")
                     context.run_task("Fight_ReturnMainWindow")
                     self.leaveSpecialLayer(context)
