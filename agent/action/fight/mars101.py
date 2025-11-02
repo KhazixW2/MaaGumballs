@@ -140,7 +140,7 @@ class Mars101(CustomAction):
         检查默认装备
         1. 检查出图装备
         """
-        if self.layers == 51:
+        if self.layers == 59:
             OpenDetail = context.run_task("Bag_Open")
             if OpenDetail.nodes:
                 if not fightUtils.checkEquipment("腰带", 1, "贵族丝带", context):
@@ -156,6 +156,7 @@ class Mars101(CustomAction):
                 logger.info(f"current layers {self.layers},装备检查完成")
             else:
                 logger.info("背包打开失败")
+                context.run_task("Fight_ReturnMainWindow")
                 return False
         return True
 
@@ -169,14 +170,14 @@ class Mars101(CustomAction):
         4. 检查86层的称号: 位面，大铸剑师，大剑师都点满
         """
         if (self.layers >= 1 and self.layers <= 3) and self.isTitle_L1 == False:
-            fightUtils.title_learn("魔法", 1, "魔法学徒", 3, context)
+            fightUtils.title_learn("魔法", 1, "魔法学徒", 4, context)
             context.run_task("Fight_ReturnMainWindow")
             self.isTitle_L1 = True
             return True
         elif (self.layers >= 10 and self.layers <= 13) and self.isTitle_L10 == False:
             fightUtils.title_learn("冒险", 1, "寻宝者", 1, context)
             fightUtils.title_learn("冒险", 2, "勘探家", 1, context)
-            fightUtils.title_learn("冒险", 3, "符文师", 3, context)
+            fightUtils.title_learn("冒险", 3, "符文师", 4, context)
             context.run_task("Fight_ReturnMainWindow")
             self.isTitle_L10 = True
             return True
@@ -1207,6 +1208,8 @@ class Mars101(CustomAction):
         )
         fightUtils.handle_dragon_event("马尔斯", context)
         self.Check_DefaultStatus(context)
+        # 检查默认装备，提升稳定性
+        self.Check_DefaultEquipment(context)
         # 临时使用， 小恶魔活动结束直接删除即可
         if (
             # 距离出图楼层还有30层
