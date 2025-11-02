@@ -127,7 +127,6 @@ def cast_magic(Type: str, MagicName: str, context: Context, TargetPos: tuple = (
         context.run_task("BackText")
         context.run_task("Fight_ReturnMainWindow")
         return False
-    context.run_task("Fight_ReturnMainWindow")
     return True
 
 
@@ -204,7 +203,6 @@ def cast_magic_special(MagicName: str, context: Context):
                 pipeline_override={"Fight_Magic_Special_Cast": {"expected": MagicName}},
             )
             logger.info(f"施放魔法:{MagicName}")
-            context.run_task("Fight_ReturnMainWindow")
             return True
         else:
             if count < 3:
@@ -214,7 +212,6 @@ def cast_magic_special(MagicName: str, context: Context):
         count += 1
     logger.info(f"没有找到对应的魔法:{MagicName}")
     context.run_task("BackText")
-    context.run_task("Fight_ReturnMainWindow")
     return False
 
 
