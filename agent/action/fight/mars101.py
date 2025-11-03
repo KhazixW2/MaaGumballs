@@ -313,7 +313,7 @@ class Mars101(CustomAction):
         """
         # 常量定义
         SAFETY_MARGIN = 0.03  # 安全余量，防止过度压血导致死亡
-        MAX_ATTEMPTS = 15  # 最大尝试次数
+        MAX_ATTEMPTS = 20  # 最大尝试次数
         TEST_ROUNDS = 3  # 测试伤害的轮次
         MIN_CHANGE_THRESHOLD = 0.01  # 最小血量变化阈值（1%）
         CONSECUTIVE_STALL_LIMIT = 3  # 连续无变化最大次数
@@ -350,7 +350,7 @@ class Mars101(CustomAction):
             safe_hp_to_reduce = current_hp - SAFETY_MARGIN
 
             # 检查是否可以使用祝福术
-            if blessing_damage <= safe_hp_to_reduce:
+            if blessing_damage <= safe_hp_to_reduce and current_hp > 0.1:
                 # 祝福术伤害适中，不会导致死亡
                 prev_hp = current_hp
                 logger.info(
@@ -360,10 +360,6 @@ class Mars101(CustomAction):
                 fightUtils.cast_magic("光", "祝福术", context)
                 context.run_task("Fight_ReturnMainWindow")
                 current_hp = self.Get_CurrentHPStatus(context)
-
-                if current_hp <= 0:
-                    logger.error("目标在压血过程中死亡，使用技能: 祝福术")
-                    return -1
 
                 # 记录实际伤害并更新最大伤害值
                 actual_damage = prev_hp - current_hp
@@ -390,7 +386,7 @@ class Mars101(CustomAction):
                     # 祝福术伤害调整不影响石肤术伤害预期
 
             # 检查是否可以使用石肤术
-            elif max_stoneskin_damage <= safe_hp_to_reduce:
+            elif max_stoneskin_damage <= safe_hp_to_reduce and current_hp > 0.1:
                 # 石肤术伤害适中，不会导致死亡
                 prev_hp = current_hp
                 logger.info(
@@ -836,7 +832,7 @@ class Mars101(CustomAction):
             self.gotoSpecialLayer(context)
             death = None
 
-            for i in range(15):
+            for i in range(20):
                 fightUtils.cast_magic("光", "祝福术", context)
                 death = context.run_recognition(
                     "Fight_FindRespawn",
