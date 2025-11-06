@@ -1224,7 +1224,7 @@ class Mars101(CustomAction):
             fightUtils.openBagAndUseItem("小恶魔", True, context)
             self.useDemon += 1
             if (
-                self.useEarthGate == 2
+                self.target_earthgate_para == 2
                 and self.useEarthGate < self.target_earthgate_para
                 and self.layers >= 100
                 and self.target_leave_layer_para >= 129
