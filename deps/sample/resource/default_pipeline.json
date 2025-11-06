@@ -1,8 +1,6 @@
 {
     "Default": {
-        "rate_limit": 500,
-        "pre_delay": 100,
-        "post_delay": 100
+        "rate_limit": 2000
     },
     "TemplateMatch": {
         "recognition": "TemplateMatch",

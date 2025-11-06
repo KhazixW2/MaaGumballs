@@ -801,6 +801,14 @@ class Mars101(CustomAction):
             if not fightUtils.cast_magic("暗", "死亡波纹", context):
                 fightUtils.cast_magic("火", " 末日审判", context)
 
+            for _ in range(10):
+                if fightUtils.checkBuffStatus("神圣重生", context):
+                    logger.info("发现神圣重生buff, 使用祝福术尝试复活")
+                    fightUtils.cast_magic("光", "祝福术", context)
+                else:
+                    time.sleep(5)
+                    break
+
             self.Control_tenpecentHP(context)
             # 增加截图调试
             context.run_task(
@@ -1277,7 +1285,10 @@ class Mars101(CustomAction):
                             }
                         },
                     )
-                if context.run_recognition("Fight_FindRespawn", image):
+                if context.run_recognition(
+                    "Fight_FindRespawn",
+                    context.tasker.controller.post_screencap().wait().get(),
+                ):
                     logger.info("下楼事件前检测到死亡， 尝试小SL")
                     fightUtils.Saveyourlife(context)
                     fightUtils.cast_magic("水", "治疗术", context)
