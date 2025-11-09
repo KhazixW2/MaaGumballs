@@ -722,25 +722,30 @@ def checkGumballsStatusV2(context: Context):
         context.run_task("Fight_OpenStatusPanel")
 
         # 检查状态
-        image = context.tasker.controller.post_screencap().wait().get()
-        if reco_detail := context.run_recognition("Fight_CheckStatusText", image):
-            try:
-                nodes = reco_detail.all_results
-                new_status = pair_by_distance(nodes, max_distance=200)
+        for _ in range(5):
+            image = context.tasker.controller.post_screencap().wait().get()
+            if reco_detail := context.run_recognition("Fight_CheckStatusText", image):
+                try:
+                    nodes = reco_detail.all_results
+                    new_status = pair_by_distance(nodes, max_distance=200)
 
-                # 验证获取的状态值，如果有异常值则使用默认值替代
-                for key, value in new_status.items():
-                    if key not in default_status.keys():
-                        continue
-                    if not value:
-                        logger.warning(f"状态值 '{key}' 识别为空，使用默认值")
-                        continue
-                    status[key] = value
-            except Exception as e:
-                logger.error(f"处理状态数据时出错: {str(e)}")
-            # logger.info(status)
-        else:
-            logger.warning("状态识别失败，保持默认值")
+                    # 验证获取的状态值，如果有异常值则使用默认值替代
+                    for key, value in new_status.items():
+                        if key not in default_status.keys():
+                            continue
+                        if not value:
+                            logger.warning(f"状态值 '{key}' 识别为空，使用默认值")
+                            continue
+                        status[key] = value
+
+                    return status
+                except Exception as e:
+                    logger.error(f"处理状态数据时出错: {str(e)}")
+                # logger.info(status)
+            else:
+                logger.warning("状态识别失败，等待一秒再次识别")
+                time.sleep(1)
+                context.run_task("Fight_OpenStatusPanel")
     except Exception as e:
         logger.error(f"检查角色状态时发生异常: {str(e)}")
     finally:
