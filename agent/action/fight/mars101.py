@@ -317,7 +317,7 @@ class Mars101(CustomAction):
         TEST_ROUNDS = 3  # 测试伤害的轮次
         MIN_CHANGE_THRESHOLD = 0.01  # 最小血量变化阈值（1%）
         CONSECUTIVE_STALL_LIMIT = 3  # 连续无变化最大次数
-        BLESSING_DAMAGE_MULTIPLIER = 8  # 祝福术伤害是石肤术最大伤害的8倍
+        BLESSING_DAMAGE_MULTIPLIER = 9  # 祝福术伤害是石肤术最大伤害的9倍
         DAMAGE_HISTORY_SIZE = 3  # 保留最近几次伤害记录用于计算平均值
 
         current_hp = self.Get_CurrentHPStatus(context)
@@ -799,9 +799,10 @@ class Mars101(CustomAction):
             self.gotoSpecialLayer(context)
             fightUtils.cast_magic("土", "石肤术", context)
             if not fightUtils.cast_magic("暗", "死亡波纹", context):
-                fightUtils.cast_magic("火", " 末日审判", context)
+                if not fightUtils.cast_magic("火", " 末日审判", context):
+                    fightUtils.cast_magic("土", "地震术", context)
 
-            for _ in range(10):
+            for _ in range(20):
                 if fightUtils.checkBuffStatus("神圣重生", context):
                     logger.info("发现神圣重生buff, 使用祝福术尝试复活")
                     fightUtils.cast_magic("光", "祝福术", context)
@@ -851,15 +852,25 @@ class Mars101(CustomAction):
                     self.isDeath = True
                     context.run_task("Screenshot")
                     break
-
-                if i > 10 and not self.Check_GridAndMonster(context, False):
-                    context.run_task("Screenshot")
-                    logger.info(f"怪物不在了，无法死亡，走正常流程离开")
+                elif self.layers == 99:
+                    logger.info(f"当前在99层，大概率无法死亡，走正常流程离开")
+                    time.sleep(3)
                     context.run_task("Fight_ReturnMainWindow")
                     self.leaveSpecialLayer(context)
                     context.run_task("Fight_ReturnMainWindow")
                     context.run_task("Screenshot")
                     break
+                if i > 15:
+                    time.sleep(3)
+                    if not self.Check_GridAndMonster(context, False):
+                        context.run_task("Screenshot")
+                        logger.info(f"怪物不在了，无法死亡，走正常流程离开")
+                        time.sleep(3)
+                        context.run_task("Fight_ReturnMainWindow")
+                        self.leaveSpecialLayer(context)
+                        context.run_task("Fight_ReturnMainWindow")
+                        context.run_task("Screenshot")
+                        break
 
             # 增加截图调试
             context.run_task(
