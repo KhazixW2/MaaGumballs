@@ -312,7 +312,7 @@ class Mars101(CustomAction):
                   10000000: 技能可能被免疫
         """
         # 常量定义
-        SAFETY_MARGIN = 0.03  # 安全余量，防止过度压血导致死亡
+        SAFETY_MARGIN = 0.08  # 安全余量，防止过度压血导致死亡
         MAX_ATTEMPTS = 20  # 最大尝试次数
         TEST_ROUNDS = 3  # 测试伤害的轮次
         MIN_CHANGE_THRESHOLD = 0.01  # 最小血量变化阈值（1%）
@@ -336,6 +336,8 @@ class Mars101(CustomAction):
             f"测试完成 - 石肤术初始最大伤害: {max_stoneskin_damage:.2%}, "
             f"祝福术初始预计伤害: {blessing_damage:.2%}"
         )
+        # 测试石肤术伤害之后更新一下当前血量
+        current_hp = self.Get_CurrentHPStatus(context)
 
         # 伤害记录
         stoneskin_damage_history = []  # 石肤术伤害历史
@@ -1058,6 +1060,10 @@ class Mars101(CustomAction):
     def handle_MarsBody_event(self, context: Context, image):
         if self.layers >= 30 and self.layers % 10 == 0:
             return True
+        if self.layers == 99 or self.layers == self.target_leave_layer_para:
+            # 出图层多等待2秒，防止没识别到墓碑
+            time.sleep(2)
+            image = context.tasker.controller.post_screencap().wait().get()
         # 摸金事件卡返回基本只会发生在夹层中
         if bodyRecoDetail := context.run_recognition("Mars_Body", image):
             logger.info("触发Mars摸金事件")
@@ -1082,10 +1088,11 @@ class Mars101(CustomAction):
                 ):
                     context.run_task("Mars_Inter_Confirm_Success")
                 elif context.run_recognition("Mars_Inter_Confirm_Pickup", img):
+                    logger.info("触发墓碑事件")
                     context.run_task("Mars_Inter_Confirm_Pickup")
-                    time.sleep(2)
+                    time.sleep(3)
                     context.run_task("Mars_Inter_Confirm_Success")
-                    time.sleep(2)
+                    time.sleep(3)
                     context.run_task("Mars_Inter_Confirm_Success")
                 else:
                     logger.info("可能在夹层中有怪物没有清理")
