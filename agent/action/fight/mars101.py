@@ -249,6 +249,7 @@ class Mars101(CustomAction):
             # 如果大地回来，低于60层就不检查状态
             if (self.layers <= 60) and self.useEarthGate > 0:
                 return True
+            cast_time = 0
             StatusDetail: dict = fightUtils.checkGumballsStatusV2(context)
             CurrentHP = float(StatusDetail["当前生命值"])
             MaxHp = float(StatusDetail["最大生命值"])
@@ -262,6 +263,10 @@ class Mars101(CustomAction):
                     fightUtils.cast_magic("气", "静电场", context)
                 cast_state = {"痊愈术": True, "神恩术": True, "治疗术": True}
                 while HPStatus < 0.8:
+                    cast_time += 1
+                    # 防止禁疗状态下一直尝试治疗术，防止无限循环
+                    if cast_time > 5:
+                        break
                     if cast_state["痊愈术"]:
                         if not fightUtils.cast_magic("水", "痊愈术", context):
                             cast_state["痊愈术"] = False
