@@ -34,41 +34,41 @@ def read_config() -> bool:
                 if message_type == "SMTP":
                     config["ExternalNotificationSmtpFrom"] = decrypt(
                         config["ExternalNotificationSmtpFrom"]
-                    )
+                    ).strip()
                     config["ExternalNotificationSmtpTo"] = decrypt(
                         config["ExternalNotificationSmtpTo"]
-                    )
+                    ).strip()
                     config["ExternalNotificationSmtpPassword"] = decrypt(
                         config["ExternalNotificationSmtpPassword"]
-                    )
+                    ).strip()
                     config["ExternalNotificationSmtpServer"] = decrypt(
                         config["ExternalNotificationSmtpServer"]
-                    )
+                    ).strip()
                     config["ExternalNotificationSmtpPort"] = decrypt(
                         config["ExternalNotificationSmtpPort"]
-                    )
+                    ).strip()
                 elif message_type == "DingTalk":
                     config["ExternalNotificationDingTalkToken"] = decrypt(
                         config["ExternalNotificationDingTalkToken"]
-                    )
+                    ).strip()
                     config["ExternalNotificationDingTalkSecret"] = decrypt(
                         config["ExternalNotificationDingTalkSecret"]
-                    )
+                    ).strip()
                 elif message_type == "Qmsg":
                     config["ExternalNotificationQmsgServer"] = decrypt(
                         config["ExternalNotificationQmsgServer"]
-                    )
+                    ).strip()
                     config["ExternalNotificationQmsgKey"] = decrypt(
                         config["ExternalNotificationQmsgKey"]
-                    )
+                    ).strip()
                     config["ExternalNotificationQmsgBot"] = decrypt(
                         config["ExternalNotificationQmsgBot"]
-                    )
+                    ).strip()
                     config["ExternalNotificationQmsgUser"] = decrypt(
                         config["ExternalNotificationQmsgUser"]
-                    )
+                    ).strip()
                 elif message_type == "PushPlus":
-                    config["pushplus_token"] = decrypt(config["pushplus_token"])
+                    config["pushplus_token"] = decrypt(config["pushplus_token"]).strip()
             logger.debug("配置文件解密成功！")
             return True
     except Exception:
