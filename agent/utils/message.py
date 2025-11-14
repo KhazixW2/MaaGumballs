@@ -4,11 +4,7 @@ import smtplib
 import re
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-try:
-    import requests
-    REQUESTS_AVAILABLE = True
-except ImportError:
-    REQUESTS_AVAILABLE = False
+
 import time
 import hmac
 import hashlib
@@ -17,6 +13,7 @@ import urllib.parse
 
 from .logger import logger
 from .simpleEncryption import decrypt
+from .myRequests import get_request, post_request
 
 config: dict = {}
 
@@ -30,6 +27,49 @@ def read_config() -> bool:
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             config = json.load(f)
+            message_types = config.get("ExternalNotificationEnabled")
+            list = message_types.split(",")
+            logger.debug("配置文件读取成功！开始解密配置...")
+            for message_type in list:
+                if message_type == "SMTP":
+                    config["ExternalNotificationSmtpFrom"] = decrypt(
+                        config["ExternalNotificationSmtpFrom"]
+                    )
+                    config["ExternalNotificationSmtpTo"] = decrypt(
+                        config["ExternalNotificationSmtpTo"]
+                    )
+                    config["ExternalNotificationSmtpPassword"] = decrypt(
+                        config["ExternalNotificationSmtpPassword"]
+                    )
+                    config["ExternalNotificationSmtpServer"] = decrypt(
+                        config["ExternalNotificationSmtpServer"]
+                    )
+                    config["ExternalNotificationSmtpPort"] = decrypt(
+                        config["ExternalNotificationSmtpPort"]
+                    )
+                elif message_type == "DingTalk":
+                    config["ExternalNotificationDingTalkToken"] = decrypt(
+                        config["ExternalNotificationDingTalkToken"]
+                    )
+                    config["ExternalNotificationDingTalkSecret"] = decrypt(
+                        config["ExternalNotificationDingTalkSecret"]
+                    )
+                elif message_type == "Qmsg":
+                    config["ExternalNotificationQmsgServer"] = decrypt(
+                        config["ExternalNotificationQmsgServer"]
+                    )
+                    config["ExternalNotificationQmsgKey"] = decrypt(
+                        config["ExternalNotificationQmsgKey"]
+                    )
+                    config["ExternalNotificationQmsgBot"] = decrypt(
+                        config["ExternalNotificationQmsgBot"]
+                    )
+                    config["ExternalNotificationQmsgUser"] = decrypt(
+                        config["ExternalNotificationQmsgUser"]
+                    )
+                elif message_type == "PushPlus":
+                    config["pushplus_token"] = decrypt(config["pushplus_token"])
+            logger.debug("配置文件解密成功！")
             return True
     except Exception:
         logger.exception("读取config配置失败，请检查配置文件！")
@@ -64,8 +104,23 @@ def is_valid_url(url: str) -> bool:
     return bool(url_pattern.match(url))
 
 
+def is_valid_email(email: str) -> bool:
+    """
+    验证邮箱地址是否有效
+    Args:
+        email (str): 需要验证的邮箱地址
+    Returns:
+        bool: 如果邮箱有效返回True，否则返回False
+    """
+    # 定义邮箱的正则表达式模式
+    email_pattern = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+
+    return bool(email_pattern.match(email))
+
+
 # 通过smtp发送邮件
 def send_email(dp: dict, title: str, text: str) -> bool:
+    start = time.time()
     # 邮件配置
     send_email = dp.get("ExternalNotificationSmtpFrom")
     receiver_email = dp.get("ExternalNotificationSmtpTo")
@@ -74,12 +129,10 @@ def send_email(dp: dict, title: str, text: str) -> bool:
     smtp_port = dp.get("ExternalNotificationSmtpPort")
 
     if send_email and receiver_email and password and smtp_server and smtp_port:
-        # 解密邮件配置
-        send_email = decrypt(send_email)
-        receiver_email = decrypt(receiver_email)
-        password = decrypt(password)
-        smtp_server = decrypt(smtp_server)
-        smtp_port = decrypt(smtp_port)
+
+        if not is_valid_email(send_email) or not is_valid_email(receiver_email):
+            logger.info("邮件地址格式错误，请检查邮件配置文件！")
+            return False
 
         # 创建邮件内容
         message = MIMEMultipart()
@@ -99,6 +152,8 @@ def send_email(dp: dict, title: str, text: str) -> bool:
             server.sendmail(send_email, receiver_email, text)
             server.quit()
             logger.info("邮件发送成功！")
+            end = time.time()
+            logger.debug(f"邮件发送耗时: {end - start}s")
             return True
         except Exception as e:
             logger.info(f"邮件发送失败: {e}")
@@ -110,9 +165,7 @@ def send_email(dp: dict, title: str, text: str) -> bool:
 
 # 通过pushplus发送消息，暂时没用上
 def send_byPushplus(dp: dict, title: str, text: str) -> bool:
-    if not REQUESTS_AVAILABLE:
-        logger.warning("requests模块不可用，无法使用pushplus发送消息")
-        return False
+
     token = dp.get("pushplus_token")
     if token == None or token == "":
         logger.info("未配置pushplus_token")
@@ -121,16 +174,16 @@ def send_byPushplus(dp: dict, title: str, text: str) -> bool:
     title = "MaaGumballs:" + title
     request_url = rootUrl + "&title=" + title + "&content=" + text
     try:
-        response = requests.get(request_url)
-        if response.status_code == 200:
-            if response.json()["code"] == 200:
+        response = get_request(request_url)
+        if response.get("status") == 200:
+            if response.get("json")["code"] == 200:
                 logger.info("消息推送成功")
                 return True
             else:
                 logger.info("消息推送失败")
                 return False
         else:
-            logger.error(f"消息推送失败，状态码：{response.status_code}")
+            logger.error(f"消息推送失败，状态码：{response.get('status')}")
             return False
     except Exception as e:
         logger.info(f"pushplus发送失败：{e}")
@@ -139,37 +192,35 @@ def send_byPushplus(dp: dict, title: str, text: str) -> bool:
 
 # 通过Qmsg发送消息
 def send_qmsg(dp: dict, title: str, text: str) -> bool:
-    if not REQUESTS_AVAILABLE:
-        logger.warning("requests模块不可用，无法使用Qmsg发送消息")
-        return False
+
+    start = time.time()
     server = dp.get("ExternalNotificationQmsgServer")
     key = dp.get("ExternalNotificationQmsgKey")
     bot = dp.get("ExternalNotificationQmsgBot")
     user = dp.get("ExternalNotificationQmsgUser")
 
     if server and key and bot and user:
-        server = decrypt(server)
-        key = decrypt(key)
-        bot = decrypt(bot)
-        user = decrypt(user)
 
         url = f"{ server }/send/{ key }"
         data = {"msg": text, "qq": user, "bot": bot}
         logger.debug(f"Qmsg_url：{url}")
         try:
             if is_valid_url(url):
-                response = requests.post(url, data=data)
-                if response.status_code == 200:
-                    if response.json()["code"] == 0:
+                response = post_request(url, data=data)
+                if response.get("status") == 200:
+                    if response.get("json")["code"] == 0:
                         logger.info("消息推送成功")
+                        end = time.time()
+                        logger.debug(f"消息发送耗时: {end - start}s")
                         return True
                     else:
                         logger.info(
-                            "消息推送失败：" + response.json().get("reason", "未知错误")
+                            "消息推送失败："
+                            + response.get("json").get("reason", "未知错误")
                         )
                         return False
                 else:
-                    logger.error(f"消息推送失败，状态码：{ response.status_code }")
+                    logger.error(f"消息推送失败，状态码：{ response.get("status") }")
                     return False
             else:
                 logger.error("Qmsg URL 无效，请检查配置")
@@ -211,10 +262,8 @@ def send_dingTalk(dp: dict, title: str, text: str) -> bool:
     Returns:
         发送成功返回True，否则返回False
     """
-    if not REQUESTS_AVAILABLE:
-        logger.warning("requests模块不可用，无法使用钉钉发送消息")
-        return False
 
+    start = time.time()
     token = dp.get("ExternalNotificationDingTalkToken")
     secret = dp.get("ExternalNotificationDingTalkSecret")
 
@@ -222,10 +271,8 @@ def send_dingTalk(dp: dict, title: str, text: str) -> bool:
         logger.error("钉钉配置不完整，请检查配置文件")
         return False
     else:
-        token = decrypt(token)
         url = f"https://oapi.dingtalk.com/robot/send?access_token={ token }"
         if secret:
-            secret = decrypt(secret)
             timestamp = str(round(time.time() * 1000))
             sign = dingTalk_sign(timestamp, secret)
             url = f"https://oapi.dingtalk.com/robot/send?access_token={ token }&timestamp={ timestamp }&sign={ sign }"
@@ -233,16 +280,20 @@ def send_dingTalk(dp: dict, title: str, text: str) -> bool:
         headers = {"Content-Type": "application/json"}
         data = {"msgtype": "text", "text": {"content": text}}
         try:
-            response = requests.post(url, headers=headers, data=json.dumps(data))
-            if response.status_code == 200:
-                if response.json()["errmsg"] == "ok":
+            response = post_request(
+                url, data=json.dumps(data).encode("utf-8"), headers=headers
+            )
+            if response.get("status") == 200:
+                if response.get("json")["errmsg"] == "ok":
                     logger.info("消息推送成功")
+                    end = time.time()
+                    logger.debug(f"消息发送耗时: {end - start}s")
                     return True
                 else:
-                    logger.error(f"消息推送失败: { response.json()["errmsg"] }")
+                    logger.error(f"消息推送失败: { response.get("json")["errmsg"] }")
                     return False
             else:
-                logger.error(f"消息推送失败，状态码：{ response.status_code }")
+                logger.error(f"消息推送失败，状态码：{ response.get("status") }")
                 return False
         except Exception as e:
             logger.info(f"消息推送失败: { str(e) }")
