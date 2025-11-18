@@ -722,6 +722,13 @@ class Mars101(CustomAction):
 
     @timing_decorator
     def handle_preLayers_event(self, context: Context):
+        if self.layers == 99 or self.layers == self.target_leave_layer_para:
+            img = context.tasker.controller.post_screencap().wait().get()
+            if context.run_recognition(
+                "Mars_Inter_Confirm_Success",
+                img,
+            ):
+                context.run_task("Mars_Inter_Confirm_Success")
         self.handle_android_skill_event(context)
         self.handle_UseMagicAssist_event(context)
         # 添加开场检查血量，防止意外
@@ -802,7 +809,7 @@ class Mars101(CustomAction):
 
         context.run_task("Fight_ReturnMainWindow")
         # 这里进夹层压血
-        if self.target_earthgate_para >= 0:
+        if self.target_earthgate_para >= 0 and self.is_demontitle_enable:
             self.gotoSpecialLayer(context)
             fightUtils.cast_magic("土", "石肤术", context)
             if not fightUtils.cast_magic("暗", "死亡波纹", context):
