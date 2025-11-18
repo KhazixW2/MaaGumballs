@@ -249,6 +249,7 @@ class Mars101(CustomAction):
             # 如果大地回来，低于60层就不检查状态
             if (self.layers <= 60) and self.useEarthGate > 0:
                 return True
+            cast_time = 0
             StatusDetail: dict = fightUtils.checkGumballsStatusV2(context)
             CurrentHP = float(StatusDetail["当前生命值"])
             MaxHp = float(StatusDetail["最大生命值"])
@@ -262,6 +263,10 @@ class Mars101(CustomAction):
                     fightUtils.cast_magic("气", "静电场", context)
                 cast_state = {"痊愈术": True, "神恩术": True, "治疗术": True}
                 while HPStatus < 0.8:
+                    cast_time += 1
+                    # 防止禁疗状态下一直尝试治疗术，防止无限循环
+                    if cast_time > 5:
+                        break
                     if cast_state["痊愈术"]:
                         if not fightUtils.cast_magic("水", "痊愈术", context):
                             cast_state["痊愈术"] = False
@@ -312,7 +317,7 @@ class Mars101(CustomAction):
                   10000000: 技能可能被免疫
         """
         # 常量定义
-        SAFETY_MARGIN = 0.03  # 安全余量，防止过度压血导致死亡
+        SAFETY_MARGIN = 0.08  # 安全余量，防止过度压血导致死亡
         MAX_ATTEMPTS = 20  # 最大尝试次数
         TEST_ROUNDS = 3  # 测试伤害的轮次
         MIN_CHANGE_THRESHOLD = 0.01  # 最小血量变化阈值（1%）
@@ -336,6 +341,8 @@ class Mars101(CustomAction):
             f"测试完成 - 石肤术初始最大伤害: {max_stoneskin_damage:.2%}, "
             f"祝福术初始预计伤害: {blessing_damage:.2%}"
         )
+        # 测试石肤术伤害之后更新一下当前血量
+        current_hp = self.Get_CurrentHPStatus(context)
 
         # 伤害记录
         stoneskin_damage_history = []  # 石肤术伤害历史
@@ -715,6 +722,13 @@ class Mars101(CustomAction):
 
     @timing_decorator
     def handle_preLayers_event(self, context: Context):
+        if self.layers == 99 or self.layers == self.target_leave_layer_para:
+            img = context.tasker.controller.post_screencap().wait().get()
+            if context.run_recognition(
+                "Mars_Inter_Confirm_Success",
+                img,
+            ):
+                context.run_task("Mars_Inter_Confirm_Success")
         self.handle_android_skill_event(context)
         self.handle_UseMagicAssist_event(context)
         # 添加开场检查血量，防止意外
@@ -795,7 +809,7 @@ class Mars101(CustomAction):
 
         context.run_task("Fight_ReturnMainWindow")
         # 这里进夹层压血
-        if self.target_earthgate_para >= 0:
+        if self.target_earthgate_para >= 0 and self.is_demontitle_enable:
             self.gotoSpecialLayer(context)
             fightUtils.cast_magic("土", "石肤术", context)
             if not fightUtils.cast_magic("暗", "死亡波纹", context):
@@ -1058,6 +1072,10 @@ class Mars101(CustomAction):
     def handle_MarsBody_event(self, context: Context, image):
         if self.layers >= 30 and self.layers % 10 == 0:
             return True
+        if self.layers == 99 or self.layers == self.target_leave_layer_para:
+            # 出图层多等待2秒，防止没识别到墓碑
+            time.sleep(2)
+            image = context.tasker.controller.post_screencap().wait().get()
         # 摸金事件卡返回基本只会发生在夹层中
         if bodyRecoDetail := context.run_recognition("Mars_Body", image):
             logger.info("触发Mars摸金事件")
@@ -1082,10 +1100,11 @@ class Mars101(CustomAction):
                 ):
                     context.run_task("Mars_Inter_Confirm_Success")
                 elif context.run_recognition("Mars_Inter_Confirm_Pickup", img):
+                    logger.info("触发墓碑事件")
                     context.run_task("Mars_Inter_Confirm_Pickup")
-                    time.sleep(2)
+                    time.sleep(3)
                     context.run_task("Mars_Inter_Confirm_Success")
-                    time.sleep(2)
+                    time.sleep(3)
                     context.run_task("Mars_Inter_Confirm_Success")
                 else:
                     logger.info("可能在夹层中有怪物没有清理")
