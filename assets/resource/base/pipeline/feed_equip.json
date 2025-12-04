@@ -1,0 +1,231 @@
+{
+    "Autofeed_Start": {
+        "timeout": 2000,
+        "next": [
+            "Autofeed_End",
+            "Autofeed"
+        ],
+        "interrupt": [
+            "BackText_500ms"
+        ]
+    },
+    "Autofeed": {
+        "doc": "点击跳转进入冈布奥界面",
+        "recognition": "OCR",
+        "expected": [
+            "跳转"
+        ],
+        "roi": [
+            305,
+            1183,
+            118,
+            64
+        ],
+        "action": "Click",
+        "timeout": 2000,
+        "next": [
+            "Autofeed_Check_Weapon",
+            "Autofeed_Check_Certificate",
+            "Autofeed_Check_Food"
+        ],
+        "on_error": [
+            "ReturnBigMap"
+        ]
+    },
+    "Autofeed_Check_Weapon": {
+        "doc": "检查武器位置是否存在黄色的加号",
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/Autofeed_Check_Weapon.png",
+        "roi": [
+            19,
+            730,
+            108,
+            110
+        ],
+        "action": "Click",
+        "timeout": 1000,
+        "next": [
+            "Autofeed_Equip_WeaponOrCertificate"
+        ]
+    },
+    "Autofeed_Check_Certificate": {
+        "doc": "检查证件位置是否存在黄色的加号，和武器位置加号用同一个识别素材",
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/Autofeed_Check_Weapon.png",
+        "roi": [
+            132,
+            742,
+            88,
+            89
+        ],
+        "action": "Click",
+        "timeout": 1000,
+        "next": [
+            "Autofeed_Equip_WeaponOrCertificate"
+        ]
+    },
+    "Autofeed_Equip_WeaponOrCertificate": {
+        "doc": "合成并装备,如果超时了还没有发现需要喂食，就换一个角色",
+        "recognition": "OCR",
+        "expected": "合成并佩戴",
+        "roi": [
+            247,
+            862,
+            216,
+            61
+        ],
+        "action": "Click",
+        "timeout": 1000,
+        "next": [
+            "Autofeed"
+        ],
+        "on_error": [
+            "Autofeed_Start"
+        ]
+    },
+    "Autofeed_Check_Food": {
+        "doc": "检查食物位置是否存在蛋糕气泡",
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/Autofeed_Check_Food.png",
+        "roi": [
+            489,
+            405,
+            100,
+            97
+        ],
+        "action": "Click",
+        "timeout": 1000,
+        "next": [
+            "Autofeed_OneClickFeeding"
+        ],
+        "on_error": [
+            "Autofeed_Start"
+        ]
+    },
+    "Autofeed_OneClickFeeding": {
+        "doc": "一键喂食",
+        "recognition": "OCR",
+        "expected": "一键喂食",
+        "roi": [
+            58,
+            1188,
+            153,
+            51
+        ],
+        "action": "Click",
+        "timeout": 1000,
+        "next": [
+            "Autofeed_Check_Food_QuestionMark"
+        ],
+        "on_error": [
+            "Autofeed_Start"
+        ]
+    },
+    "Autofeed_Check_Food_QuestionMark": {
+        "doc": "检查红色问号，判断是否存在没有喂食的食物，如果超时了还检测不到，就换一个角色喂食上装备",
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/Autofeed_Check_Food_QuestionMark.png",
+        "roi": [
+            90,
+            314,
+            538,
+            688
+        ],
+        "action": "Click",
+        "next": [
+            "Autofeed_Making_Food"
+        ],
+        "interrupt": [
+            "Autofeed_Check_Food_QuestionMark1"
+        ],
+        "timeout": 3000,
+        "on_error": [
+            "Autofeed_Start"
+        ]
+    },
+    "Autofeed_Check_Food_QuestionMark1": {
+        "doc": "检查红色问号，判断是否存在没有喂食的食物，只检查一次可能点快了没进去，复制一份上一个节点让他重复检查",
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/Autofeed_Check_Food_QuestionMark.png",
+        "roi": [
+            90,
+            314,
+            538,
+            688
+        ],
+        "action": "Click",
+        "timeout": 1000,
+        "on_error": [
+            "Autofeed_Start"
+        ]
+    },
+    "Autofeed_Making_Food": {
+        "doc": "点击红色问号之后，这里点击左下角快速合成",
+        "recognition": "OCR",
+        "expected": "快速合成",
+        "roi": [
+            63,
+            1182,
+            146,
+            56
+        ],
+        "action": "Click",
+        "timeout": 2000,
+        "next": [
+            "Autofeed_Making_Food_ConfirmSynthesis",
+            "Autofeed_Check_Food_QuestionMark"
+        ],
+        "on_error": [
+            "Autofeed_Start"
+        ]
+    },
+    "Autofeed_Making_Food_ConfirmSynthesis": {
+        "doc": "点击左下角快速合成之后，点击合成消耗金币获得食物",
+        "recognition": "OCR",
+        "expected": "合成",
+        "roi": [
+            166,
+            715,
+            86,
+            48
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000,
+        "next": [
+            "Autofeed_Check_Food_QuestionMark"
+        ],
+        "on_error": [
+            "Autofeed_Start"
+        ]
+    },
+    "Autofeed_End": {
+        "doc": "钱花完了，该结束了",
+        "recognition": "OCR",
+        "expected": "钻石购买",
+        "roi": [
+            243,
+            483,
+            238,
+            73
+        ],
+        "next": [
+            "Autofeed_End_Cancel"
+        ]
+    },
+    "Autofeed_End_Cancel": {
+        "doc": "帮用户点一下取消，避免用户误操作损失钻石",
+        "recognition": "OCR",
+        "expected": "取消",
+        "roi": [
+            446,
+            717,
+            120,
+            47
+        ],
+        "action": "Click",
+        "next": [
+            "ReturnBigMap"
+        ]
+    }
+}
