@@ -2,7 +2,7 @@ from math import floor
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
-from utils import logger
+from utils import logger, send_message
 
 from action.fight.fightUtils import timing_decorator
 from action.fight import fightUtils
@@ -769,142 +769,149 @@ class Mars101(CustomAction):
     def handle_before_leave_maze_event(self, context: Context):
         logger.info("触发Mars结算事件")
         context.run_task("Fight_ReturnMainWindow")
-        # 先关闭魔法助手
-        if self.isUseMagicAssist:
-            fightUtils.cast_magic_special("魔法助手", context)
-            self.isUseMagicAssist = False
+        if not self.manual_leave_para:
+            # 先关闭魔法助手
+            if self.isUseMagicAssist:
+                fightUtils.cast_magic_special("魔法助手", context)
+                self.isUseMagicAssist = False
 
-        for _ in range(3):
-            fightUtils.cast_magic_special("生命颂歌", context)
+            for _ in range(3):
+                fightUtils.cast_magic_special("生命颂歌", context)
 
-        self.gotoSpecialLayer(context)
-        fightUtils.openBagAndUseItem("电能试剂", True, context)
-
-        self.leaveSpecialLayer(context)
-        context.run_task("Fight_ReturnMainWindow")
-        for _ in range(3):
-            fightUtils.cast_magic_special("生命颂歌", context)
-        self.gotoSpecialLayer(context)
-        fightUtils.openBagAndUseItem("能量电池", True, context)
-
-        self.leaveSpecialLayer(context)
-        context.run_task("Fight_ReturnMainWindow")
-        for _ in range(3):
-            fightUtils.cast_magic_special("生命颂歌", context)
-        fightUtils.title_learn("魔法", 3, "咒术师", 1, context)
-        if fightUtils.title_check("巨龙", context):
-            fightUtils.title_learn("巨龙", 1, "亚龙血统", 3, context)
-            fightUtils.title_learn("巨龙", 2, "初级龙族血统", 3, context)
-            if self.layers > 100:
-                fightUtils.title_learn("巨龙", 3, "中级龙族血统", 3, context)
-                fightUtils.title_learn("巨龙", 4, "高级龙族血统", 3, context)
-
-            if self.useEarthGate > 1:
-                fightUtils.title_learn("巨龙", 5, "邪龙血统", 1, context)
-                fightUtils.title_learn_branch("巨龙", 5, "攻击强化", 3, context)
-                fightUtils.title_learn_branch(
-                    "巨龙", 5, "攻击强化", 3, context, repeatable=True
-                )
-                fightUtils.title_learn_branch("巨龙", 5, "生命强化", 3, context)
-
-        context.run_task("Fight_ReturnMainWindow")
-        # 这里进夹层压血
-        if self.target_earthgate_para >= 0 and self.is_demontitle_enable:
             self.gotoSpecialLayer(context)
-            fightUtils.cast_magic("土", "石肤术", context)
-            if not fightUtils.cast_magic("暗", "死亡波纹", context):
-                if not fightUtils.cast_magic("火", " 末日审判", context):
-                    fightUtils.cast_magic("土", "地震术", context)
+            fightUtils.openBagAndUseItem("电能试剂", True, context)
 
-            for _ in range(20):
-                if fightUtils.checkBuffStatus("神圣重生", context):
-                    logger.info("发现神圣重生buff, 使用祝福术尝试复活")
-                    fightUtils.cast_magic("光", "祝福术", context)
-                else:
-                    time.sleep(5)
-                    break
-
-            self.Control_tenpecentHP(context)
-            # 增加截图调试
-            context.run_task(
-                "WaitStableNode_ForOverride",
-                pipeline_override={
-                    "WaitStableNode_ForOverride": {"pre_wait_freezes": {"time": 100}}
-                },
-            )
-            context.run_task("Screenshot")
             self.leaveSpecialLayer(context)
             context.run_task("Fight_ReturnMainWindow")
-
-        fightUtils.title_learn("战斗", 5, "剑圣", 1, context)
-        context.run_task("Fight_ReturnMainWindow")
-
-        fightUtils.title_learn_branch("战斗", 5, "攻击强化", 3, context)
-        fightUtils.title_learn_branch("战斗", 5, "魔力强化", 3, context)
-        fightUtils.title_learn_branch("战斗", 5, "生命强化", 3, context)
-        context.run_task("Fight_ReturnMainWindow")
-
-        OpenDetail = context.run_task("Bag_Open")
-        if OpenDetail:
-            time.sleep(1)
-            for _ in range(2):
-                if fightUtils.findItem("武器大师执照", True, context, threshold=0.8):
-                    break
-        # 这里进夹层压血
-        if self.target_earthgate_para >= 0:
+            for _ in range(3):
+                fightUtils.cast_magic_special("生命颂歌", context)
             self.gotoSpecialLayer(context)
-            death = None
+            fightUtils.openBagAndUseItem("能量电池", True, context)
 
-            for i in range(20):
-                fightUtils.cast_magic("光", "祝福术", context)
-                death = context.run_recognition(
-                    "Fight_FindRespawn",
-                    context.tasker.controller.post_screencap().wait().get(),
+            self.leaveSpecialLayer(context)
+            context.run_task("Fight_ReturnMainWindow")
+            for _ in range(3):
+                fightUtils.cast_magic_special("生命颂歌", context)
+            fightUtils.title_learn("魔法", 3, "咒术师", 1, context)
+            if fightUtils.title_check("巨龙", context):
+                fightUtils.title_learn("巨龙", 1, "亚龙血统", 3, context)
+                fightUtils.title_learn("巨龙", 2, "初级龙族血统", 3, context)
+                if self.layers > 100:
+                    fightUtils.title_learn("巨龙", 3, "中级龙族血统", 3, context)
+                    fightUtils.title_learn("巨龙", 4, "高级龙族血统", 3, context)
+
+                if self.useEarthGate > 1:
+                    fightUtils.title_learn("巨龙", 5, "邪龙血统", 1, context)
+                    fightUtils.title_learn_branch("巨龙", 5, "攻击强化", 3, context)
+                    fightUtils.title_learn_branch(
+                        "巨龙", 5, "攻击强化", 3, context, repeatable=True
+                    )
+                    fightUtils.title_learn_branch("巨龙", 5, "生命强化", 3, context)
+
+            context.run_task("Fight_ReturnMainWindow")
+            # 这里进夹层压血
+            if self.target_earthgate_para >= 0 and self.is_demontitle_enable:
+                self.gotoSpecialLayer(context)
+                fightUtils.cast_magic("土", "石肤术", context)
+                if not fightUtils.cast_magic("暗", "死亡波纹", context):
+                    if not fightUtils.cast_magic("火", " 末日审判", context):
+                        fightUtils.cast_magic("土", "地震术", context)
+
+                for _ in range(20):
+                    if fightUtils.checkBuffStatus("神圣重生", context):
+                        logger.info("发现神圣重生buff, 使用祝福术尝试复活")
+                        fightUtils.cast_magic("光", "祝福术", context)
+                    else:
+                        time.sleep(5)
+                        break
+
+                self.Control_tenpecentHP(context)
+                # 增加截图调试
+                context.run_task(
+                    "WaitStableNode_ForOverride",
+                    pipeline_override={
+                        "WaitStableNode_ForOverride": {
+                            "pre_wait_freezes": {"time": 100}
+                        }
+                    },
                 )
-                if death:
-                    logger.info(f"已死亡，准备出图")
-                    self.isDeath = True
-                    context.run_task("Screenshot")
-                    break
-                elif self.layers == 99:
-                    logger.info(f"当前在99层，大概率无法死亡，走正常流程离开")
-                    time.sleep(3)
-                    context.run_task("Fight_ReturnMainWindow")
-                    self.leaveSpecialLayer(context)
-                    context.run_task("Fight_ReturnMainWindow")
-                    context.run_task("Screenshot")
-                    break
-                if i > 15:
-                    time.sleep(3)
-                    if not self.Check_GridAndMonster(context, False):
+                context.run_task("Screenshot")
+                self.leaveSpecialLayer(context)
+                context.run_task("Fight_ReturnMainWindow")
+
+            fightUtils.title_learn("战斗", 5, "剑圣", 1, context)
+            context.run_task("Fight_ReturnMainWindow")
+
+            fightUtils.title_learn_branch("战斗", 5, "攻击强化", 3, context)
+            fightUtils.title_learn_branch("战斗", 5, "魔力强化", 3, context)
+            fightUtils.title_learn_branch("战斗", 5, "生命强化", 3, context)
+            context.run_task("Fight_ReturnMainWindow")
+
+            OpenDetail = context.run_task("Bag_Open")
+            if OpenDetail:
+                time.sleep(1)
+                for _ in range(2):
+                    if fightUtils.findItem(
+                        "武器大师执照", True, context, threshold=0.8
+                    ):
+                        break
+            if self.target_earthgate_para >= 0:
+                self.gotoSpecialLayer(context)
+                death = None
+
+                for i in range(20):
+                    fightUtils.cast_magic("光", "祝福术", context)
+                    death = context.run_recognition(
+                        "Fight_FindRespawn",
+                        context.tasker.controller.post_screencap().wait().get(),
+                    )
+                    if death:
+                        logger.info(f"已死亡，准备出图")
+                        self.isDeath = True
                         context.run_task("Screenshot")
-                        logger.info(f"怪物不在了，无法死亡，走正常流程离开")
+                        break
+                    elif self.layers == 99:
+                        logger.info(f"当前在99层，大概率无法死亡，走正常流程离开")
                         time.sleep(3)
                         context.run_task("Fight_ReturnMainWindow")
                         self.leaveSpecialLayer(context)
                         context.run_task("Fight_ReturnMainWindow")
                         context.run_task("Screenshot")
                         break
+                    if i > 15:
+                        time.sleep(3)
+                        if not self.Check_GridAndMonster(context, False):
+                            context.run_task("Screenshot")
+                            logger.info(f"怪物不在了，无法死亡，走正常流程离开")
+                            time.sleep(3)
+                            context.run_task("Fight_ReturnMainWindow")
+                            self.leaveSpecialLayer(context)
+                            context.run_task("Fight_ReturnMainWindow")
+                            context.run_task("Screenshot")
+                            break
 
-            # 增加截图调试
-            context.run_task(
-                "WaitStableNode_ForOverride",
-                pipeline_override={
-                    "WaitStableNode_ForOverride": {"pre_wait_freezes": {"time": 100}}
-                },
-            )
+                # 增加截图调试
+                context.run_task(
+                    "WaitStableNode_ForOverride",
+                    pipeline_override={
+                        "WaitStableNode_ForOverride": {
+                            "pre_wait_freezes": {"time": 100}
+                        }
+                    },
+                )
 
-            if death:
-                logger.info("可以出图了")
-                context.run_task("Fight_FindLeaveText")
-                # 等待6秒
-                time.sleep(6)
-                if context.run_recognition(
-                    "ConfirmButton",
-                    context.tasker.controller.post_screencap().wait().get(),
-                ):
-                    context.run_task("ConfirmButton")
-
+                if death:
+                    logger.info("可以出图了")
+                    context.run_task("Fight_FindLeaveText")
+                    # 等待6秒
+                    time.sleep(6)
+                    if context.run_recognition(
+                        "ConfirmButton",
+                        context.tasker.controller.post_screencap().wait().get(),
+                    ):
+                        context.run_task("ConfirmButton")
+        else:
+            logger.info("选择手动结算，跳过结算事件！")
         self.isLeaveMaze = True
         # 到这可以出图了
 
@@ -1477,7 +1484,10 @@ class Mars101(CustomAction):
                 "param"
             ]["expected"][0]
         ).lower() == "true"
-
+        self.manual_leave_para = bool(
+            context.get_node_data("Fight_ManualLeave")["enabled"]
+        )
+        logger.info(f"手动结算：{self.manual_leave_para}")
         # initialize
         self.initialize(context)
         logger.info(f"本次任务目标层数: {self.target_leave_layer_para}")
@@ -1512,13 +1522,22 @@ class Mars101(CustomAction):
                 break
 
         logger.info(f"马尔斯探索结束，当前到达{self.layers}层")
-        context.run_task("Fight_LeaveMaze")
-        # 获取并打印统计信息
-        stats = fightUtils.get_time_statistics()
-        for func_name, data in stats.items():
-            logger.info(
-                f"{func_name} 执行 {data['count']} 次，总耗时: {data['total_time']:.4f}秒"
+        if self.manual_leave_para:
+            # 暂离
+            context.run_task("Save_Status")
+            send_message(
+                "MaaGB",
+                f"当前到达{self.layers}层，已暂离保存，请冒险者大人快来结算吧~",
             )
+        else:
+            # 退出
+            context.run_task("Fight_LeaveMaze")
+            # 获取并打印统计信息
+            stats = fightUtils.get_time_statistics()
+            for func_name, data in stats.items():
+                logger.info(
+                    f"{func_name} 执行 {data['count']} 次，总耗时: {data['total_time']:.4f}秒"
+                )
         return CustomAction.RunResult(success=True)
 
 

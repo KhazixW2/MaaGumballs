@@ -264,7 +264,8 @@
                 "目标出图楼层",
                 "目标大地数量",
                 "开启自动拾取",
-                "魔法系冈布奥选择"
+                "魔法系冈布奥选择",
+                "是否手动结算"
             ],
             "pipeline_override": {
                 "Select_WorldTree_InputBox_Text": {
@@ -865,6 +866,27 @@
                     "pipeline_override": {
                         "Mars_Astrological_Title_Setting": {
                             "expected": "true"
+                        }
+                    }
+                }
+            ]
+        },
+        "是否手动结算": {
+            "default_case": "no",
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "Fight_ManualLeave": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "Fight_ManualLeave": {
+                            "enabled": true
                         }
                     }
                 }

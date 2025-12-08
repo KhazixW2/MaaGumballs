@@ -783,5 +783,8 @@
         "post_delay": 1000,
         "threshold": 0.8,
         "timeout": 3000
+    },
+    "Fight_ManualLeave": {
+        "enabled": false
     }
 }
