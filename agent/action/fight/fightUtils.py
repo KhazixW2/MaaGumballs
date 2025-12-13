@@ -590,6 +590,7 @@ def openBagAndUseItem(
     equipmentName: str,
     isUse: bool,
     context: Context,
+    isReturnMainWindow: bool = True,
 ):
     context.run_task("Fight_ReturnMainWindow")
     OpenDetail = context.run_task("Bag_Open")
@@ -597,7 +598,8 @@ def openBagAndUseItem(
         time.sleep(1)
         findItem(equipmentName, isUse, context)
     time.sleep(1)
-    context.run_task("Fight_ReturnMainWindow")
+    if isReturnMainWindow:
+        context.run_task("Fight_ReturnMainWindow")
 
 
 def pair_by_distance(detections, max_distance=200):

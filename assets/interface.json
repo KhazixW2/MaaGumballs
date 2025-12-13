@@ -260,12 +260,13 @@
             "repeat_count": 1,
             "option": [
                 "自动肉鸽时使用钻石购买体力",
-                "是否启用手记开启恶魔系称号",
+                "是否启用名导心得",
                 "目标出图楼层",
                 "目标大地数量",
                 "开启自动拾取",
                 "魔法系冈布奥选择",
-                "是否手动结算"
+                "是否手动结算",
+                "是否启用手记开启恶魔系称号"
             ],
             "pipeline_override": {
                 "Select_WorldTree_InputBox_Text": {
@@ -887,6 +888,26 @@
                     "pipeline_override": {
                         "Fight_ManualLeave": {
                             "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "是否启用名导心得": {
+            "cases": [
+                {
+                    "name": "no",
+                    "pipeline_override": {
+                        "Mars_Director_Title_Setting": {
+                            "expected": "false"
+                        }
+                    }
+                },
+                {
+                    "name": "yes",
+                    "pipeline_override": {
+                        "Mars_Director_Title_Setting": {
+                            "expected": "true"
                         }
                     }
                 }

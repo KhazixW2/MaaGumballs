@@ -86,6 +86,34 @@ class Mars101(CustomAction):
                 self.is_demontitle_enable = True
             else:
                 logger.info("获取恶魔系称号失败")
+        if self.director_para:
+            # 名导心得相关
+            fightUtils.openBagAndUseItem(
+                "名导心得", False, context, isReturnMainWindow=False
+            )
+            context.run_task(
+                "Clickitem",
+                pipeline_override={
+                    "Clickitem": {
+                        "recognition": "TemplateMatch",
+                        "action": "Click",
+                        "template": "items/名导心得.png",
+                        "timeout": 3000,
+                        "post_delay": 500,
+                    },
+                },
+            )
+            context.run_task(
+                "Mars_Director_ATK_for_Override",
+                pipeline_override={
+                    "Mars_Director_ATK_for_Override": {
+                        "template": "fight/Mars/Mars_Director1.png"
+                    }
+                },
+            )
+            for _ in range(5):
+                context.run_task("Mars_Director_ATK_Confirm")
+            context.run_task("Fight_ReturnMainWindow")
 
     def Check_CurrentLayers(self, context: Context):
         tempLayers = fightUtils.handle_currentlayer_event(context)
@@ -770,6 +798,45 @@ class Mars101(CustomAction):
         logger.info("触发Mars结算事件")
         context.run_task("Fight_ReturnMainWindow")
         if not self.manual_leave_para:
+            # 名导心得相关
+            fightUtils.openBagAndUseItem(
+                "名导心得", False, context, isReturnMainWindow=False
+            )
+            context.run_task(
+                "Clickitem",
+                pipeline_override={
+                    "Clickitem": {
+                        "recognition": "TemplateMatch",
+                        "action": "Click",
+                        "template": "items/名导心得.png",
+                        "timeout": 3000,
+                        "post_delay": 500,
+                    },
+                },
+            )
+            context.run_task(
+                "Mars_Director_ATK_for_Override",
+                pipeline_override={
+                    "Mars_Director_ATK_for_Override": {
+                        "template": "fight/Mars/Mars_Director2.png"
+                    }
+                },
+            )
+            for _ in range(5):
+                context.run_task("Mars_Director_ATK_Confirm")
+            context.run_task("BackText")
+            context.run_task(
+                "Mars_Director_ATK_for_Override",
+                pipeline_override={
+                    "Mars_Director_ATK_for_Override": {
+                        "template": "fight/Mars/Mars_Director4.png"
+                    }
+                },
+            )
+            for _ in range(6):
+                context.run_task("Mars_Director_ATK_Confirm")
+            context.run_task("Fight_ReturnMainWindow")
+            压血相关
             # 先关闭魔法助手
             if self.isUseMagicAssist:
                 fightUtils.cast_magic_special("魔法助手", context)
@@ -792,6 +859,8 @@ class Mars101(CustomAction):
             context.run_task("Fight_ReturnMainWindow")
             for _ in range(3):
                 fightUtils.cast_magic_special("生命颂歌", context)
+            context.run_task("Screenshot")
+            logger.info("截图保存检查柱子")
             fightUtils.title_learn("魔法", 3, "咒术师", 1, context)
             if fightUtils.title_check("巨龙", context):
                 fightUtils.title_learn("巨龙", 1, "亚龙血统", 3, context)
@@ -809,35 +878,34 @@ class Mars101(CustomAction):
                     fightUtils.title_learn_branch("巨龙", 5, "生命强化", 3, context)
 
             context.run_task("Fight_ReturnMainWindow")
-            # 这里进夹层压血
-            if self.target_earthgate_para >= 0 and self.is_demontitle_enable:
-                self.gotoSpecialLayer(context)
-                fightUtils.cast_magic("土", "石肤术", context)
-                if not fightUtils.cast_magic("暗", "死亡波纹", context):
-                    if not fightUtils.cast_magic("火", " 末日审判", context):
-                        fightUtils.cast_magic("土", "地震术", context)
+            # 压血相关
+            # # 这里进夹层压血
+            # if self.target_earthgate_para >= 0 and self.is_demontitle_enable:
+            #     self.gotoSpecialLayer(context)
+            #     fightUtils.cast_magic("土", "石肤术", context)
+            #     if not fightUtils.cast_magic("暗", "死亡波纹", context):
+            #         if not fightUtils.cast_magic("火", " 末日审判", context):
+            #             fightUtils.cast_magic("土", "地震术", context)
 
-                for _ in range(20):
-                    if fightUtils.checkBuffStatus("神圣重生", context):
-                        logger.info("发现神圣重生buff, 使用祝福术尝试复活")
-                        fightUtils.cast_magic("光", "祝福术", context)
-                    else:
-                        time.sleep(5)
-                        break
+            #     for _ in range(20):
+            #         if fightUtils.checkBuffStatus("神圣重生", context):
+            #             logger.info("发现神圣重生buff, 使用祝福术尝试复活")
+            #             fightUtils.cast_magic("光", "祝福术", context)
+            #         else:
+            #             time.sleep(5)
+            #             break
 
-                self.Control_tenpecentHP(context)
-                # 增加截图调试
-                context.run_task(
-                    "WaitStableNode_ForOverride",
-                    pipeline_override={
-                        "WaitStableNode_ForOverride": {
-                            "pre_wait_freezes": {"time": 100}
-                        }
-                    },
-                )
-                context.run_task("Screenshot")
-                self.leaveSpecialLayer(context)
-                context.run_task("Fight_ReturnMainWindow")
+            #     self.Control_tenpecentHP(context)
+            #     # 增加截图调试
+            #     context.run_task(
+            #         "WaitStableNode_ForOverride",
+            #         pipeline_override={
+            #             "WaitStableNode_ForOverride": {"pre_wait_freezes": {"time": 100}}
+            #         },
+            #     )
+            #     context.run_task("Screenshot")
+            #     self.leaveSpecialLayer(context)
+            #     context.run_task("Fight_ReturnMainWindow")
 
             fightUtils.title_learn("战斗", 5, "剑圣", 1, context)
             context.run_task("Fight_ReturnMainWindow")
@@ -855,63 +923,63 @@ class Mars101(CustomAction):
                         "武器大师执照", True, context, threshold=0.8
                     ):
                         break
-            if self.target_earthgate_para >= 0:
-                self.gotoSpecialLayer(context)
-                death = None
-
-                for i in range(20):
-                    fightUtils.cast_magic("光", "祝福术", context)
-                    death = context.run_recognition(
-                        "Fight_FindRespawn",
-                        context.tasker.controller.post_screencap().wait().get(),
-                    )
-                    if death:
-                        logger.info(f"已死亡，准备出图")
-                        self.isDeath = True
-                        context.run_task("Screenshot")
-                        break
-                    elif self.layers == 99:
-                        logger.info(f"当前在99层，大概率无法死亡，走正常流程离开")
-                        time.sleep(3)
-                        context.run_task("Fight_ReturnMainWindow")
-                        self.leaveSpecialLayer(context)
-                        context.run_task("Fight_ReturnMainWindow")
-                        context.run_task("Screenshot")
-                        break
-                    if i > 15:
-                        time.sleep(3)
-                        if not self.Check_GridAndMonster(context, False):
-                            context.run_task("Screenshot")
-                            logger.info(f"怪物不在了，无法死亡，走正常流程离开")
-                            time.sleep(3)
-                            context.run_task("Fight_ReturnMainWindow")
-                            self.leaveSpecialLayer(context)
-                            context.run_task("Fight_ReturnMainWindow")
-                            context.run_task("Screenshot")
-                            break
-
-                # 增加截图调试
-                context.run_task(
-                    "WaitStableNode_ForOverride",
-                    pipeline_override={
-                        "WaitStableNode_ForOverride": {
-                            "pre_wait_freezes": {"time": 100}
-                        }
-                    },
-                )
-
-                if death:
-                    logger.info("可以出图了")
-                    context.run_task("Fight_FindLeaveText")
-                    # 等待6秒
-                    time.sleep(6)
-                    if context.run_recognition(
-                        "ConfirmButton",
-                        context.tasker.controller.post_screencap().wait().get(),
-                    ):
-                        context.run_task("ConfirmButton")
         else:
-            logger.info("选择手动结算，跳过结算事件！")
+            logger.info("需要手动结算")
+        # 压血相关
+        # # 这里进夹层压血
+        # if self.target_earthgate_para >= 0:
+        #     self.gotoSpecialLayer(context)
+        #     death = None
+
+        #     for i in range(20):
+        #         fightUtils.cast_magic("光", "祝福术", context)
+        #         death = context.run_recognition(
+        #             "Fight_FindRespawn",
+        #             context.tasker.controller.post_screencap().wait().get(),
+        #         )
+        #         if death:
+        #             logger.info(f"已死亡，准备出图")
+        #             self.isDeath = True
+        #             context.run_task("Screenshot")
+        #             break
+        #         elif self.layers == 99:
+        #             logger.info(f"当前在99层，大概率无法死亡，走正常流程离开")
+        #             time.sleep(3)
+        #             context.run_task("Fight_ReturnMainWindow")
+        #             self.leaveSpecialLayer(context)
+        #             context.run_task("Fight_ReturnMainWindow")
+        #             context.run_task("Screenshot")
+        #             break
+        #         if i > 15:
+        #             time.sleep(3)
+        #             if not self.Check_GridAndMonster(context, False):
+        #                 context.run_task("Screenshot")
+        #                 logger.info(f"怪物不在了，无法死亡，走正常流程离开")
+        #                 time.sleep(3)
+        #                 context.run_task("Fight_ReturnMainWindow")
+        #                 self.leaveSpecialLayer(context)
+        #                 context.run_task("Fight_ReturnMainWindow")
+        #                 context.run_task("Screenshot")
+        #                 break
+
+        #     # 增加截图调试
+        #     context.run_task(
+        #         "WaitStableNode_ForOverride",
+        #         pipeline_override={
+        #             "WaitStableNode_ForOverride": {"pre_wait_freezes": {"time": 100}}
+        #         },
+        #     )
+        #     if death:
+        #         logger.info("可以出图了")
+        #         context.run_task("Fight_FindLeaveText")
+        #         # 等待6秒
+        #         time.sleep(6)
+        #         if context.run_recognition(
+        #             "ConfirmButton",
+        #             context.tasker.controller.post_screencap().wait().get(),
+        #         ):
+        #             context.run_task("ConfirmButton")
+
         self.isLeaveMaze = True
         # 到这可以出图了
 
@@ -1079,10 +1147,7 @@ class Mars101(CustomAction):
     def handle_MarsBody_event(self, context: Context, image):
         if self.layers >= 30 and self.layers % 10 == 0:
             return True
-        if self.layers == 99 or self.layers == self.target_leave_layer_para:
-            # 出图层多等待2秒，防止没识别到墓碑
-            time.sleep(2)
-            image = context.tasker.controller.post_screencap().wait().get()
+
         # 摸金事件卡返回基本只会发生在夹层中
         if bodyRecoDetail := context.run_recognition("Mars_Body", image):
             logger.info("触发Mars摸金事件")
@@ -1118,6 +1183,25 @@ class Mars101(CustomAction):
                     context.run_task("Mars_Inter_Confirm_Fail")
                     return False
             return True
+        for _ in range(3):
+            if self.astrological_title_para == False:
+                # 不开启恶魔称号基本不用考虑墓碑压血
+                break
+            if self.layers == 99 or self.layers == self.target_leave_layer_para:
+                context.run_task("Screenshot")
+                if context.run_recognition(
+                    "Mars_Tomb", context.tasker.controller.post_screencap().wait().get()
+                ):
+                    logger.info("触发墓碑事件")
+                    context.run_task("Mars_Tomb")
+                    time.sleep(3)
+                    context.run_task("Mars_Inter_Confirm_Success")
+                    context.run_task("Fight_ReturnMainWindow")
+                    break
+                else:
+                    time.sleep(1)
+            else:
+                break
         return True
 
     @timing_decorator
@@ -1300,7 +1384,15 @@ class Mars101(CustomAction):
         if self.layers >= 90 and context.run_recognition(
             "Mars_HideGumball", context.tasker.controller.post_screencap().wait().get()
         ):
+            # 识别到了隐藏冈布奥
+            logger.info("检测到隐藏冈布奥")
             context.run_task("Mars_HideGumball")
+            self.Check_DefaultStatus(context)
+            context.run_task("Fight_OpenedDoor")
+            logger.info("离开隐藏冈布奥夹层")
+            context.run_task("Screenshot")
+            return False
+        # 重新清理当前层，防止影响出图层
 
         if (
             (self.layers >= self.target_leave_layer_para - 2)
@@ -1484,6 +1576,11 @@ class Mars101(CustomAction):
                 "param"
             ]["expected"][0]
         ).lower() == "true"
+        self.director_para = (
+            context.get_node_data("Mars_Director_Title_Setting")["recognition"][
+                "param"
+            ]["expected"][0]
+        ).lower() == "true"
         self.manual_leave_para = bool(
             context.get_node_data("Fight_ManualLeave")["enabled"]
         )
@@ -1524,6 +1621,7 @@ class Mars101(CustomAction):
         logger.info(f"马尔斯探索结束，当前到达{self.layers}层")
         if self.manual_leave_para:
             # 暂离
+            time.sleep(1)
             context.run_task("Save_Status")
             send_message(
                 "MaaGB",

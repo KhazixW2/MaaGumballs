@@ -321,6 +321,28 @@
             "Mars_Inter_Confirm_Fail"
         ]
     },
+    "Mars_Tomb": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/UniversalUI/墓碑.png"
+        ],
+        "roi": [
+            4,
+            182,
+            705,
+            839
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "Mars_Inter_Confirm_Success",
+            "Mars_Inter_Confirm_Fail"
+        ],
+        "interrupt": [
+            "Mars_Inter_Confirm_Pickup"
+        ]
+    },
     "Mars_HideGumball": {
         "recognition": "TemplateMatch",
         "template": [
@@ -969,21 +991,31 @@
         "threshold": 0.9,
         "timeout": 3000
     },
-    "Mars_GetDemonTitle_Confirm": {
+    "Mars_Director_ATK_for_Override": {
         "recognition": "TemplateMatch",
         "action": "Click",
-        "template": "fight/Mars/恶魔系称号.png",
+        "template": "fight/Mars/Mars_Director2.png",
         "roi": [
-            54,
-            639,
-            625,
-            330
+            213,
+            334,
+            449,
+            478
         ],
         "timeout": 3000,
-        "post_delay": 500,
-        "next": [
-            "Mars_GetDemonTitle_Enabled"
-        ]
+        "post_delay": 500
+    },
+    "Mars_Director_ATK_Confirm": {
+        "recognition": "TemplateMatch",
+        "action": "Click",
+        "template": "fight/Mars/Mars_Director_Confirm.png",
+        "roi": [
+            44,
+            646,
+            641,
+            276
+        ],
+        "timeout": 3000,
+        "post_delay": 500
     },
     "Mars_GetDemonTitle_Confirm_2": {
         "recognition": "OCR",
@@ -1038,6 +1070,10 @@
         "expected": "1"
     },
     "Mars_Astrological_Title_Setting": {
+        "recognition": "OCR",
+        "expected": "false"
+    },
+    "Mars_Director_Title_Setting": {
         "recognition": "OCR",
         "expected": "false"
     }
