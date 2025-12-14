@@ -836,7 +836,7 @@ class Mars101(CustomAction):
             for _ in range(6):
                 context.run_task("Mars_Director_ATK_Confirm")
             context.run_task("Fight_ReturnMainWindow")
-            压血相关
+            # 压血相关
             # 先关闭魔法助手
             if self.isUseMagicAssist:
                 fightUtils.cast_magic_special("魔法助手", context)
