@@ -1627,15 +1627,16 @@ class Mars101(CustomAction):
                 "MaaGB",
                 f"当前到达{self.layers}层，已暂离保存，请冒险者大人快来结算吧~",
             )
+
         else:
             # 退出
             context.run_task("Fight_LeaveMaze")
-            # 获取并打印统计信息
-            stats = fightUtils.get_time_statistics()
-            for func_name, data in stats.items():
-                logger.info(
-                    f"{func_name} 执行 {data['count']} 次，总耗时: {data['total_time']:.4f}秒"
-                )
+        # 获取并打印统计信息
+        stats = fightUtils.get_time_statistics()
+        for func_name, data in stats.items():
+            logger.info(
+                f"{func_name} 执行 {data['count']} 次，总耗时: {data['total_time']:.4f}秒"
+            )
         return CustomAction.RunResult(success=True)
 
 
