@@ -4,6 +4,7 @@
     "mirrorchyan_rid": "MaaGB",
     "mirrorchyan_multiplatform": true,
     "mfa_max_version": "1.6.9",
+    "interface_version": 2,
     "controller": [
         {
             "name": "ADB 默认方式",

@@ -302,6 +302,7 @@ def title_learn(
                 "TitlePanel_Series": {"expected": titleType},
                 "TitlePanel_Panel": {"expected": titleType},
                 "TitlePanel_CurrentPanel": {"expected": titleType},
+                "TitlePanel_Learnable_ClickOnce": {"target": titileRect[titleLevel]},
             },
         )
 
@@ -380,6 +381,7 @@ def title_learn_branch(
                 "TitlePanel_Series": {"expected": titleType},
                 "TitlePanel_Panel": {"expected": titleType},
                 "TitlePanel_CurrentPanel": {"expected": titleType},
+                "TitlePanel_Learnable_ClickOnce": {"target": titileRect[titleLevel]},
             },
         )
         time.sleep(0.3)

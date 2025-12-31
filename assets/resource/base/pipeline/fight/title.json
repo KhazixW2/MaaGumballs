@@ -21,10 +21,10 @@
         "action": "Click",
         "target": true,
         "target_offset": [
-            325,
-            75,
+            285,
             0,
-            0
+            10,
+            10
         ],
         "threshold": 0.8,
         "post_delay": 1200,
@@ -154,9 +154,22 @@
         ],
         "next": [
             "TitlePanel_Learnable_Check",
-            "TitlePanel_Learnable_Fnish"
+            "TitlePanel_Learnable_Fnish",
+            "[JumpBack]TitlePanel_Learnable_ClickOnce"
         ],
-        "post_delay": 300,
+        "post_delay": 1000,
+        "timeout": 10000
+    },
+    "TitlePanel_Learnable_ClickOnce": {
+        "recognition": "DirectHit",
+        "action": "Click",
+        "target": [
+            53,
+            843,
+            138,
+            152
+        ],
+        "post_delay": 1000,
         "timeout": 2000
     },
     "TitlePanel_TitleCheck_New": {
@@ -225,6 +238,7 @@
         "expected": [
             "升至",
             "升",
+            "开至",
             "提升"
         ],
         "roi": [
