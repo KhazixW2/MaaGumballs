@@ -1,0 +1,93 @@
+{
+    "SwitchOuterCity": {
+        "recognition": "OCR",
+        "expected": "外城",
+        "roi": [
+            16,
+            254,
+            698,
+            169
+        ],
+        "post_delay": 1000,
+        "timeout": 2000,
+        "action": "Click"
+    },
+    "SwitchInnerCity": {
+        "recognition": "OCR",
+        "expected": "内城",
+        "roi": [
+            16,
+            254,
+            698,
+            169
+        ],
+        "post_delay": 1000,
+        "timeout": 2000,
+        "action": "Click"
+    },
+    "FindCityTavern_OCR": {
+        "recognition": "OCR",
+        "expected": "酒馆",
+        "roi": [
+            85,
+            406,
+            610,
+            821
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000
+    },
+    "FindCityChangeCareer_OCR": {
+        "recognition": "OCR",
+        "expected": "转职",
+        "roi": [
+            85,
+            406,
+            610,
+            821
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000
+    },
+    "FindCityShop_OCR": {
+        "recognition": "OCR",
+        "expected": "杂货铺",
+        "roi": [
+            85,
+            406,
+            610,
+            821
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000
+    },
+    "FindCityTask_OCR": {
+        "recognition": "OCR",
+        "expected": "任务",
+        "roi": [
+            85,
+            406,
+            610,
+            821
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000
+    },
+    "CheckTaskDetail_OCR": {
+        "recognition": "OCR",
+        "expected": "任务详情",
+        "roi": [
+            17,
+            350,
+            693,
+            861
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000
+    }
+}
