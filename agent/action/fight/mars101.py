@@ -1338,10 +1338,10 @@ class Mars101(CustomAction):
             # 距离出图楼层还有30层
             self.layers > self.target_leave_layer_para - 29
             and (self.layers - 1) % 10 == 0
-            and self.useDemon < 3
         ):
-            fightUtils.openBagAndUseItem("小恶魔", True, context)
-            self.useDemon += 1
+            if self.is_demontitle_enable and self.useDemon < 3:
+                fightUtils.openBagAndUseItem("小恶魔", True, context)
+                self.useDemon += 1
             if (
                 self.target_earthgate_para == 2
                 and self.useEarthGate < self.target_earthgate_para
