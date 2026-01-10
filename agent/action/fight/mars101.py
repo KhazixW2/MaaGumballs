@@ -791,43 +791,44 @@ class Mars101(CustomAction):
         context.run_task("Fight_ReturnMainWindow")
         if not self.manual_leave_para:
             # 名导心得相关
-            fightUtils.openBagAndUseItem(
-                "名导心得", False, context, isReturnMainWindow=False
-            )
-            context.run_task(
-                "Clickitem",
-                pipeline_override={
-                    "Clickitem": {
-                        "recognition": "TemplateMatch",
-                        "action": "Click",
-                        "template": "items/名导心得.png",
-                        "timeout": 3000,
-                        "post_delay": 500,
+            if self.director_para:
+                fightUtils.openBagAndUseItem(
+                    "名导心得", False, context, isReturnMainWindow=False
+                )
+                context.run_task(
+                    "Clickitem",
+                    pipeline_override={
+                        "Clickitem": {
+                            "recognition": "TemplateMatch",
+                            "action": "Click",
+                            "template": "items/名导心得.png",
+                            "timeout": 3000,
+                            "post_delay": 500,
+                        },
                     },
-                },
-            )
-            context.run_task(
-                "Mars_Director_ATK_for_Override",
-                pipeline_override={
-                    "Mars_Director_ATK_for_Override": {
-                        "template": "fight/Mars/Mars_Director2.png"
-                    }
-                },
-            )
-            for _ in range(5):
-                context.run_task("Mars_Director_ATK_Confirm")
-            context.run_task("BackText")
-            context.run_task(
-                "Mars_Director_ATK_for_Override",
-                pipeline_override={
-                    "Mars_Director_ATK_for_Override": {
-                        "template": "fight/Mars/Mars_Director4.png"
-                    }
-                },
-            )
-            for _ in range(6):
-                context.run_task("Mars_Director_ATK_Confirm")
-            context.run_task("Fight_ReturnMainWindow")
+                )
+                context.run_task(
+                    "Mars_Director_ATK_for_Override",
+                    pipeline_override={
+                        "Mars_Director_ATK_for_Override": {
+                            "template": "fight/Mars/Mars_Director2.png"
+                        }
+                    },
+                )
+                for _ in range(5):
+                    context.run_task("Mars_Director_ATK_Confirm")
+                context.run_task("BackText")
+                context.run_task(
+                    "Mars_Director_ATK_for_Override",
+                    pipeline_override={
+                        "Mars_Director_ATK_for_Override": {
+                            "template": "fight/Mars/Mars_Director4.png"
+                        }
+                    },
+                )
+                for _ in range(6):
+                    context.run_task("Mars_Director_ATK_Confirm")
+                context.run_task("Fight_ReturnMainWindow")
             # 压血相关
             # 先关闭魔法助手
             if self.isUseMagicAssist:
@@ -1337,10 +1338,10 @@ class Mars101(CustomAction):
             # 距离出图楼层还有30层
             self.layers > self.target_leave_layer_para - 29
             and (self.layers - 1) % 10 == 0
-            and self.useDemon < 3
         ):
-            fightUtils.openBagAndUseItem("小恶魔", True, context)
-            self.useDemon += 1
+            if self.is_demontitle_enable and self.useDemon < 3:
+                fightUtils.openBagAndUseItem("小恶魔", True, context)
+                self.useDemon += 1
             if (
                 self.target_earthgate_para == 2
                 and self.useEarthGate < self.target_earthgate_para
