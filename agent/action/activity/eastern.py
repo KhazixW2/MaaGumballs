@@ -1,3 +1,4 @@
+# 新年迷宫（东方的归途） interface的entry： Eastern_Start
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
@@ -151,6 +152,8 @@ class Eastern_Activity(CustomAction):
                             send_message(
                                 "MaaGB", "多次领取工资失败，请冒险者大人回来重启任务！"
                             )
+                            logger.info("多次领取工资失败，请冒险者大人回来重启任务！")
+                            context.run_task("Fight_ReturnMainWindow")
                             return CustomAction.RunResult(success=False)
                     context.run_task("Fight_ReturnMainWindow")
                 context.run_task("Fight_OpenedDoor")
