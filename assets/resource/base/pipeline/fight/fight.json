@@ -211,7 +211,7 @@
         ],
         "action": "Click",
         "threshold": 0.8,
-        "post_delay": 500,
+        "post_delay": 250,
         "timeout": 2000
     },
     "Fight_SkillPack_Type": {
