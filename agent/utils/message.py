@@ -302,7 +302,7 @@ def send_dingTalk(dp: dict, title: str, text: str) -> bool:
             logger.info(f"消息推送失败: { str(e) }")
             return False
 
-def send_telegram(dp: dict, title: str, text:str):
+def send_telegram(dp: dict, text:str):
     """
     发送消息到 Telegram
     Args:
@@ -326,7 +326,7 @@ def send_telegram(dp: dict, title: str, text:str):
             logger.error(f"消息推送失败，状态码：{response.get('status')}")
             return False
     except Exception as e:
-        logger.info(f"发送 Telegram 消息失败: { str(e) }")
+        logger.error(f"发送 Telegram 消息失败: { str(e) }")
         return False
 
 
@@ -360,7 +360,7 @@ def send_message(title: str, text: str) -> bool:
             elif message_type == "DingTalk":
                 send_dingTalk(config, title, text=text)
             elif message_type == "Telegram":
-                send_telegram(config, title, text=text)
+                send_telegram(config, text=text)
             else:
                 logger.info("未配置消息类型或暂不支持此消息类型！")
                 return False
