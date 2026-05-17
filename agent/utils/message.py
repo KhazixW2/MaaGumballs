@@ -302,6 +302,7 @@ def send_dingTalk(dp: dict, title: str, text: str) -> bool:
             logger.info(f"消息推送失败: { str(e) }")
             return False
 
+
 def send_telegram(dp: dict, text: str) -> bool:
     """
     发送消息到 Telegram
