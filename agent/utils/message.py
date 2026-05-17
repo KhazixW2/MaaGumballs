@@ -69,6 +69,9 @@ def read_config() -> bool:
                     ).strip()
                 elif message_type == "PushPlus":
                     config["pushplus_token"] = decrypt(config["pushplus_token"]).strip()
+                elif message_type == "Telegram":
+                    config["telegram_token"] = decrypt(config["ExternalNotificationTelegramBotToken"]).strip()
+                    config["telegram_chat_id"] = decrypt(config["ExternalNotificationTelegramChatId"]).strip()
             logger.debug("配置文件解密成功！")
             return True
     except Exception:
@@ -299,6 +302,33 @@ def send_dingTalk(dp: dict, title: str, text: str) -> bool:
             logger.info(f"消息推送失败: { str(e) }")
             return False
 
+def send_telegram(dp: dict, title: str, text:str):
+    """
+    发送消息到 Telegram
+    Args:
+        title(str): 标题
+        text(str): 内容
+    Returns:
+        发送成功返回True，否则返回False
+    """
+    start = time.time()
+    bot_token = dp.get("telegram_token")
+    chat_id = dp.get("telegram_chat_id")
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    try:
+        response = post_request(url, data={"chat_id": chat_id, "text": text})
+        if response.get("status") == 200:
+            logger.info("telegram消息推送成功")
+            end = time.time()
+            logger.debug(f"telegram消息发送耗时: {end - start}s")
+            return True
+        else:
+            logger.error(f"消息推送失败，状态码：{response.get('status')}")
+            return False
+    except Exception as e:
+        logger.info(f"发送 Telegram 消息失败: { str(e) }")
+        return False
+
 
 def send_message(title: str, text: str) -> bool:
     """
@@ -329,6 +359,8 @@ def send_message(title: str, text: str) -> bool:
                 send_qmsg(config, title, text=text)
             elif message_type == "DingTalk":
                 send_dingTalk(config, title, text=text)
+            elif message_type == "Telegram":
+                send_telegram(config, title, text=text)
             else:
                 logger.info("未配置消息类型或暂不支持此消息类型！")
                 return False
