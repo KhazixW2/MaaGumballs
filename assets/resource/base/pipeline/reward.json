@@ -431,8 +431,8 @@
     "Cdk_CheckResult_ESpyJoined": {
         "recognition": "OCR",
         "expected": [
-            "",
-            ""
+            "早就和你并肩作战",
+            "那我开玩笑"
         ],
         "roi": [
             128,
