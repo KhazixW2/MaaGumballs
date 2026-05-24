@@ -314,6 +314,7 @@
             "Cdk_CheckResult_False",
             "Cdk_CheckResult_Expired",
             "Cdk_CheckResult_Error",
+            "Cdk_CheckResult_EChannel",
             "[JumpBack]Cdk_Select_CdkEntrance",
             "[JumpBack]BackText"
         ]
@@ -404,6 +405,26 @@
         "action": "DoNothing",
         "focus": {
             "succeeded": "[color:Orange]密令已过期[/color]"
+        }
+    },
+    "Cdk_CheckResult_EChannel": {
+        "recognition": "OCR",
+        "expected": [
+            "有些特别",
+            "好像需要身份验证",
+            "不属于你"
+        ],
+        "roi": [
+            128,
+            526,
+            395,
+            107
+        ],
+        "post_delay": 2500,
+        "timeout": 2000,
+        "action": "StopTask",
+        "focus": {
+            "succeeded": "[color:Purple]密令不适用于当前渠道哦~[/color]"
         }
     },
     "Cdk_Sources": {
