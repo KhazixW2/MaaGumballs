@@ -312,6 +312,7 @@
             "ConfirmButton",
             "Cdk_CheckResult_True",
             "Cdk_CheckResult_False",
+            "Cdk_CheckResult_Expired",
             "Cdk_CheckResult_Error",
             "[JumpBack]Cdk_Select_CdkEntrance",
             "[JumpBack]BackText"
@@ -384,6 +385,25 @@
         "action": "StopTask",
         "focus": {
             "succeeded": "[color:Tomato]密令识别错误,请冒险者大人来看看哦~[/color]"
+        }
+    },
+    "Cdk_CheckResult_Expired": {
+        "recognition": "OCR",
+        "expected": [
+            "已经过期了",
+            "毫无价值"
+        ],
+        "roi": [
+            128,
+            526,
+            395,
+            107
+        ],
+        "post_delay": 2500,
+        "timeout": 2000,
+        "action": "DoNothing",
+        "focus": {
+            "succeeded": "[color:Orange]密令已过期[/color]"
         }
     },
     "Cdk_Sources": {
