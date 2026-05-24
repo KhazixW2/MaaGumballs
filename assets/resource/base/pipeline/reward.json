@@ -313,6 +313,7 @@
             "Cdk_CheckResult_True",
             "Cdk_CheckResult_False",
             "Cdk_CheckResult_Expired",
+            "Cdk_CheckResult_ESpyJoined",
             "Cdk_CheckResult_EChannel",
             "Cdk_CheckResult_Error",
             "[JumpBack]Cdk_Select_CdkEntrance",
@@ -425,6 +426,25 @@
         "action": "DoNothing",
         "focus": {
             "succeeded": "[color:Purple]密令不适用于当前渠道哦~[/color]"
+        }
+    },
+    "Cdk_CheckResult_ESpyJoined": {
+        "recognition": "OCR",
+        "expected": [
+            "",
+            ""
+        ],
+        "roi": [
+            128,
+            526,
+            395,
+            107
+        ],
+        "post_delay": 2500,
+        "timeout": 2000,
+        "action": "DoNothing",
+        "focus": {
+            "succeeded": "[color:DarkViolet]间谍已被招募过[/color]"
         }
     },
     "Cdk_Sources": {
