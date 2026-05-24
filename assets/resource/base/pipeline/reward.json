@@ -313,8 +313,8 @@
             "Cdk_CheckResult_True",
             "Cdk_CheckResult_False",
             "Cdk_CheckResult_Expired",
-            "Cdk_CheckResult_Error",
             "Cdk_CheckResult_EChannel",
+            "Cdk_CheckResult_Error",
             "[JumpBack]Cdk_Select_CdkEntrance",
             "[JumpBack]BackText"
         ]
@@ -422,7 +422,7 @@
         ],
         "post_delay": 2500,
         "timeout": 2000,
-        "action": "StopTask",
+        "action": "DoNothing",
         "focus": {
             "succeeded": "[color:Purple]密令不适用于当前渠道哦~[/color]"
         }
