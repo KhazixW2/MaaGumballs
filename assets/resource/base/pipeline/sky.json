@@ -211,7 +211,8 @@
         "recognition": "OCR",
         "expected": [
             "探索",
-            "袭击"
+            "袭击",
+            "解除"
         ],
         "roi": [
             470,
@@ -222,7 +223,8 @@
         "timeout": 2000,
         "next": [
             "AutoSky_ExploreEventDetection",
-            "AutoSky_CombatEventDetection"
+            "AutoSky_CombatEventDetection",
+            "AutoSky_ActivateTemple"
         ]
     },
     "AutoSky_ExploreEventDetection": {
@@ -253,6 +255,38 @@
         "next": [
             "AutoSky_SkipDetection",
             "AutoSky_Lost"
+        ]
+    },
+    "AutoSky_ActivateTemple": {
+        "recognition": "OCR",
+        "expected": "解除封印",
+        "roi": [
+            470,
+            203,
+            249,
+            317
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000,
+        "next": [
+            "AutoSky_ActivateTemple_Confirm"
+        ]
+    },
+    "AutoSky_ActivateTemple_Confirm": {
+        "recognition": "OCR",
+        "expected": "开启",
+        "roi": [
+            25,
+            427,
+            663,
+            397
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "ConfirmButton"
         ]
     },
     "AutoSky_SkipDetection": {
