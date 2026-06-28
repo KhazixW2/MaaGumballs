@@ -395,5 +395,194 @@
         "next": [
             "BackText_500ms"
         ]
+    },
+    "AutoSky_Clcik_FleetIcon": {
+        "recognition": "TemplateMatch",
+        "template": "sky/sky_fleet.png",
+        "roi": [
+            44,
+            1174,
+            642,
+            99
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000
+    },
+    "AutoSky_Click_BagIcon": {
+        "doc": "背包",
+        "recognition": "TemplateMatch",
+        "template": "sky/sky_bag.png",
+        "roi": [
+            44,
+            1174,
+            642,
+            99
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000
+    },
+    "AutoSky_Click_ClonerIcon": {
+        "doc": "克隆体",
+        "recognition": "TemplateMatch",
+        "template": "sky/sky_cloner.png",
+        "roi": [
+            44,
+            1174,
+            642,
+            99
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000
+    },
+    "AutoSky_Click_GumballsIcon": {
+        "doc": "冈布奥",
+        "recognition": "TemplateMatch",
+        "template": "sky/sky_gambulls.png",
+        "roi": [
+            44,
+            1174,
+            642,
+            99
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000
+    },
+    "AutoSky_Click_ReturnIcon": {
+        "doc": "返回",
+        "recognition": "TemplateMatch",
+        "template": "sky/sky_return.png",
+        "roi": [
+            44,
+            1174,
+            642,
+            99
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000
+    },
+    "AutoSky_Click_TreasureIcon": {
+        "doc": "宝藏",
+        "recognition": "TemplateMatch",
+        "template": "sky/sky_treasure.png",
+        "roi": [
+            44,
+            1174,
+            642,
+            99
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000
+    },
+    "AutoSky_Switch_Fleet": {
+        "next": [
+            "AutoSky_ComfirmFleet",
+            "[JumpBack]AutoSky_Click_GumballsIcon",
+            "[JumpBack]AutoSky_SweepToSwitchFleet"
+        ],
+        "timeout": 5000
+    },
+    "AutoSky_ComfirmFleet": {
+        "recognition": "OCR",
+        "expected": [
+            "深渊"
+        ],
+        "next": [
+            "AutoSky_ComfirmFleet_Click"
+        ],
+        "timeout": 2000
+    },
+    "AutoSky_ComfirmFleet_Click": {
+        "recognition": "OCR",
+        "roi": [
+            31,
+            1116,
+            668,
+            143
+        ],
+        "expected": [
+            "出战"
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000
+    },
+    "AutoSky_SweepToSwitchFleet": {
+        "doc": "向右滑动",
+        "recognition": "DirectHit",
+        "action": "Swipe",
+        "begin": [
+            483,
+            564,
+            20,
+            20
+        ],
+        "end": [
+            226,
+            564,
+            20,
+            20
+        ],
+        "post_delay": 500,
+        "timeout": 2000
+    },
+    "AutoSky_Bag_UseBattery": {
+        "next": [
+            "AutoSky_Bag_ClickBattery_Use",
+            "[JumpBack]AutoSky_Bag_ClickBattery",
+            "[JumpBack]AutoSky_Click_BagIcon"
+        ]
+    },
+    "AutoSky_Bag_ClickBattery": {
+        "recognition": "TemplateMatch",
+        "template": "sky/sky_battery.png",
+        "roi": [
+            68,
+            328,
+            594,
+            647
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000
+    },
+    "AutoSky_Bag_ClickBattery_Use": {
+        "recognition": "OCR",
+        "expected": [
+            "5个"
+        ],
+        "roi": [
+            68,
+            328,
+            594,
+            647
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000
+    },
+    "AutoSky_ReturnSkyMap": {
+        "next": [
+            "AutoSky_SkyMapWindow",
+            "[JumpBack]BackText_500ms"
+        ]
+    },
+    "AutoSky_SkyMapWindow": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "sky/sky_return.png"
+        ],
+        "roi": [
+            44,
+            1174,
+            642,
+            99
+        ],
+        "timeout": 2000
     }
 }
