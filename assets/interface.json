@@ -177,10 +177,13 @@
         {
             "name": "自动天空",
             "entry": "AutoSky",
+            "option": [
+                "天空_出战阵营"
+            ],
             "doc": [
                 "### 工作内容",
                 "- **第一步**:从大地图点击左下角进入伊甸，再从伊甸进入雷达界面",
-                "- **第二步**:不断切换目标，寻找飞艇，怪物或浮岛并完成战斗或探索",
+                "- **第二步**:在雷达界面根据选项配置切换主分队（默认深渊），再不断切换目标，寻找飞艇，怪物或浮岛并完成战斗或探索",
                 "- **第三步**:返回伊甸，执行自动探索，消耗能量，返回雷达界面，重复进行第二步",
                 "",
                 "### 结束条件",
@@ -456,6 +459,52 @@
                     "focus": "{cdk_text}"
                 }
             }
+        },
+        "天空_出战阵营": {
+            "default_case": "深渊",
+            "description": "选择出战的冈布奥阵营",
+            "cases": [
+                {
+                    "name": "深渊",
+                    "pipeline_override": {
+                        "AutoSky_ComfirmFleet": {
+                            "expected": [
+                                "深渊"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "启示",
+                    "pipeline_override": {
+                        "AutoSky_ComfirmFleet": {
+                            "expected": [
+                                "启示"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "游荡",
+                    "pipeline_override": {
+                        "AutoSky_ComfirmFleet": {
+                            "expected": [
+                                "游荡"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "刃",
+                    "pipeline_override": {
+                        "AutoSky_ComfirmFleet": {
+                            "expected": [
+                                "刃"
+                            ]
+                        }
+                    }
+                }
+            ]
         },
         "选择神锻任务": {
             "default_case": "黑水池",

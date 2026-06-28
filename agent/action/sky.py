@@ -31,6 +31,30 @@ class AutoSky(CustomAction):
         self._target_round = 5
         self._clone_enabled = True  # 默认启用克隆体检查
 
+    def switch_main_fleet(self, context: Context) -> bool:
+        """
+        在雷达界面将主分队切换为用户在 UI 选项中选择的分队。
+
+        该方法依赖 ``AutoSky_Switch_Fleet`` 任务链,后者会:
+          1. 点击冈布奥图标打开分队列表
+          2. 通过 OCR 识别用户选定的分队名(由主分队选项注入 ``expected``)
+          3. 若未找到则向右滑动并重试
+          4. 找到后点击"出战"确认
+
+        Returns:
+            bool: True 表示成功切换或当前已是目标分队;False 表示执行失败。
+        """
+        logger.info("开始切换主分队...")
+        result = context.run_task("AutoSky_Switch_Fleet")
+        if result.nodes:
+            logger.info("主分队切换成功。")
+            context.run_task("AutoSky_ReturnSkyMap")
+            return True
+        logger.warning("主分队切换失败,可能当前已是目标分队或识别失败,继续执行。")
+        context.run_task("AutoSky_ReturnSkyMap")
+
+        return False
+
     def run(
         self,
         context: Context,
@@ -54,7 +78,10 @@ class AutoSky(CustomAction):
 
         logger.info("已成功进入天空探索雷达界面。")
 
-        # 1.1 进入克隆体界面, 默认关闭克隆体
+        # 1.1 切换主分队为用户在 UI 中选择的分队（默认深渊）
+        self.switch_main_fleet(context)
+
+        # 1.2 进入克隆体界面, 默认关闭克隆体
         context.run_task("AutoSky_Enter_Clone")
         self._clone_enabled = False  # 进入克隆体界面说明克隆体被禁用
 
