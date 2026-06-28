@@ -830,9 +830,9 @@
         "action": "Click",
         "target_offset": [
             0,
+            -20,
             0,
-            0,
-            -20
+            0
         ],
         "next": [
             "drawReward"
