@@ -458,3 +458,11 @@ grid/*
 logs
 python/
 settings.local.json
+
+
+# mcp
+.playwright-mcp
+
+
+# skills
+.claude/skills

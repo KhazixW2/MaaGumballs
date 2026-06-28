@@ -1,0 +1,26 @@
+{
+  "skill_name": "pipeline-graph",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "visualize-pipeline-relationships",
+      "prompt": "我们这个项目是 MaaFramework 的 Pipeline + Python 调度结构,我接手项目想先理解整体架构,能帮我把节点关系、Python 调用关系、用户级入口都画出来吗?",
+      "expected_output": "用 pipeline-graph skill 生成 17 张 HTML 图谱(总览 + Python 调用 + 工具 + 13 单文件),含导航栏和 index 主页",
+      "files": []
+    },
+    {
+      "id": 2,
+      "eval_name": "debug-orphan-nodes",
+      "prompt": "我打开 pipeline_overview.html 看到很多节点没有入边,这些是 bug 还是被其他地方调用的?我想确认一下",
+      "expected_output": "识别出孤儿子图 = 外部入口,扫 interface.json + agent/**/*.py 的 context.run_task() 调用,把这些边补进图里,解释机制",
+      "files": []
+    },
+    {
+      "id": 3,
+      "eval_name": "refactor-impact-analysis",
+      "prompt": "我要重构 marry.json,加一个新节点 CastleMarryNewStep,会影响哪些文件哪些节点?先帮我画图看清楚现状",
+      "expected_output": "重跑 pipeline-graph,定位 marry 状态机里 CastleHall 这个 fan-out 节点,展示 JumpBack 调用关系(因为 CastleMarryEntry 等 5 个 calls),给重构建议",
+      "files": []
+    }
+  ]
+}

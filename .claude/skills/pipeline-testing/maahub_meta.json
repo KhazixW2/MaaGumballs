@@ -1,0 +1,18 @@
+{
+  "id": "KhazixW2/pipeline-testing",
+  "title": "Pipeline Testing",
+  "description": "Tools and guidance for testing MaaFramework pipeline nodes and recognition results using run_pipeline and device control.",
+  "author": "KhazixW2",
+  "source": "MaaHub",
+  "sourceGithub": "https://github.com/MaaXYZ/MaaHub",
+  "tags": ["pipeline", "testing", "skill"],
+  "createdAt": "2026-06-11",
+  "updatedAt": "2026-06-11",
+  "version": "0.1.0",
+  "mfwVersion": "5.10.4",
+  "entry": "SKILL.md",
+  "readme": "./README.md",
+  "status": "beta",
+  "type": "skill",
+  "category": "pipeline"
+}
