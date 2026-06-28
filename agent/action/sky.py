@@ -1,4 +1,7 @@
+import difflib
+import json
 import time
+from pathlib import Path
 
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
@@ -6,6 +9,13 @@ from maa.context import Context
 from utils import logger
 
 MAX_RETRY_ATTEMPTS = 3  # 定义最大重试次数
+
+# 事件库 JSON 路径（相对项目根）
+SKY_EVENTS_FILE = (
+    Path(__file__).resolve().parent.parent.parent
+    / "intelligence_data"
+    / "sky_events.json"
+)
 
 
 @AgentServer.custom_action("AutoSky")
@@ -15,10 +25,15 @@ class AutoSky(CustomAction):
     _troopLoss: bool  # 记录是否出现克隆体战损
     _target_round: int
     _clone_enabled: bool  # 记录克隆体是否启用
+    _sky_events_index: dict  # name -> event，__init__ 时预加载
 
     def __init__(self):
         super().__init__()
         self.resetParam()
+        # 先置 None 防止 _ensure_sky_events_loaded 里的 is-not-None 检查触发 AttributeError
+        self._sky_events_index = None
+        # 启动时立即预加载事件库（避免第一次遇到事件时才加载导致的延迟）
+        self._sky_events_index = self._ensure_sky_events_loaded()
         logger.debug("AutoSky 实例已创建并初始化默认参数。")
 
     def resetParam(self):
@@ -30,6 +45,240 @@ class AutoSky(CustomAction):
         self._troopLoss = False
         self._target_round = 5
         self._clone_enabled = True  # 默认启用克隆体检查
+
+    # ------------------------------------------------------------------
+    # 事件库：构造时预加载 + 检索
+    # ------------------------------------------------------------------
+
+    def _ensure_sky_events_loaded(self) -> dict:
+        """加载 sky_events.json 并构建 name -> event 索引。
+
+        首次在 ``__init__`` 调用，之后保持缓存。文件不存在时返回空字典。
+
+        Returns:
+            dict: 事件名 -> 事件原始数据。
+        """
+        if self._sky_events_index is not None:
+            return self._sky_events_index
+
+        if not SKY_EVENTS_FILE.exists():
+            logger.warning(f"事件库文件不存在: {SKY_EVENTS_FILE}")
+            self._sky_events_index = {}
+            return self._sky_events_index
+
+        with open(SKY_EVENTS_FILE, encoding="utf-8") as f:
+            data = json.load(f)
+
+        index: dict = {}
+        for cat in data.get("categories", []):
+            for ev in cat.get("events", []):
+                name = ev.get("name")
+                if name:
+                    index[name] = ev
+        self._sky_events_index = index
+        logger.info(f"事件库预加载完成: {len(index)} 个事件")
+        return self._sky_events_index
+
+    def _find_event_by_title(self, title: str) -> dict | None:
+        """根据 OCR 出的事件标题在事件库中查找。
+
+        三档匹配:
+          1. 精确匹配
+          2. 子串匹配（OCR 漏字或夹塞字也能命中）
+          3. 相似度匹配（SequenceMatcher，处理 OCR 错字）
+        """
+        if not title:
+            return None
+        index = self._ensure_sky_events_loaded()
+
+        # 1. 精确匹配
+        if title in index:
+            return index[title]
+
+        # 2. 子串匹配（OCR 文本可能在标题前/中/后夹塞字）
+        for name, ev in index.items():
+            if title in name or name in title:
+                logger.info(f"事件标题子串匹配: OCR='{title}' → 库='{name}'")
+                return ev
+
+        # 3. 相似度匹配（兜底，处理 OCR 错字如 "垃圾烧炉" vs "垃圾焚烧炉"）
+        best_match = None
+        best_name = None
+        best_ratio = 0.6  # 相似度阈值
+        for name, ev in index.items():
+            ratio = difflib.SequenceMatcher(None, title, name).ratio()
+            if ratio > best_ratio:
+                best_ratio = ratio
+                best_match = ev
+                best_name = name
+        if best_match is not None:
+            logger.info(
+                f"事件标题相似度匹配: OCR='{title}' → 库='{best_name}' (ratio={best_ratio:.2f})"
+            )
+            return best_match
+
+        return None
+
+    @staticmethod
+    def _get_recommended_option(event: dict, title: str) -> dict | None:
+        """根据事件类型决定推荐选项。
+
+        规则优先级:
+          1. 残骸/尸体类事件 → 选包含"翻找"的选项
+          2. 普通类 → 选 selected=true 的选项
+        注: 分岔的洞窟不通过此函数处理，统一走兜底点"左"按钮
+        """
+        # 规则 1: 残骸/尸体类事件统一选翻找
+        if "的残骸" in title or "尸体" in title:
+            for opt in event.get("options", []):
+                if "翻找" in opt.get("name", ""):
+                    return opt
+            # 没有翻找则降级用 selected
+
+        # 规则 2: 走事件库默认标记
+        for opt in event.get("options", []):
+            if opt.get("selected"):
+                return opt
+        return None
+
+    @staticmethod
+    def _get_selected_option(event: dict) -> dict | None:
+        """从事件记录中取 selected=true 的选项（事件库已预先标记推荐选项）。"""
+        for opt in event.get("options", []):
+            if opt.get("selected"):
+                return opt
+        return None
+
+    def _handle_random_event(self, context: Context, img, title: str) -> bool:
+        """处理非战斗类随机事件：OCR 标题 → 查库 → 点击推荐选项 → 等待完成。
+
+        Args:
+            context: MaaFramework 上下文。
+            img: 当前截图（numpy ndarray）。
+
+        Returns:
+            bool: True 表示事件已完成并返回雷达界面；False 表示标题未识别/库中无此事件/超时。
+        """
+
+        event = self._find_event_by_title(title)
+        selected = None
+        if event:
+            selected = self._get_recommended_option(event, title)
+
+        # 残骸/尸体类兜底：库中没有匹配项时仍按"翻找"规则处理
+        if not selected and ("的残骸" in title or "尸体" in title):
+            logger.info(f"事件 '{title}' 残骸类,未匹配库或无推荐选项,按规则统一选'翻找'")
+            selected = {"name": "翻找", "reason": "残骸类事件统一翻找"}
+
+        # 分岔的洞窟兜底：库中没有匹配项时仍按"左侧"规则处理
+        if not selected and ("分岔的洞窟" in title or title.startswith("分岔")):
+            logger.info(f"事件 '{title}' 分岔类,未匹配库或无推荐选项,按规则统一选'左'")
+            selected = {"name": "左", "reason": "分岔类事件统一选左侧"}
+
+        if not selected:
+            logger.warning(f"事件 '{title}' 未在事件库中找到,跳过智能选择")
+            return False
+
+        option_name = selected["name"]
+        # 去掉括号注释（如 "(需海怪船长/鱼人/...之一)"）再用于 OCR 匹配按钮
+        ocr_target = option_name.split("(", 1)[0].strip()
+        reason = selected.get("reason", "")
+        logger.info(
+            f"事件 '{title}' → 点击 '{ocr_target}'"
+            + (f" (源: '{option_name}')" if ocr_target != option_name else "")
+            + (f" (原因: {reason})" if reason else "")
+        )
+
+        result = context.run_task(
+            "AutoSky_ClickOptionByName",
+            pipeline_override={
+                "AutoSky_ClickOptionByName": {
+                    "recognition": "OCR",
+                    "expected": [ocr_target],
+                }
+            },
+        )
+        if not (result and result.nodes):
+            logger.warning(f"点击选项 '{ocr_target}' 失败")
+            return False
+
+        # 点击后等待事件完成（游戏可能进入战斗动画 / 奖励弹窗 / 确认对话框，
+        # 最终应返回雷达界面）。中途如果出现"确定/确认"按钮则代为点击。
+        return self._wait_for_event_completion(context, title)
+
+    def _wait_for_event_completion(
+        self,
+        context: Context,
+        title: str,
+        timeout: int = 45,
+    ) -> bool:
+        """轮询直到事件结束（返回雷达界面），中途出现的确认对话框自动点掉。
+
+        Args:
+            context: MaaFramework 上下文。
+            title: 事件标题（用于日志）。
+            timeout: 最大等待秒数。
+
+        Returns:
+            bool: True 表示已返回雷达界面；False 表示超时。
+        """
+        deadline = time.time() + timeout
+        confirm_attempts = 0
+        max_confirm_attempts = 5  # 防止误识别后无限点
+
+        time.sleep(1)  # 初始等待，让点击效果生效
+
+        while time.time() < deadline:
+            if context.tasker.stopping:
+                logger.info(f"检测到停止任务请求,事件 '{title}' 等待终止")
+                return False
+
+            current_img = context.tasker.controller.post_screencap().wait().get()
+
+            # 1. 已返回雷达界面 → 事件完成
+            if context.run_recognition(
+                "AutoSky_CheckExplorationInfo", current_img
+            ).hit:
+                logger.info(f"事件 '{title}' 已完成,返回雷达界面")
+                return True
+
+            # 2. 检测到确认对话框 → 自动点击
+            if confirm_attempts < max_confirm_attempts:
+                confirm_reco = context.run_recognition(
+                    "AutoSky_ClickOptionByName",
+                    current_img,
+                    pipeline_override={
+                        "AutoSky_ClickOptionByName": {
+                            "recognition": "OCR",
+                            "expected": ["确定", "确认"],
+                            "action": "DoNothing",
+                            "post_delay": 0,
+                            "timeout": 1000,
+                        }
+                    },
+                )
+                if confirm_reco and confirm_reco.hit:
+                    confirm_text = confirm_reco.best_result.text
+                    logger.info(
+                        f"事件 '{title}' 出现确认按钮 '{confirm_text}',代为点击"
+                    )
+                    context.run_task(
+                        "AutoSky_ClickOptionByName",
+                        pipeline_override={
+                            "AutoSky_ClickOptionByName": {
+                                "recognition": "OCR",
+                                "expected": ["确定", "确认"],
+                            }
+                        },
+                    )
+                    confirm_attempts += 1
+                    time.sleep(1)
+                    continue
+
+            time.sleep(2)
+
+        logger.warning(f"事件 '{title}' 等待完成超时 ({timeout}s)")
+        return False
 
     def switch_main_fleet(self, context: Context) -> bool:
         """
@@ -140,13 +389,20 @@ class AutoSky(CustomAction):
                     logger.info(
                         f"当前目标为时空裂痕，继续切换 ({manual_attempts_done}/{max_manual_attempts} 次尝试)。"
                     )
-                else:
+                # 非裂隙事件处理
+                elif context.run_recognition(
+                        "AutoSky_EventDetection",
+                        context.tasker.controller.post_screencap().wait().get(),
+                    ).hit:
+                    # 处理战斗事件
                     logger.info(f"发现战斗目标~~")
                     context.run_task("AutoSky_EventDetection")  # 会自动完成战斗或探索
 
                     current_img = (
                         context.tasker.controller.post_screencap().wait().get()
                     )
+
+                    # 遇到打不过的敌人跑路
                     if context.run_recognition("AutoSky_Lost", current_img).hit:
                         logger.warning("遇到打不过的敌人，本轮探索结束")
                         time.sleep(2)
@@ -164,6 +420,31 @@ class AutoSky(CustomAction):
                             context.run_task("AutoSky_TroopLoss_Backtext")
                             self._troopLoss = True
                             break
+                # 探索类事件处理
+                elif context.run_recognition(
+                        "AutoSky_ExploreRandomEvent",
+                        context.tasker.controller.post_screencap().wait().get(),
+                    ).hit:
+                    # 非战斗事件处理：先点"调查"进入事件详情页（如果还没进），
+                    # 再 OCR 事件标题查库 + 智能点选项。对战斗/神殿事件静默跳过。
+                    reco = context.run_recognition(
+                        "AutoSky_CheckRandomEvent",
+                        context.tasker.controller.post_screencap().wait().get()
+                    )
+                    if not reco or not reco.hit:
+                        logger.warning("未能 OCR 识别随机事件标题")
+                        continue
+                    context.run_task("AutoSky_ExploreRandomEvent")
+                    time.sleep(1)  # 等待事件详情页加载
+                    current_img = (
+                        context.tasker.controller.post_screencap().wait().get()
+                    )
+                    self._handle_random_event(context, current_img, reco.best_result.text)
+                
+                # 无法识别的类型
+                else :
+                    logger.error("无法识别的数据类型")
+
 
             # 2.3 自动探索
             logger.info("开始本轮的自动探索环节。")

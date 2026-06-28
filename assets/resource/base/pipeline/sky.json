@@ -618,5 +618,60 @@
             99
         ],
         "timeout": 2000
+    },
+    "AutoSky_CheckRandomEvent": {
+        "recognition": "OCR",
+        "expected": [
+            "[^\\x00-\\x7F]+"
+        ],
+        "roi": [
+            0,
+            328,
+            188,
+            59
+        ],
+        "post_delay": 300,
+        "timeout": 2000
+    },
+    "AutoSky_CheckRandomEventDetail": {
+        "recognition": "OCR",
+        "expected": [],
+        "roi": [
+            55,
+            261,
+            616,
+            758
+        ],
+        "only_rec": true,
+        "timeout": 2000
+    },
+    "AutoSky_ExploreRandomEvent": {
+        "recognition": "OCR",
+        "expected": "调查",
+        "roi": [
+            470,
+            203,
+            249,
+            317
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000
+    },
+    "AutoSky_ClickOptionByName": {
+        "doc": "按事件库推荐选项名点击（运行时由 Python 通过 pipeline_override 注入 expected）",
+        "recognition": "OCR",
+        "expected": [
+            "_PLACEHOLDER_"
+        ],
+        "roi": [
+            40,
+            380,
+            640,
+            780
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 3000
     }
 }
