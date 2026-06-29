@@ -10,7 +10,6 @@ if TYPE_CHECKING:
 
 import time
 
-
 # 特殊层怪物坐标
 special_layer_monster_1_x, special_layer_monster_1_y = 90, 650
 special_layer_monster_2_x, special_layer_monster_2_y = 363, 650
@@ -22,22 +21,31 @@ class MarsSpecialLayerManager:
     def __init__(self, mars: "Mars101") -> None:
         self.mars: "Mars101" = mars
 
-    def gotoSpecialLayer(self, context: Context):
+    def gotoSpecialLayer(self, context: Context, entrance_detected: bool = False):
         """进入休息室（特殊层）"""
         context.run_task("Fight_ReturnMainWindow")
-        time.sleep(1)
-        if context.run_recognition(
-            "Mars_GotoSpecialLayer",
-            context.tasker.controller.post_screencap().wait().get(),
-        ).hit:
+        used_cached_entrance = entrance_detected
+        if not entrance_detected:
+            time.sleep(1)
+            entrance_detected = context.run_recognition(
+                "Mars_GotoSpecialLayer",
+                context.tasker.controller.post_screencap().wait().get(),
+            ).hit
+        else:
+            logger.debug(
+                "special_layer cached entrance hit, skip fresh entrance recognition"
+            )
+        if entrance_detected:
 
             context.run_task("Mars_GotoSpecialLayer")
+            entered_special_layer = False
             for _ in range(10):
                 if context.run_recognition(
                     "Mars_GotoSpecialLayer_Confirm",
                     context.tasker.controller.post_screencap().wait().get(),
                 ).hit:
                     context.run_task("Mars_GotoSpecialLayer_Confirm")
+                    entered_special_layer = True
                     break
                 if context.run_recognition(
                     "Mars_Inter_Confirm_Fail",
@@ -47,6 +55,16 @@ class MarsSpecialLayerManager:
                     logger.info("进入休息室失败, 需要重新清理当前层")
                     return False
                 time.sleep(1)
+
+            if used_cached_entrance and not entered_special_layer:
+                if not context.run_recognition(
+                    "Mars_LeaveSpecialLayer",
+                    context.tasker.controller.post_screencap().wait().get(),
+                ).hit:
+                    logger.debug(
+                        "cached special entrance did not enter, retry fresh recognition"
+                    )
+                    return self.gotoSpecialLayer(context, False)
 
             while not context.run_recognition(
                 "Mars_LeaveSpecialLayer",
@@ -87,8 +105,12 @@ class MarsSpecialLayerManager:
         """处理休息室（特殊层）事件：吃面包、施法等"""
         # 波塞冬不放柱子，用冰锥打裸男
         if (30 <= self.mars.layers + 1 <= 150) and ((self.mars.layers + 1) % 10 == 0):
+            entrance_detected = False
             for _ in range(5):
-                if not context.run_recognition("Mars_GotoSpecialLayer", image).hit:
+                entrance_detected = context.run_recognition(
+                    "Mars_GotoSpecialLayer", image
+                ).hit
+                if not entrance_detected:
                     logger.debug("当前截图中休息室可能被遮挡, 再次截图尝试")
                     context.run_task(
                         "WaitStableNode_ForOverride",
@@ -102,7 +124,7 @@ class MarsSpecialLayerManager:
                 else:
                     break
             logger.info("触发Mars休息室事件")
-            if not self.gotoSpecialLayer(context):
+            if not self.gotoSpecialLayer(context, entrance_detected):
                 return False
             if self.mars.isUseMagicAssist:
                 fightUtils.cast_magic("土", "石肤术", context)
