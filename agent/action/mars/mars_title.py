@@ -89,10 +89,14 @@ class MarsTitleManager:
                 fightUtils.title_learn_branch("恶魔", 5, "生命强化", 3, context)
             else:
                 logger.info("没点恶魔")
-            if fightUtils.title_check("巨龙", context):
+            if self.mars.target_leave_layer_para >= 149 and fightUtils.title_check(
+                "巨龙", context
+            ):
                 self.isGetDragonTitle = True
                 fightUtils.title_learn("巨龙", 1, "亚龙血统", 3, context)
                 fightUtils.title_learn("巨龙", 2, "初级龙族血统", 3, context)
+                fightUtils.title_learn("巨龙", 3, "中级龙族血统", 3, context)
+                fightUtils.title_learn("巨龙", 4, "高级龙族血统", 3, context)
 
             context.run_task("Fight_ReturnMainWindow")
 
