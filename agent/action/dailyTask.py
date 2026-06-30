@@ -181,7 +181,6 @@ class DailyForeignDomain_Explore(CustomAction):
 
     def __init__(self):
         super().__init__()
-        self.planets = ["X", "U", "E", "G"]
         self.FDUtils = foreignDomainUtils(self)
 
     def run(
@@ -197,17 +196,18 @@ class DailyForeignDomain_Explore(CustomAction):
 
         # 移动到地图右下角开始
         self.FDUtils.swipeMapToBottomRight(context)
+        planets = ["X", "U", "E", "G"]
         default_fleets = ["奥鲁维", "卡纳斯", "游荡者", "深渊"]
 
         time.sleep(2)
-        while len(self.planets) > 0:
+        while len(planets) > 0:
             if context.tasker.stopping:
                 logger.info("检测到停止任务, 开始退出agent")
                 return CustomAction.RunResult(success=False)
 
             remove_list = []
-            for i in range(0, len(self.planets)):
-                key = self.planets[i]
+            for i in range(0, len(planets)):
+                key = planets[i]
                 img = context.tasker.controller.post_screencap().wait().get()
                 recoDetail = context.run_recognition(
                     "FD_FindPlanet",
@@ -239,10 +239,10 @@ class DailyForeignDomain_Explore(CustomAction):
                     default_fleets.pop(0)
                     remove_list.append(key)
 
-            if i == len(self.planets) - 1:
+            if i == len(planets) - 1:
                 self.FDUtils.swipeMap(context)
             for key in remove_list:
-                self.planets.remove(key)
+                planets.remove(key)
         logger.info("所有星球已全部找到")
         for key in self.FDUtils.fleetRoiList:
             box = self.FDUtils.fleetRoiList[key]
