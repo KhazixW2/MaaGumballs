@@ -251,6 +251,7 @@ class FightProcessor:
         img = context.tasker.controller.post_screencap().wait().get()
         monster_count = 0
 
+        # 从 visited 数组中获取门的位置（999 表示门的位置）
         door_r, door_c = -1, -1
         for r in range(self.rows):
             for c in range(self.cols):
@@ -260,17 +261,21 @@ class FightProcessor:
             if door_r != -1:
                 break
 
+        # 存储可攻击的怪物信息：(距离, 行, 列, x, y, w, h)
         attackable_monsters = []
 
+        # 检测所有怪物
         for r in range(self.rows):
             for c in range(self.cols):
                 if self.visited[r][c] >= 30:
                     continue
 
+                # 计算 ROI 区域
                 x, y, w, h = self.roi_matrix[r][c]
                 roi_image = img[y : y + h, x : x + w]
                 left_bottom_img = roi_image[0:60, 0:60].copy()
 
+                # 检测左上角区块是否存在血条
                 if left_detected := self.bgrColorMatch(
                     left_bottom_img,
                     self.monster_lower,
@@ -279,30 +284,43 @@ class FightProcessor:
                     context,
                 ):
                     monster_count += 1
+                    # logger.debug(f"检测({r + 1},{c + 1})有怪物: {x}, {y}, {w}, {h}")
+
+                    # 检查是否可以被攻击到
                     can_attack = False
-                    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+                    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # 四方向
                     for direction in directions:
                         new_r, new_c = r + direction[0], c + direction[1]
                         if 0 <= new_r < self.rows and 0 <= new_c < self.cols:
                             if self.visited[new_r][new_c] == 0:
                                 continue
                             else:
+                                # logger.debug(
+                                #     f"({new_r + 1},{new_c + 1})已被访问, 可以攻击到({r + 1},{c + 1})的怪物"
+                                # )
                                 can_attack = True
                                 break
 
+                    # 如果可以攻击，计算与门的距离并添加到列表
                     if can_attack:
-                        if door_r != -1:
+                        # 计算与门的距离（曼哈顿距离）
+                        if door_r != -1:  # 如果找到了门
                             distance = abs(r - door_r) + abs(c - door_c)
                         else:
+                            # 如果没有找到门，使用到原点的距离作为替代
                             distance = r + c
 
                         attackable_monsters.append((distance, r, c, x, y, w, h))
 
+        # 按距离排序（距离近的优先攻击）
         attackable_monsters.sort(key=lambda m: m[0])
 
+        # 攻击排序后的怪物
         for monster in attackable_monsters:
             _, r, c, x, y, w, h = monster
+            # 确认攻击后再标记已访问
             self.visited[r][c] += 1
+            # logger.debug(f"攻击怪物({r + 1},{c + 1})，距离门：{monster[0]}")
             for _ in range(self.hit_monster_count):
                 context.tasker.controller.post_click(x + w // 2, y + h // 2).wait()
 
@@ -314,6 +332,7 @@ class FightProcessor:
         door_kind: str,
         current_layer: int | None = None,
     ) -> tuple[int, int] | None:
+        # 记录门的类型和位置(box 转成 (r,c))
         for r in range(self.rows):
             for c in range(self.cols):
                 if self.is_roi_mostly_overlapping(box, self.roi_matrix[r][c]):
@@ -360,6 +379,7 @@ class FightProcessor:
     def get_last_door_click_target(
         self, current_layer: int | None = None
     ) -> tuple[int, int] | None:
+        # 如果缓存有效，则返回缓存的坐标
         if not self._is_door_cache_valid(current_layer):
             return None
 
@@ -502,7 +522,7 @@ class FightProcessor:
         fail_check_monster_cnt = 0
         last_clicked_grids: set[tuple[int, int]] = set()
         DoorX, DoorY = self.checkClosedDoor(context)
-        if DoorX == 0 and DoorY == 0:
+        if DoorX == 0 and DoorY == 0:  # 没检测到关着的门
             DoorX, DoorY = self.checkOpenedDoor(context)  # 那就检测开着的门
         self.visited = [[0] * self.cols for _ in range(self.rows)]
         self.visited[DoorX][DoorY] = 999
@@ -515,10 +535,12 @@ class FightProcessor:
                 logger.info("清层任务被停止")
                 return False
 
+            # 截图,检测神龙和地板
             img = context.tasker.controller.post_screencap().wait().get()
             if self.handle_dragon_encounter(context, img):
                 continue
 
+            # 检测grid还能不能找到, 累计几次找不到则退出
             clicked_grid_count, clicked_grids = self.detect_and_click_grid(
                 context, img, last_clicked_grids
             )
@@ -526,6 +548,7 @@ class FightProcessor:
             if not clicked_grid_count:
                 fail_check_grid_cnt += 1
                 if fail_check_grid_cnt >= 2:
+                    # 连续2次找不到地板,则全部标记为已访问, 避免死循环
                     logger.debug("连续2次找不到地板,全部标记为已访问")
                     for r in range(self.rows):
                         for c in range(self.cols):
@@ -550,8 +573,10 @@ class FightProcessor:
             )
 
             if isclearall:
+                # 需要地板全清
                 if fail_check_grid_cnt >= self.max_grid_loop_fail:
                     break
+            # 如果提前清理完该层，那么不需要继续等待，可以提前退出
             elif (
                 fail_check_monster_cnt >= self.max_monster_loop_fail
                 or fail_check_grid_cnt >= self.max_grid_loop_fail

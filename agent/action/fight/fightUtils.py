@@ -1160,7 +1160,7 @@ def handle_currentlayer_event(context: Context):
             break
         tempLayers = extract_num_layer(RunResult.best_result.text)
         if context.tasker.stopping:
-            logger.info("detect stop task, exiting agent")
+            logger.info("检测到停止任务, 开始退出agent")
             return -1
     return tempLayers
 

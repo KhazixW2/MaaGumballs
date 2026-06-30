@@ -112,7 +112,7 @@ class FightDownstairManager:
 
         logger.info("由于未知原因, 层数未改变，可能在夹层中")
         downstair_result = "no_change_but_continue"
-        logger.info(
+        logger.debug(
             f"[downstair_result] result={downstair_result} old_layer={temp_layer} new_layer={current_layer} attempts={wait_attempts} branch={downstair_branch}"
         )
         return True
