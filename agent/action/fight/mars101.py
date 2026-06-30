@@ -7,6 +7,7 @@ from utils import logger, send_message
 from action.fight.fightUtils import timing_decorator
 from action.fight import fightUtils
 from action.fight import fightProcessor
+from action.fight.downstair import FightDownstairManager
 from action.mars.mars_hp import MarsHPManager
 from action.mars.mars_boss import MarsBossHandler
 from action.mars.mars_title import MarsTitleManager
@@ -116,6 +117,7 @@ class Mars101(CustomAction):
         self.earth_gate_manager = MarsEarthGateManager(self)
         self.events_dispatcher = MarsEventDispatcher(self)
         self.settlement_manager = MarsSettlementManager(self)
+        self.downstair_manager = FightDownstairManager(self)
 
     def Check_CurrentLayers(self, context: Context):
         tempLayers = fightUtils.handle_currentlayer_event(context)
@@ -476,7 +478,7 @@ class Mars101(CustomAction):
                 return False
             logger.info("触发下楼事件")
             with fightUtils.timing_section("post.downstair"):
-                fightUtils.handle_downstair_event(context)
+                self.downstair_manager.handle_downstair_event(context)
         return True
 
     def handle_clearCurLayer_event(self, context: Context):

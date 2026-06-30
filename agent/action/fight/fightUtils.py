@@ -1,16 +1,11 @@
 from maa.context import Context
 from utils import logger, send_message
-from action.fight import fightProcessor
 from plyer import notification
 
 import math
 import re
 import time
 from functools import wraps
-
-DOWNSTAIR_LAYER_CHANGE_MAX_ATTEMPTS = 5
-DOWNSTAIR_LAYER_CHANGE_SLEEP_SECONDS = 1
-KEYHOLE_POLL_SECONDS = 3
 
 # 神龙许愿ROI [77,465,570,553]
 # 神龙许愿list = ["我要获得钻石", "我要神奇的果实", "我要更多的伙伴", "我要获得巨龙之力", "我要学习龙语魔法", "我要变得更强", "我要变得富有", "我要最凶残的装备", "我要更多的伙伴", "我要大量的矿石", "我要你的收藏品", "我要您的碎片"]
@@ -1168,110 +1163,6 @@ def handle_currentlayer_event(context: Context):
             logger.info("detect stop task, exiting agent")
             return -1
     return tempLayers
-
-
-def _wait_until_layer_changed(context: Context, old_layer: int):
-    attempts = 0
-    current_layer = old_layer
-
-    with timing_section("post.downstair.wait_change_total"):
-        for _ in range(DOWNSTAIR_LAYER_CHANGE_MAX_ATTEMPTS):
-            attempts += 1
-            with timing_section("post.downstair.wait_change_iter"):
-                with timing_section("post.downstair.layer_after"):
-                    current_layer = handle_currentlayer_event(context)
-            if old_layer != current_layer and current_layer != -1:
-                return True, current_layer, attempts
-            with timing_section("post.downstair.wait_change_sleep"):
-                time.sleep(DOWNSTAIR_LAYER_CHANGE_SLEEP_SECONDS)
-
-    return False, current_layer, attempts
-
-
-def _get_door_click_target(current_layer: int | None = None):
-    processor = fightProcessor.FightProcessor()
-
-    return processor.get_last_door_click_target(current_layer)
-
-
-def _click_door_target(context: Context, target: tuple[int, int] | None):
-    if target is None:
-        return False
-
-    context.tasker.controller.post_click(target[0], target[1]).wait()
-    return True
-
-
-def handle_downstair_event(context: Context):
-    downstair_result = "door_not_detected"
-    downstair_branch = "cached_processor_door"
-    temp_layer = -1
-    current_layer = -1
-    wait_attempts = 0
-
-    temp_layer = handle_currentlayer_event(context)
-
-    door_target = _get_door_click_target(temp_layer)
-    clicked_door = _click_door_target(context, door_target)
-    if clicked_door:
-        downstair_result = "processor_click_sent"
-
-    changed, current_layer, wait_attempts = _wait_until_layer_changed(
-        context, temp_layer
-    )
-    if changed:
-        downstair_result = "changed_confirmed"
-        logger.info(
-            f"[downstair_result] result={downstair_result} old_layer={temp_layer} new_layer={current_layer} attempts={wait_attempts} branch={downstair_branch}"
-        )
-        return True
-
-    downstair_branch = "fallback_recognition"
-    img = context.tasker.controller.post_screencap().wait().get()
-    opened_door_hit = context.run_recognition("Fight_OpenedDoor", img).hit
-    if opened_door_hit:
-        context.run_task("Fight_OpenedDoor")
-        downstair_result = "fallback_opened_door"
-    else:
-        key_hole_hit = context.run_recognition("FindKeyHole", img).hit
-        if key_hole_hit:
-            downstair_result = "keyhole_manual_wait"
-            logger.warning("检查到神秘的洞穴捏，请冒险者大人检查！！")
-            send_alert("洞穴警告", "发现神秘洞穴，请及时处理！")
-            send_message("洞穴警告", "发现神秘洞穴，请及时处理！")
-
-            with timing_section("post.downstair.keyhole_wait_total"):
-                while not context.run_recognition(
-                    "Fight_OpenedDoor",
-                    context.tasker.controller.post_screencap().wait().get(),
-                ).hit:
-                    if context.tasker.stopping:
-                        logger.info("检测到停止任务, 开始退出agent")
-                        logger.info(
-                            f"[downstair_result] result=stopped_during_keyhole_wait old_layer={temp_layer} new_layer={current_layer} attempts={wait_attempts} branch={downstair_branch}"
-                        )
-                        return False
-                    time.sleep(KEYHOLE_POLL_SECONDS)
-
-            logger.info("冒险者大人已找到钥匙捏，继续探索")
-            context.run_task("Fight_OpenedDoor")
-
-    changed, current_layer, wait_attempts = _wait_until_layer_changed(
-        context, temp_layer
-    )
-    if changed:
-        downstair_result = "changed_confirmed"
-        logger.info(
-            f"[downstair_result] result={downstair_result} old_layer={temp_layer} new_layer={current_layer} attempts={wait_attempts} branch={downstair_branch}"
-        )
-        return True
-
-    logger.info("由于未知原因, 层数未改变，可能在夹层中")
-    downstair_result = "no_change_but_continue"
-    logger.info(
-        f"[downstair_result] result={downstair_result} old_layer={temp_layer} new_layer={current_layer} attempts={wait_attempts} branch={downstair_branch}"
-    )
-    return True
 
 
 def handle_skillShop_event(

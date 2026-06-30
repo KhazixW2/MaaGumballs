@@ -6,6 +6,7 @@ from utils import logger, send_message
 from action.fight import fightUtils
 from action.fight import fightProcessor
 from action.fight.fightUtils import timing_decorator
+from action.fight.downstair import FightDownstairManager
 
 import time
 
@@ -23,6 +24,7 @@ class JJC101(CustomAction):
         self.isTitle_L63 = False
         self.isAutoPickup = False
         self.layers = 1
+        self.downstair_manager = FightDownstairManager(self)
 
     def initialize(self, context: Context):
         self.__init__()
@@ -473,7 +475,7 @@ class JJC101(CustomAction):
     @timing_decorator
     def handle_downstair_event(self, context: Context):
         logger.info("触发下楼事件")
-        fightUtils.handle_downstair_event(context)
+        self.downstair_manager.handle_downstair_event(context)
 
     @timing_decorator
     def handle_clearCurLayer_event(self, context: Context):
