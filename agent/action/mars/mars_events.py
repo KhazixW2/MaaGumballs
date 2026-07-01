@@ -28,9 +28,8 @@ class MarsEventDispatcher:
         if self.mars.layers >= 30 and self.mars.layers % 10 == 0:
             return True
         if (
-            self.mars.layers > 10
-            and context.run_recognition("Mars_Exchange_Shop", image).hit
-        ):
+            (self.mars.layers > 60) or (self.mars.useEarthGate > 0)
+        ) and context.run_recognition("Mars_Exchange_Shop", image).hit:
             logger.info("触发Mars交换战利品事件")
             context.run_task("Mars_Exchange_Shop")
             nodedetail = context.run_task("Mars_Exchange_Shop_Check")

@@ -1165,39 +1165,6 @@ def handle_currentlayer_event(context: Context):
     return tempLayers
 
 
-def handle_downstair_event(context: Context):
-    temp_layer = handle_currentlayer_event(context)
-    img = context.tasker.controller.post_screencap().wait().get()
-    if context.run_recognition("Fight_OpenedDoor", img).hit:
-        context.run_task("Fight_OpenedDoor")
-
-    elif context.run_recognition("FindKeyHole", img).hit:
-        logger.warning("检查到神秘的洞穴捏，请冒险者大人检查！！")
-        send_alert("洞穴警告", "发现神秘洞穴，请及时处理！")
-        send_message("洞穴警告", "发现神秘洞穴，请及时处理！")
-
-        while not context.run_recognition(
-            "Fight_OpenedDoor",
-            context.tasker.controller.post_screencap().wait().get(),
-        ).hit:
-            if context.tasker.stopping:
-                logger.info("检测到停止任务, 开始退出agent")
-                return False
-            time.sleep(3)
-
-        logger.info("冒险者大人已找到钥匙捏，继续探索")
-        context.run_task("Fight_OpenedDoor")
-
-    # 确认层数更换再返回
-    for _ in range(5):
-        current_layer = handle_currentlayer_event(context)
-        if temp_layer != current_layer and current_layer != -1:
-            return True
-        time.sleep(1)
-    logger.info("由于未知原因, 层数未改变，可能在夹层中")
-    return True
-
-
 def handle_skillShop_event(
     context: Context, target_skill=["火球术", "闪电术", "死亡波纹"]
 ):
@@ -1241,6 +1208,30 @@ def handle_skillShop_event(
 
 # 存储函数执行时间的全局变量
 function_time_records = {}
+
+
+def _record_time(func_name, duration):
+    if func_name in function_time_records:
+        function_time_records[func_name]["count"] += 1
+        function_time_records[func_name]["total_time"] += duration
+    else:
+        function_time_records[func_name] = {"count": 1, "total_time": duration}
+
+
+class timing_section:
+    def __init__(self, name):
+        self.name = name
+        self.start_time = None
+
+    def __enter__(self):
+        self.start_time = time.perf_counter()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        duration = time.perf_counter() - self.start_time
+        _record_time(self.name, duration)
+        logger.debug(f"[timing:{self.name}] cost {duration:.4f}s")
+        return False
 
 
 def timing_decorator(func):
@@ -1336,6 +1327,21 @@ def timed_block(name: str, func: callable):
 def get_time_statistics():
     """返回所有函数的执行时间统计信息，返回后清空统计信息"""
     global function_time_records
-    result = function_time_records
+    keyhole_wait_total = function_time_records.get(
+        "post.downstair.keyhole_wait_total", {}
+    ).get("total_time", 0)
+    result = {
+        name: data.copy()
+        for name, data in function_time_records.items()
+        if name
+        not in {
+            "post.downstair.keyhole_wait_total",
+            "post.downstair.keyhole_wait_sleep",
+        }
+    }
+    if keyhole_wait_total and "post.downstair" in result:
+        result["post.downstair"]["total_time"] = max(
+            0, result["post.downstair"]["total_time"] - keyhole_wait_total
+        )
     function_time_records = {}
     return result

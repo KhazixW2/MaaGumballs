@@ -26,6 +26,9 @@ class FightProcessor:
             self.rows = 6
             self.roi_matrix = []
             self.visited = []
+            self.last_door_grid: tuple[int, int] | None = None
+            self.last_door_kind: str | None = None
+            self.last_door_layer: int | None = None
             self._monster_lower = [190, 35, 35]
             self._monster_upper = [235, 65, 65]
             self._monster_count = 20
@@ -320,9 +323,38 @@ class FightProcessor:
             # logger.debug(f"攻击怪物({r + 1},{c + 1})，距离门：{monster[0]}")
             for _ in range(self.hit_monster_count):
                 context.tasker.controller.post_click(x + w // 2, y + h // 2).wait()
-                # time.sleep(0.05)
 
         return monster_count > 0
+
+    def cache_door_from_box(
+        self,
+        box: tuple[int, int, int, int],
+        door_kind: str,
+        current_layer: int | None = None,
+    ) -> tuple[int, int] | None:
+        # 记录门的类型和位置(box 转成 (r,c))
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if self.is_roi_mostly_overlapping(box, self.roi_matrix[r][c]):
+                    self.last_door_grid = (r, c)
+                    self.last_door_kind = door_kind
+                    self.last_door_layer = (
+                        current_layer if current_layer is not None else self.layers
+                    )
+                    return r, c
+        return None
+
+    def _is_door_cache_valid(self, current_layer: int | None = None) -> bool:
+        if self.last_door_grid is None:
+            return False
+        if current_layer is not None and self.last_door_layer != current_layer:
+            return False
+        return True
+
+    def get_last_door_kind(self, current_layer: int | None = None) -> str | None:
+        if not self._is_door_cache_valid(current_layer):
+            return None
+        return self.last_door_kind
 
     def checkClosedDoor(self, context: Context) -> tuple[int, int]:
         if recoDetail := context.run_recognition(
@@ -330,13 +362,8 @@ class FightProcessor:
         ):
             if not recoDetail.hit:
                 return 0, 0
-            for r in range(self.rows):
-                for c in range(self.cols):
-                    if self.is_roi_mostly_overlapping(
-                        recoDetail.box, self.roi_matrix[r][c]
-                    ):
-                        # logger.info(f"识别到 ClosedDoor 位于 {r+1},{c+1}")
-                        return r, c
+            if door_grid := self.cache_door_from_box(recoDetail.box, "closed"):
+                return door_grid
         return 0, 0
 
     def checkOpenedDoor(self, context: Context) -> tuple[int, int]:
@@ -345,14 +372,23 @@ class FightProcessor:
         ):
             if not recoDetail.hit:
                 return 0, 0
-            for r in range(self.rows):
-                for c in range(self.cols):
-                    if self.is_roi_mostly_overlapping(
-                        recoDetail.box, self.roi_matrix[r][c]
-                    ):
-                        # logger.info(f"识别到 OpenedDoor 位于 {r+1},{c+1}")
-                        return r, c
+            if door_grid := self.cache_door_from_box(recoDetail.box, "opened"):
+                return door_grid
         return 0, 0
+
+    def get_last_door_click_target(
+        self, current_layer: int | None = None
+    ) -> tuple[int, int] | None:
+        # 如果缓存有效，则返回缓存的坐标
+        if not self._is_door_cache_valid(current_layer):
+            return None
+
+        row, col = self.last_door_grid
+        if not (0 <= row < self.rows and 0 <= col < self.cols):
+            return None
+
+        x, y, w, h = self.roi_matrix[row][col]
+        return x + w // 2, y + h // 2
 
     def checkIsDragonBall(self, context: Context):
         if context.run_recognition(
@@ -412,16 +448,23 @@ class FightProcessor:
 
         return False
 
-    def detect_and_click_grid(self, context: Context, img) -> int:
+    def detect_and_click_grid(
+        self, context: Context, img, skip_grids: set[tuple[int, int]] | None = None
+    ) -> tuple[int, set[tuple[int, int]]]:
         """
         检测并点击地板格子
         :param context: 上下文对象
         :param img: 当前截图
-        :return: 点击的格子数量
+        :param skip_grids: 本轮临时跳过的格子，通常是上一轮刚点击过的地板
+        :return: 点击的格子数量、本轮点击过的格子
         """
         checkGridCnt = 0
+        clicked_grids: set[tuple[int, int]] = set()
+        skip_grids = skip_grids or set()
         for r in range(self.rows):
             for c in range(self.cols):
+                if (r, c) in skip_grids:
+                    continue
                 if self.visited[r][c] >= 8:
                     continue
 
@@ -454,12 +497,13 @@ class FightProcessor:
                 if left_detected or right_detected:
                     context.tasker.controller.post_click(x + w // 2, y + h // 2).wait()
                     self.visited[r][c] += 1
+                    clicked_grids.add((r, c))
                     checkGridCnt += 1
                     # time.sleep(0.005)
                     if self.layers > 110 and center_detected:
                         logger.debug("点击了一个怪物地板")
-                        return checkGridCnt
-        return checkGridCnt
+                        return checkGridCnt, clicked_grids
+        return checkGridCnt, clicked_grids
 
     def handle_dragon_encounter(self, context: Context, img):
         """处理遇到神龙的逻辑"""
@@ -476,6 +520,7 @@ class FightProcessor:
         # 初始化
         fail_check_grid_cnt = 0
         fail_check_monster_cnt = 0
+        last_clicked_grids: set[tuple[int, int]] = set()
         DoorX, DoorY = self.checkClosedDoor(context)
         if DoorX == 0 and DoorY == 0:  # 没检测到关着的门
             DoorX, DoorY = self.checkOpenedDoor(context)  # 那就检测开着的门
@@ -496,7 +541,11 @@ class FightProcessor:
                 continue
 
             # 检测grid还能不能找到, 累计几次找不到则退出
-            if not self.detect_and_click_grid(context, img):
+            clicked_grid_count, clicked_grids = self.detect_and_click_grid(
+                context, img, last_clicked_grids
+            )
+            last_clicked_grids = clicked_grids
+            if not clicked_grid_count:
                 fail_check_grid_cnt += 1
                 if fail_check_grid_cnt >= 2:
                     # 连续2次找不到地板,则全部标记为已访问, 避免死循环
@@ -508,13 +557,6 @@ class FightProcessor:
             else:
                 fail_check_grid_cnt = 0
 
-            # context.run_task(
-            #     "WaitStableNode_ForOverride",
-            #     pipeline_override={
-            #         "WaitStableNode_ForOverride": {"pre_wait_freezes": {"time": 30}}
-            #     },
-            # )
-            # 检测怪物并进行攻击
             if not self.checkMonster(context):
                 fail_check_monster_cnt += 1
             else:
