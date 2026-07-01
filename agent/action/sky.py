@@ -421,25 +421,25 @@ class AutoSky(CustomAction):
                             self._troopLoss = True
                             break
                 # 探索类事件处理
-                elif context.run_recognition(
-                        "AutoSky_ExploreRandomEvent",
-                        context.tasker.controller.post_screencap().wait().get(),
-                    ).hit:
-                    # 非战斗事件处理：先点"调查"进入事件详情页（如果还没进），
-                    # 再 OCR 事件标题查库 + 智能点选项。对战斗/神殿事件静默跳过。
-                    reco = context.run_recognition(
-                        "AutoSky_CheckRandomEvent",
-                        context.tasker.controller.post_screencap().wait().get()
-                    )
-                    if not reco or not reco.hit:
-                        logger.warning("未能 OCR 识别随机事件标题")
-                        continue
-                    context.run_task("AutoSky_ExploreRandomEvent")
-                    time.sleep(1)  # 等待事件详情页加载
-                    current_img = (
-                        context.tasker.controller.post_screencap().wait().get()
-                    )
-                    self._handle_random_event(context, current_img, reco.best_result.text)
+                # elif context.run_recognition(
+                #         "AutoSky_ExploreRandomEvent",
+                #         context.tasker.controller.post_screencap().wait().get(),
+                #     ).hit:
+                #     # 非战斗事件处理：先点"调查"进入事件详情页（如果还没进），
+                #     # 再 OCR 事件标题查库 + 智能点选项。对战斗/神殿事件静默跳过。
+                #     reco = context.run_recognition(
+                #         "AutoSky_CheckRandomEvent",
+                #         context.tasker.controller.post_screencap().wait().get()
+                #     )
+                #     if not reco or not reco.hit:
+                #         logger.warning("未能 OCR 识别随机事件标题")
+                #         continue
+                #     context.run_task("AutoSky_ExploreRandomEvent")
+                #     time.sleep(1)  # 等待事件详情页加载
+                #     current_img = (
+                #         context.tasker.controller.post_screencap().wait().get()
+                #     )
+                #     self._handle_random_event(context, current_img, reco.best_result.text)
                 
                 # 无法识别的类型
                 else :
