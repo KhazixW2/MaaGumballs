@@ -175,8 +175,13 @@ class AutoSky(CustomAction):
         """
 
         selected = None
-        if event:= self._find_event_by_title(title):
-            selected = self._get_recommended_option(event,title)
+        event = self._find_event_by_title(title)
+        if event:
+            selected = self._get_recommended_option(event, title)
+            if not selected:
+                # 事件在库中但没 selected 选项(占位事件/待补全)→ 静默跳过
+                logger.info(f"事件 '{title}' 库中无 selected 选项(占位/未配置),跳过")
+                return False
 
         if not selected:
             logger.warning(f"事件 '{title}' 未在事件库中找到,跳过智能选择")
@@ -491,7 +496,14 @@ class AutoSky(CustomAction):
                         context.tasker.controller.post_screencap().wait().get()
                     )
                     self._handle_random_event(context, current_img, reco.best_result.text)
-                
+
+                # 交谈类事件：识别后跳过（处理逻辑复杂,暂不实现）
+                elif context.run_recognition(
+                        "AutoSky_TalkEvent",
+                        context.tasker.controller.post_screencap().wait().get(),
+                    ).hit:
+                    logger.info("检测到交谈类事件,暂不处理,跳过")
+
                 # 战斗事件处理
                 elif context.run_recognition(
                         "AutoSky_EventDetection",
@@ -525,7 +537,28 @@ class AutoSky(CustomAction):
                             break
                 # 无法识别的类型
                 else :
-                    logger.error("无法识别的数据类型")
+                    # 调试:把屏幕 OCR 文本全部 dump 出来,方便排查
+                    debug_img = (
+                        context.tasker.controller.post_screencap().wait().get()
+                    )
+                    debug_reco = context.run_recognition(
+                        "AutoSky_EventDetection",
+                        debug_img,
+                        pipeline_override={
+                            "AutoSky_EventDetection": {
+                                "action": "DoNothing",
+                                "post_delay": 0,
+                                "timeout": 1000,
+                            }
+                        },
+                    )
+                    if debug_reco and debug_reco.all_results:
+                        texts = [r.text for r in debug_reco.all_results[:8]]
+                        logger.error(
+                            f"无法识别的数据类型,屏幕 OCR 文本: {texts}"
+                        )
+                    else:
+                        logger.error("无法识别的数据类型,且 OCR 无结果")
 
 
             # 2.3 自动探索

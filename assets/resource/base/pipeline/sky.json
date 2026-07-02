@@ -697,6 +697,19 @@
         "post_delay": 500,
         "timeout": 2000
     },
+    "AutoSky_TalkEvent": {
+        "recognition": "OCR",
+        "doc": "交谈类事件（暂不处理,仅识别后跳过）",
+        "expected": "交谈",
+        "roi": [
+            470,
+            203,
+            249,
+            317
+        ],
+        "post_delay": 0,
+        "timeout": 1000
+    },
     "AutoSky_ClickOptionByName": {
         "doc": "按事件库推荐选项名点击（运行时由 Python 通过 pipeline_override 注入 expected）",
         "recognition": "OCR",
