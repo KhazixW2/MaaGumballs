@@ -1110,165 +1110,37 @@
         {
           "id": "craftsman_4f",
           "floor": "4F",
-          "name": "分岔的洞窟 - 矿洞",
+          "name": "分岔的洞窟",
           "level_range": "1001+",
           "monitorable": true,
-          "branches": [
+          "options": [
             {
-              "branch_id": "left",
-              "branch_label": "左(散落着一些人骨)",
-              "options": [
+              "name": "左侧通道",
+              "rewards": [
                 {
-                  "name": "武器架",
-                  "rewards": [
-                    {
-                      "type": "rune",
-                      "category": "挑战",
-                      "rarity": "1星",
-                      "name": "锯齿剑"
-                    },
-                    {
-                      "type": "material",
-                      "name": "神器碎片",
-                      "quantity": 5
-                    }
-                  ],
-                  "selected": false,
-                  "reason": "次选"
-                },
-                {
-                  "name": "冒险者的尸体",
-                  "rewards": [
-                    {
-                      "type": "material",
-                      "name": "神器碎片",
-                      "quantity": 5
-                    },
-                    {
-                      "type": "title",
-                      "name": "食骨者",
-                      "effect": "袭击怪物浮岛时,敌方火力及装甲-4/-8/-12"
-                    }
-                  ],
-                  "tags": {
-                    "has_title": true,
-                    "has_robot": false,
-                    "consumes_diamond": false,
-                    "is_standalone_unobtainable": true,
-                    "requires_choice": false,
-                    "is_corpse_option": true
-                  },
-                  "selected": true,
-                  "reason": "含称号(火力/装甲减益效果,负向称号不可获取)"
-                },
-                {
-                  "name": "战斗:食人魔",
-                  "rewards": [
-                    {
-                      "type": "battle",
-                      "enemy": "食人魔",
-                      "stats": "930w,256/236/243/265"
-                    },
-                    {
-                      "type": "rune",
-                      "category": "挑战",
-                      "rarity": "3星",
-                      "name": "狼牙棒"
-                    },
-                    {
-                      "type": "material",
-                      "name": "活性细胞",
-                      "quantity": 200
-                    }
-                  ],
-                  "selected": false,
-                  "reason": "战斗选项"
+                  "type": "currency",
+                  "name": "金币",
+                  "quantity": "30k 或 50k"
                 }
-              ]
+              ],
+              "selected": false,
+              "reason": "次选(纯金币)"
             },
             {
-              "branch_id": "right",
-              "branch_label": "右(矿镐敲击石壁的声音)",
-              "options": [
+              "name": "右侧通道",
+              "rewards": [
                 {
-                  "name": "破帐篷",
-                  "rewards": [
-                    {
-                      "type": "rune",
-                      "category": "探索",
-                      "rarity": "2星",
-                      "name": "手电筒"
-                    },
-                    {
-                      "type": "material",
-                      "name": "4阶食材",
-                      "quantity": 10
-                    }
-                  ],
-                  "selected": false,
-                  "reason": "次选"
-                },
-                {
-                  "name": "矿工的残骸",
-                  "rewards": [
-                    {
-                      "type": "material",
-                      "name": "2阶矿石",
-                      "quantity": 15
-                    },
-                    {
-                      "type": "material",
-                      "name": "4阶矿石",
-                      "quantity": 3
-                    }
-                  ],
-                  "tags": {
-                    "has_title": false,
-                    "has_robot": false,
-                    "consumes_diamond": false,
-                    "is_standalone_unobtainable": false,
-                    "requires_choice": false,
-                    "is_wreckage_option": true
-                  },
-                  "selected": false,
-                  "reason": "残骸选项无翻找动作,降为默认"
-                },
-                {
-                  "name": "战斗:监工",
-                  "rewards": [
-                    {
-                      "type": "battle",
-                      "enemy": "监工",
-                      "stats": "1020w,312/277/254/277"
-                    },
-                    {
-                      "type": "item",
-                      "name": "炼金坊工匠",
-                      "quantity": 1,
-                      "limit": 3
-                    },
-                    {
-                      "type": "rune",
-                      "category": "反击",
-                      "rarity": "2星",
-                      "name": "矿工锄"
-                    }
-                  ],
-                  "tags": {
-                    "has_title": false,
-                    "has_robot": false,
-                    "consumes_diamond": false,
-                    "is_standalone_unobtainable": true,
-                    "requires_choice": false
-                  },
-                  "selected": true,
-                  "reason": "右支推荐战斗(炼金坊工匠+2星符石)"
+                  "type": "currency",
+                  "name": "可能有工人",
+                  "quantity": 500
                 }
-              ]
+              ],
+              "selected": true,
+              "reason": "可能有工人"
             }
           ],
-          "selected_branch": "left",
-          "branch_selection_reason": "左支含称号'食骨者'，按规则优先选称号"
+          "selected_branch": "右侧通道",
+          "branch_selection_reason": "按用户要求统一推荐右侧"
         }
       ]
     },
@@ -6592,7 +6464,7 @@
                 "is_search_action": true
               },
               "selected": true,
-              "reason": "翻找动作优先(本事件无残骸,但有翻找选项,作为默认)"
+              "reason": "无需特定冈布奥即可稳定获得奖励(10活性细胞+随机3神器碎片/1000遗迹碎片)"
             },
             {
               "name": "禁锢灵魂(拥有收魂者冈布奥概率成功)",
@@ -10945,6 +10817,660 @@
               },
               "selected": false,
               "reason": "需事件等级+150后才可选"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wreckage",
+      "name": "残骸类事件",
+      "events": [
+        {
+          "id": "wreckage_sailor",
+          "floor": "50",
+          "name": "水手的残骸",
+          "level_range": "50+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "翻找",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "活性细胞",
+                  "quantity": 40
+                },
+                {
+                  "type": "material",
+                  "name": "遗迹碎片",
+                  "quantity": 600
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_search_action": true
+              },
+              "selected": true,
+              "reason": "数据表预置:残骸类统一选翻找"
+            },
+            {
+              "name": "埋葬",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "灵魂",
+                  "quantity": 5
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_burial_action": true
+              },
+              "selected": false,
+              "reason": "次选(仅给灵魂,无额外材料)"
+            }
+          ]
+        },
+        {
+          "id": "wreckage_mage",
+          "floor": "100",
+          "name": "魔法师的残骸",
+          "level_range": "100+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "翻找",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "活性细胞",
+                  "quantity": 50
+                },
+                {
+                  "type": "material",
+                  "name": "遗迹碎片",
+                  "quantity": 700
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_search_action": true
+              },
+              "selected": true,
+              "reason": "数据表预置:残骸类统一选翻找"
+            },
+            {
+              "name": "埋葬",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "灵魂",
+                  "quantity": 5
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_burial_action": true
+              },
+              "selected": false,
+              "reason": "次选(仅给灵魂,无额外材料)"
+            }
+          ]
+        },
+        {
+          "id": "wreckage_warrior",
+          "floor": "150",
+          "name": "战士的残骸",
+          "level_range": "150+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "翻找",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "活性细胞",
+                  "quantity": 60
+                },
+                {
+                  "type": "material",
+                  "name": "遗迹碎片",
+                  "quantity": 800
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_search_action": true
+              },
+              "selected": true,
+              "reason": "数据表预置:残骸类统一选翻找"
+            },
+            {
+              "name": "埋葬",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "灵魂",
+                  "quantity": 5
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_burial_action": true
+              },
+              "selected": false,
+              "reason": "次选(仅给灵魂,无额外材料)"
+            }
+          ]
+        },
+        {
+          "id": "wreckage_priest",
+          "floor": "200",
+          "name": "牧师的残骸",
+          "level_range": "200+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "翻找",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "活性细胞",
+                  "quantity": 70
+                },
+                {
+                  "type": "material",
+                  "name": "遗迹碎片",
+                  "quantity": 900
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_search_action": true
+              },
+              "selected": true,
+              "reason": "数据表预置:残骸类统一选翻找"
+            },
+            {
+              "name": "埋葬",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "灵魂",
+                  "quantity": 5
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_burial_action": true
+              },
+              "selected": false,
+              "reason": "次选(仅给灵魂,无额外材料)"
+            }
+          ]
+        },
+        {
+          "id": "wreckage_hunter",
+          "floor": "250",
+          "name": "猎人的残骸",
+          "level_range": "250+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "翻找",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "活性细胞",
+                  "quantity": 80
+                },
+                {
+                  "type": "material",
+                  "name": "遗迹碎片",
+                  "quantity": 1000
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_search_action": true
+              },
+              "selected": true,
+              "reason": "数据表预置:残骸类统一选翻找"
+            },
+            {
+              "name": "埋葬",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "灵魂",
+                  "quantity": 5
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_burial_action": true
+              },
+              "selected": false,
+              "reason": "次选(仅给灵魂,无额外材料)"
+            }
+          ]
+        },
+        {
+          "id": "wreckage_thief",
+          "floor": "300",
+          "name": "盗贼的残骸",
+          "level_range": "300+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "翻找",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "活性细胞",
+                  "quantity": 90
+                },
+                {
+                  "type": "material",
+                  "name": "遗迹碎片",
+                  "quantity": 1100
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_search_action": true
+              },
+              "selected": true,
+              "reason": "数据表预置:残骸类统一选翻找"
+            },
+            {
+              "name": "埋葬",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "灵魂",
+                  "quantity": 5
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_burial_action": true
+              },
+              "selected": false,
+              "reason": "次选(仅给灵魂,无额外材料)"
+            }
+          ]
+        },
+        {
+          "id": "wreckage_archer",
+          "floor": "350",
+          "name": "弓手的残骸",
+          "level_range": "350+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "翻找",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "活性细胞",
+                  "quantity": 100
+                },
+                {
+                  "type": "material",
+                  "name": "遗迹碎片",
+                  "quantity": 1200
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_search_action": true
+              },
+              "selected": true,
+              "reason": "数据表预置:残骸类统一选翻找"
+            },
+            {
+              "name": "埋葬",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "灵魂",
+                  "quantity": 5
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_burial_action": true
+              },
+              "selected": false,
+              "reason": "次选(仅给灵魂,无额外材料)"
+            }
+          ]
+        },
+        {
+          "id": "wreckage_assassin",
+          "floor": "400",
+          "name": "刺客的残骸",
+          "level_range": "400+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "翻找",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "活性细胞",
+                  "quantity": 110
+                },
+                {
+                  "type": "material",
+                  "name": "遗迹碎片",
+                  "quantity": 1300
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_search_action": true
+              },
+              "selected": true,
+              "reason": "数据表预置:残骸类统一选翻找"
+            },
+            {
+              "name": "埋葬",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "灵魂",
+                  "quantity": 5
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_burial_action": true
+              },
+              "selected": false,
+              "reason": "次选(仅给灵魂,无额外材料)"
+            }
+          ]
+        },
+        {
+          "id": "wreckage_knight",
+          "floor": "500",
+          "name": "骑士的残骸",
+          "level_range": "500+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "翻找",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "活性细胞",
+                  "quantity": 130
+                },
+                {
+                  "type": "material",
+                  "name": "遗迹碎片",
+                  "quantity": 1500
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_search_action": true
+              },
+              "selected": true,
+              "reason": "数据表预置:残骸类统一选翻找"
+            },
+            {
+              "name": "埋葬",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "灵魂",
+                  "quantity": 5
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_burial_action": true
+              },
+              "selected": false,
+              "reason": "次选(仅给灵魂,无额外材料)"
+            }
+          ]
+        },
+        {
+          "id": "wreckage_alchemist",
+          "floor": "600",
+          "name": "炼金术士的残骸",
+          "level_range": "600+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "翻找",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "活性细胞",
+                  "quantity": 150
+                },
+                {
+                  "type": "material",
+                  "name": "遗迹碎片",
+                  "quantity": 1700
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_search_action": true
+              },
+              "selected": true,
+              "reason": "数据表预置:残骸类统一选翻找"
+            },
+            {
+              "name": "埋葬",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "灵魂",
+                  "quantity": 5
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_burial_action": true
+              },
+              "selected": false,
+              "reason": "次选(仅给灵魂,无额外材料)"
+            }
+          ]
+        },
+        {
+          "id": "wreckage_lich",
+          "floor": "700",
+          "name": "巫妖的残骸",
+          "level_range": "700+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "翻找",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "活性细胞",
+                  "quantity": 170
+                },
+                {
+                  "type": "material",
+                  "name": "遗迹碎片",
+                  "quantity": 1900
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_search_action": true
+              },
+              "selected": true,
+              "reason": "数据表预置:残骸类统一选翻找"
+            },
+            {
+              "name": "埋葬",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "灵魂",
+                  "quantity": 5
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_burial_action": true
+              },
+              "selected": false,
+              "reason": "次选(仅给灵魂,无额外材料)"
+            }
+          ]
+        },
+        {
+          "id": "wreckage_ninja",
+          "floor": "800",
+          "name": "忍者的残骸",
+          "level_range": "800+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "翻找",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "活性细胞",
+                  "quantity": 190
+                },
+                {
+                  "type": "material",
+                  "name": "遗迹碎片",
+                  "quantity": 2100
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_search_action": true
+              },
+              "selected": true,
+              "reason": "数据表预置:残骸类统一选翻找"
+            },
+            {
+              "name": "埋葬",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "灵魂",
+                  "quantity": 5
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_burial_action": true
+              },
+              "selected": false,
+              "reason": "次选(仅给灵魂,无额外材料)"
             }
           ]
         }

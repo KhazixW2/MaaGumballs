@@ -212,7 +212,9 @@
         "expected": [
             "探索",
             "袭击",
-            "解除"
+            "解除",
+            "摧毁",
+            "调查"
         ],
         "roi": [
             470,
@@ -222,6 +224,7 @@
         ],
         "timeout": 2000,
         "next": [
+            "AutoSky_CombatEventDestory",
             "AutoSky_ExploreEventDetection",
             "AutoSky_CombatEventDetection",
             "AutoSky_ActivateTemple"
@@ -229,7 +232,10 @@
     },
     "AutoSky_ExploreEventDetection": {
         "recognition": "OCR",
-        "expected": "探索",
+        "expected": [
+            "调查",
+            "探索"
+        ],
         "roi": [
             470,
             203,
@@ -244,10 +250,10 @@
         "recognition": "OCR",
         "expected": "袭击",
         "roi": [
-            470,
-            203,
-            249,
-            317
+            517,
+            224,
+            196,
+            362
         ],
         "action": "Click",
         "post_delay": 3500,
@@ -261,10 +267,10 @@
         "recognition": "OCR",
         "expected": "解除封印",
         "roi": [
-            470,
-            203,
-            249,
-            317
+            517,
+            224,
+            196,
+            362
         ],
         "action": "Click",
         "post_delay": 500,
@@ -277,10 +283,10 @@
         "recognition": "OCR",
         "expected": "开启",
         "roi": [
-            25,
+            35,
             427,
-            663,
-            397
+            648,
+            405
         ],
         "action": "Click",
         "post_delay": 1000,
@@ -288,6 +294,20 @@
         "next": [
             "ConfirmButton"
         ]
+    },
+    "AutoSky_CombatEventDestory": {
+        "doc": "战斗事件右侧的摧毁按钮（炮轰，不进入战斗）",
+        "recognition": "OCR",
+        "expected": "摧毁",
+        "roi": [
+            517,
+            224,
+            196,
+            362
+        ],
+        "action": "Click",
+        "post_delay": 3500,
+        "timeout": 10000
     },
     "AutoSky_SkipDetection": {
         "recognition": "OCR",
@@ -671,6 +691,7 @@
             780
         ],
         "action": "Click",
+        "order_by": "Area",
         "post_delay": 500,
         "timeout": 3000
     }

@@ -121,21 +121,26 @@ class AutoSky(CustomAction):
 
     @staticmethod
     def _get_recommended_option(event: dict, title: str) -> dict | None:
-        """根据事件类型决定推荐选项。
+        """根据事件库标记取推荐选项。
 
-        规则优先级:
-          1. 残骸/尸体类事件 → 选包含"翻找"的选项
-          2. 普通类 → 选 selected=true 的选项
-        注: 分岔的洞窟不通过此函数处理，统一走兜底点"左"按钮
+        优先级:
+          1. 分支结构（branches）: 用 selected_branch → 选该分支的 selected 选项
+          2. 普通 options: 选 selected=true 的选项
         """
-        # 规则 1: 残骸/尸体类事件统一选翻找
-        if "的残骸" in title or "尸体" in title:
-            for opt in event.get("options", []):
-                if "翻找" in opt.get("name", ""):
-                    return opt
-            # 没有翻找则降级用 selected
+        # 1. 分支结构（如 分岔的洞窟）
+        branches = event.get("branches", [])
+        if branches:
+            target_id = event.get("selected_branch") or "left"
+            target_branch = next(
+                (b for b in branches if b.get("branch_id") == target_id),
+                None,
+            )
+            if target_branch:
+                for opt in target_branch.get("options", []):
+                    if opt.get("selected"):
+                        return opt
 
-        # 规则 2: 走事件库默认标记
+        # 2. 普通 options
         for opt in event.get("options", []):
             if opt.get("selected"):
                 return opt
@@ -160,20 +165,9 @@ class AutoSky(CustomAction):
             bool: True 表示事件已完成并返回雷达界面；False 表示标题未识别/库中无此事件/超时。
         """
 
-        event = self._find_event_by_title(title)
         selected = None
-        if event:
-            selected = self._get_recommended_option(event, title)
-
-        # 残骸/尸体类兜底：库中没有匹配项时仍按"翻找"规则处理
-        if not selected and ("的残骸" in title or "尸体" in title):
-            logger.info(f"事件 '{title}' 残骸类,未匹配库或无推荐选项,按规则统一选'翻找'")
-            selected = {"name": "翻找", "reason": "残骸类事件统一翻找"}
-
-        # 分岔的洞窟兜底：库中没有匹配项时仍按"左侧"规则处理
-        if not selected and ("分岔的洞窟" in title or title.startswith("分岔")):
-            logger.info(f"事件 '{title}' 分岔类,未匹配库或无推荐选项,按规则统一选'左'")
-            selected = {"name": "左", "reason": "分岔类事件统一选左侧"}
+        if event:= self._find_event_by_title(title):
+            selected = self._get_recommended_option(event,title)
 
         if not selected:
             logger.warning(f"事件 '{title}' 未在事件库中找到,跳过智能选择")
@@ -389,7 +383,28 @@ class AutoSky(CustomAction):
                     logger.info(
                         f"当前目标为时空裂痕，继续切换 ({manual_attempts_done}/{max_manual_attempts} 次尝试)。"
                     )
-                # 非裂隙事件处理
+                # 探索类事件处理
+                elif context.run_recognition(
+                        "AutoSky_ExploreRandomEvent",
+                        context.tasker.controller.post_screencap().wait().get(),
+                    ).hit:
+                    # 非战斗事件处理：先点"调查"进入事件详情页（如果还没进），
+                    # 再 OCR 事件标题查库 + 智能点选项。对战斗/神殿事件静默跳过。
+                    reco = context.run_recognition(
+                        "AutoSky_CheckRandomEvent",
+                        context.tasker.controller.post_screencap().wait().get()
+                    )
+                    if not reco or not reco.hit:
+                        logger.warning("未能 OCR 识别随机事件标题")
+                        continue
+                    context.run_task("AutoSky_ExploreRandomEvent")
+                    time.sleep(1)  # 等待事件详情页加载
+                    current_img = (
+                        context.tasker.controller.post_screencap().wait().get()
+                    )
+                    self._handle_random_event(context, current_img, reco.best_result.text)
+                
+                # 战斗事件处理
                 elif context.run_recognition(
                         "AutoSky_EventDetection",
                         context.tasker.controller.post_screencap().wait().get(),
@@ -420,27 +435,6 @@ class AutoSky(CustomAction):
                             context.run_task("AutoSky_TroopLoss_Backtext")
                             self._troopLoss = True
                             break
-                # 探索类事件处理
-                # elif context.run_recognition(
-                #         "AutoSky_ExploreRandomEvent",
-                #         context.tasker.controller.post_screencap().wait().get(),
-                #     ).hit:
-                #     # 非战斗事件处理：先点"调查"进入事件详情页（如果还没进），
-                #     # 再 OCR 事件标题查库 + 智能点选项。对战斗/神殿事件静默跳过。
-                #     reco = context.run_recognition(
-                #         "AutoSky_CheckRandomEvent",
-                #         context.tasker.controller.post_screencap().wait().get()
-                #     )
-                #     if not reco or not reco.hit:
-                #         logger.warning("未能 OCR 识别随机事件标题")
-                #         continue
-                #     context.run_task("AutoSky_ExploreRandomEvent")
-                #     time.sleep(1)  # 等待事件详情页加载
-                #     current_img = (
-                #         context.tasker.controller.post_screencap().wait().get()
-                #     )
-                #     self._handle_random_event(context, current_img, reco.best_result.text)
-                
                 # 无法识别的类型
                 else :
                     logger.error("无法识别的数据类型")
