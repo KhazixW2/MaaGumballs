@@ -867,7 +867,8 @@
         "recognition": "TemplateMatch",
         "template": [
             "dailyTask/weeklyRaid/永恒王座入口.png",
-            "dailyTask/weeklyRaid/六重天入口.png"
+            "dailyTask/weeklyRaid/六重天入口.png",
+            "dailyTask/weeklyRaid/惑星走私集团入口.png"
         ],
         "threshold": 0.8,
         "roi": [
@@ -892,7 +893,8 @@
         "recognition": "OCR",
         "expected": [
             "永恒王座",
-            "六重天"
+            "六重天",
+            "惑星走私集团"
         ],
         "roi": [
             38,
@@ -984,7 +986,8 @@
         "recognition": "TemplateMatch",
         "template": [
             "dailyTask/weeklyRaid/永恒王座彩蛋.png",
-            "dailyTask/weeklyRaid/六重天彩蛋.png"
+            "dailyTask/weeklyRaid/六重天彩蛋.png",
+            "dailyTask/weeklyRaid/惑星走私集团彩蛋.png"
         ],
         "roi": [
             158,

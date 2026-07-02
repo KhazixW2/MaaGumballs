@@ -76,7 +76,7 @@ class DailyTask(CustomAction):
 @AgentServer.custom_action("WeeklyRaidFighting")
 class WeeklyRaidFighting(CustomAction):
     def __init__(self):
-        self.weeklyRaidList = ["永恒王座", "六重天"]
+        self.weeklyRaidList = ["永恒王座", "六重天","惑星走私集团"]
         super().__init__()
         # 这个做成一个map，通过我们的副本名称一个string来映射一个string列表
         self.MonsterCheckPath: str = "dailyTask/weeklyRaid/"
@@ -98,9 +98,19 @@ class WeeklyRaidFighting(CustomAction):
             self.MonsterCheckPath + "六重天冈布奥6.png",
             self.MonsterCheckPath + "六重天冈布奥7.png",
         ]
+        self.MonsterList3 = [
+            self.MonsterCheckPath + "惑星走私集团1.png",
+            self.MonsterCheckPath + "惑星走私集团2.png",
+            self.MonsterCheckPath + "惑星走私集团3.png",
+            self.MonsterCheckPath + "惑星走私集团4.png",
+            self.MonsterCheckPath + "惑星走私集团5.png",
+            self.MonsterCheckPath + "惑星走私集团6.png",
+            self.MonsterCheckPath + "惑星走私集团7.png",
+        ]
         self.MonsterMap = {
             "永恒王座": self.MonsterList1,
             "六重天": self.MonsterList2,
+            "惑星走私集团": self.MonsterList3
         }
 
     def run(
@@ -122,6 +132,10 @@ class WeeklyRaidFighting(CustomAction):
 
         # 2. 执行战斗, 一共6~7轮
         for i in range(12):
+            if context.tasker.stopping:
+                logger.info("检测到停止任务, 开始退出agent")
+                return CustomAction.RunResult(success=False)
+
             logger.info(f"第{i+1}/12轮识别怪物")
             if MonsterReco := context.run_recognition(
                 "WeeklyRaid_MonsterCheck",
