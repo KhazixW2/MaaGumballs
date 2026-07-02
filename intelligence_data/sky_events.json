@@ -10819,52 +10819,6 @@
               "reason": "需事件等级+150后才可选"
             }
           ]
-        },
-        {
-          "id": "npc_vincent",
-          "name": "Vincent",
-          "level_range": "any",
-          "monitorable": true,
-          "options": [
-            {
-              "name": "我是新手",
-              "rewards": [
-                {
-                  "type": "material",
-                  "name": "新手礼包",
-                  "quantity": 1
-                }
-              ],
-              "tags": {
-                "has_title": false,
-                "has_robot": false,
-                "consumes_diamond": false,
-                "is_standalone_unobtainable": false,
-                "requires_choice": false
-              },
-              "selected": false,
-              "reason": "次选(仅给新手奖励)"
-            },
-            {
-              "name": "我是老手",
-              "rewards": [
-                {
-                  "type": "material",
-                  "name": "老手奖励",
-                  "quantity": 1
-                }
-              ],
-              "tags": {
-                "has_title": false,
-                "has_robot": false,
-                "consumes_diamond": false,
-                "is_standalone_unobtainable": true,
-                "requires_choice": false
-              },
-              "selected": true,
-              "reason": "默认选项(老手玩家)"
-            }
-          ]
         }
       ]
     },
@@ -11559,6 +11513,45 @@
               "reason": "唯一选项:翻找获得奖励(占位奖励,待补全)"
             }
           ]
+        }
+      ]
+    },
+    {
+      "id": "gumball",
+      "name": "冈布奥事件",
+      "events": [
+        {
+          "id": "gumball_pharmacist",
+          "name": "药剂师冈布奥",
+          "level_range": "any",
+          "monitorable": true,
+          "options": [],
+          "tags": {
+            "is_placeholder": true,
+            "note": "占位事件,无选项,等后续补全"
+          }
+        },
+        {
+          "id": "gumball_mage_boy",
+          "name": "魔法少年冈布奥",
+          "level_range": "any",
+          "monitorable": true,
+          "options": [],
+          "tags": {
+            "is_placeholder": true,
+            "note": "占位事件,无选项,等后续补全"
+          }
+        },
+        {
+          "id": "gumball_mechanic",
+          "name": "机械师冈布奥",
+          "level_range": "any",
+          "monitorable": true,
+          "options": [],
+          "tags": {
+            "is_placeholder": true,
+            "note": "占位事件,无选项,等后续补全"
+          }
         }
       ]
     }

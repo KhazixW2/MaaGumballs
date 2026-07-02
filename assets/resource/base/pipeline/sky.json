@@ -660,7 +660,8 @@
     "AutoSky_CheckRandomEvent": {
         "recognition": "OCR",
         "expected": [
-            "[^\\x00-\\x7F]+"
+            "[^\\x00-\\x7F]+",
+            "[A-Za-z][A-Za-z0-9 _]*"
         ],
         "roi": [
             0,
