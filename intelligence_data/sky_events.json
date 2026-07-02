@@ -8897,7 +8897,7 @@
           "monitorable": true,
           "options": [
             {
-              "name": "接受传承(关闭指定数量裂隙后可选)",
+              "name": "接受传承(关闭指定数量裂痕后可选)",
               "rewards": [
                 {
                   "type": "item",
@@ -10408,7 +10408,7 @@
               "rewards": [
                 {
                   "type": "effect",
-                  "desc": "随机消灭一个敌方目标(可以摧毁浮岛、飞艇和时光裂隙),最多使用6次"
+                  "desc": "随机消灭一个敌方目标(可以摧毁浮岛、飞艇和时光裂痕),最多使用6次"
                 }
               ],
               "selected": false,
@@ -10817,6 +10817,52 @@
               },
               "selected": false,
               "reason": "需事件等级+150后才可选"
+            }
+          ]
+        },
+        {
+          "id": "npc_vincent",
+          "name": "Vincent",
+          "level_range": "any",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "我是新手",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "新手礼包",
+                  "quantity": 1
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false
+              },
+              "selected": false,
+              "reason": "次选(仅给新手奖励)"
+            },
+            {
+              "name": "我是老手",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "老手奖励",
+                  "quantity": 1
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": true,
+                "requires_choice": false
+              },
+              "selected": true,
+              "reason": "默认选项(老手玩家)"
             }
           ]
         }
@@ -11471,6 +11517,46 @@
               },
               "selected": false,
               "reason": "次选(仅给灵魂,无额外材料)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vein",
+      "name": "矿脉类",
+      "events": [
+        {
+          "id": "vein_yellow",
+          "floor": "X",
+          "name": "黄色矿脉",
+          "level_range": "X+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "翻找",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "活性细胞",
+                  "quantity": 20
+                },
+                {
+                  "type": "material",
+                  "name": "随机矿石",
+                  "quantity": 5
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_search_action": true
+              },
+              "selected": true,
+              "reason": "唯一选项:翻找获得奖励(占位奖励,待补全)"
             }
           ]
         }

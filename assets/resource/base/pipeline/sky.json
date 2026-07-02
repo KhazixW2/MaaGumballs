@@ -207,6 +207,24 @@
         "post_delay": 200,
         "timeout": 1000
     },
+    "AutoSky_RiftColor": {
+        "recognition": "OCR",
+        "doc": "时空裂痕的边框颜色字（青/黄/红/蓝）→ 对应阵营",
+        "expected": [
+            "青",
+            "黄",
+            "红",
+            "蓝"
+        ],
+        "roi": [
+            0,
+            265,
+            184,
+            240
+        ],
+        "post_delay": 200,
+        "timeout": 1000
+    },
     "AutoSky_EventDetection": {
         "recognition": "OCR",
         "expected": [

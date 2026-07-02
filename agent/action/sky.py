@@ -17,6 +17,15 @@ SKY_EVENTS_FILE = (
     / "sky_events.json"
 )
 
+# 时空裂痕边框颜色 → 阵营映射
+# 青色 = 启示, 黄色 = 游荡, 红色 = 深渊, 蓝色 = 刃
+RIFT_COLOR_TO_FACTION: dict[str, str] = {
+    "青": "启示",
+    "黄": "游荡",
+    "红": "深渊",
+    "蓝": "刃",
+}
+
 
 @AgentServer.custom_action("AutoSky")
 class AutoSky(CustomAction):
@@ -298,6 +307,73 @@ class AutoSky(CustomAction):
 
         return False
 
+    def _switch_fleet_to_faction(self, context: Context, faction_name: str) -> bool:
+        """把主分队切换到指定阵营对应的默认舰队。
+
+        Args:
+            context: MaaFramework 上下文。
+            faction_name: 阵营名(启示/游荡/深渊/刃),对应游戏内的默认舰队名。
+
+        Returns:
+            bool: True 表示切换成功。
+        """
+        logger.info(f"切换主分队到 {faction_name} 阵营...")
+        result = context.run_task(
+            "AutoSky_Switch_Fleet",
+            pipeline_override={
+                "AutoSky_ComfirmFleet": {
+                    "expected": [faction_name],
+                }
+            },
+        )
+        if result and result.nodes:
+            logger.info(f"主分队已切换到 {faction_name}")
+            context.run_task("AutoSky_ReturnSkyMap")
+            return True
+        logger.warning(f"主分队切换到 {faction_name} 失败,继续执行。")
+        context.run_task("AutoSky_ReturnSkyMap")
+        return False
+
+    def _handle_rift_by_color(self, context: Context) -> None:
+        """时空裂痕无法直接摧毁时的处理:
+
+        1. OCR 裂痕边框颜色(青/黄/红/蓝)
+        2. 颜色 → 阵营 映射(RIFT_COLOR_TO_FACTION)
+        3. 切换主分队到对应阵营
+        4. 攻击裂痕
+        5. 切回默认主分队
+        """
+        img = context.tasker.controller.post_screencap().wait().get()
+        color_reco = context.run_recognition("AutoSky_RiftColor", img)
+        if not color_reco or not color_reco.hit:
+            logger.warning("无法 OCR 识别裂痕颜色,跳过攻击")
+            return
+
+        color = color_reco.best_result.text
+        # OCR 可能返回 "时空裂痕·黄" 等带前缀的字符串,提取纯色字
+        color_char = next((c for c in ("青", "黄", "红", "蓝") if c in color), color)
+        target_faction = RIFT_COLOR_TO_FACTION.get(color_char)
+        if not target_faction:
+            logger.warning(f"未识别的裂痕颜色 '{color_char}' (源文本='{color}'),跳过攻击")
+            return
+
+        logger.info(
+            f"裂痕颜色={color} → 目标阵营={target_faction},切换主分队..."
+        )
+        if not self._switch_fleet_to_faction(context, target_faction):
+            logger.warning(f"切换主分队到 {target_faction} 失败,放弃本次裂痕")
+            return
+
+        # 攻击裂痕(点击袭击按钮)
+        logger.info(f"用 {target_faction} 阵营攻击裂痕")
+        result = context.run_task("AutoSky_CombatEventDetection")
+        if not (result and result.nodes):
+            logger.warning(f"攻击裂痕失败")
+
+        # 切回默认主分队
+        logger.info("切回默认主分队...")
+        self.switch_main_fleet(context)
+
     def run(
         self,
         context: Context,
@@ -375,11 +451,23 @@ class AutoSky(CustomAction):
                 context.run_task("AutoSky_ChangeTarget")  # 切换目标
                 manual_attempts_done += 1
 
-                # 检查是否为裂隙
+                # 检查是否为裂痕
                 if context.run_recognition(
                     "AutoSky_RiftDetection",
                     context.tasker.controller.post_screencap().wait().get(),
                 ).hit:
+                    # if context.run_recognition(
+                    #     "AutoSky_CombatEventDestory",
+                    #     context.tasker.controller.post_screencap().wait().get(),
+                    # ).hit:
+                    #     logger.info("识别到裂痕可以直接摧毁，摧毁！！")
+                    #     context.run_task("AutoSky_CombatEventDestory")
+                    # else:
+                        # 无法直接摧毁 → 识别颜色 → 切到对应阵营后攻击
+                    self._handle_rift_by_color(context)
+                        
+
+
                     logger.info(
                         f"当前目标为时空裂痕，继续切换 ({manual_attempts_done}/{max_manual_attempts} 次尝试)。"
                     )
