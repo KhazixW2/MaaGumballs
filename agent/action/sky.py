@@ -421,7 +421,10 @@ class AutoSky(CustomAction):
     def _try_auto_explore(self, context: Context) -> bool:
         """尝试触发一次自动探索(消耗能量)。
 
-        流程:确认在雷达→离开雷达→触发自动探索→等待并确认消耗。
+        流程:确认在雷达→离开雷达→触发自动探索→等待并确认消耗→**显式回到雷达**。
+
+        关键:无论自动探索成功或失败,return 前都要 ``_back_to_radar()``,
+        否则下一轮可能因为 UI 不在雷达而失败。
 
         Args:
             context: MaaFramework 上下文。
@@ -437,6 +440,7 @@ class AutoSky(CustomAction):
 
         for retry_count in range(MAX_RETRY_ATTEMPTS):
             if context.tasker.stopping:
+                self._back_to_radar(context)
                 return False
 
             # 1. 离开雷达界面
@@ -446,6 +450,7 @@ class AutoSky(CustomAction):
                     context.tasker.controller.post_screencap().wait().get(),
                 ).hit:
                     logger.error("不在雷达界面,自动探索失败")
+                    self._back_to_radar(context)
                     return False
                 logger.info("确认目前处于雷达界面")
                 context.run_task("AutoSky_Exit_Radar_Interface")
@@ -474,6 +479,7 @@ class AutoSky(CustomAction):
 
         if not auto_explore_successful:
             logger.error(f"达到最大重试次数,自动探索失败")
+            self._back_to_radar(context)
             return False
 
         # 3. 等待并确认消耗
@@ -482,13 +488,15 @@ class AutoSky(CustomAction):
             "AutoSky_SkyExplore_Confirm_Finish",
             context.tasker.controller.post_screencap().wait().get(),
         ).hit:
-            # 未成功消耗能量(可能没能量/雷达满)→ 尝试回到雷达让外层循环接手
-            logger.info("未成功消耗能量,可能没能量或者雷达满了")
+            # 未成功消耗能量(可能没能量/雷达满)→ 显式回雷达后让外层循环接手
+            logger.info("未成功消耗能量,尝试返回雷达界面")
             context.run_task("AutoSky_SkyExplore_Finish")
+            self._back_to_radar(context)
             return False
 
         logger.info("自动探索成功,消耗了能量")
         context.run_task("AutoSky_SkyExplore_Confirm_Finish")
+        self._back_to_radar(context)
         return True
 
     def _do_manual_exploration(self, context: Context) -> bool:
@@ -634,6 +642,11 @@ class AutoSky(CustomAction):
         每次 ``context.run_task("AutoSky_Bag_UseBattery")`` 调用使用 5 个电池
         (沿用 OCR "5个" 的语义),本次最多连续调用 ``max_per_batch // 5`` 次。
 
+        用完后会**主动关闭可能残留的弹框**(背包/补充能量对话框),确保外层
+        主循环下一次进入 ``_try_auto_explore`` / ``_do_manual_exploration`` 时
+        处于干净雷达界面,避免 ``AutoSky_Exit_Radar_Interface`` 因弹框遮挡
+        TemplateMatch 失败导致任务立即结束。
+
         Args:
             context: MaaFramework 上下文。
             max_per_batch: 本次最多使用的电池数(默认 ``BATTERY_BATCH_SIZE``=25)。
@@ -652,9 +665,87 @@ class AutoSky(CustomAction):
                 logger.warning(f"单次使用能量包失败,已在 {used} 个处停止")
                 break
             used += BATTERY_PER_USE
+
         if used > 0:
             logger.info(f"本批使用了 {used} 个能量包")
+
+        # 关闭残留弹框(最多 2 次返回,把可能的"补充能量" + "天空物资"两层关掉)
+        # 不强制成功:如果 BackText 在不同 UI 层有副作用,这里是兜底
+        for _ in range(2):
+            if context.tasker.stopping:
+                break
+            current_img = context.tasker.controller.post_screencap().wait().get()
+            if context.run_recognition(
+                "AutoSky_CheckExplorationInfo", current_img
+            ).hit:
+                break
+            context.run_task("BackText_500ms")
+            time.sleep(1)
+
         return used
+
+    def _back_to_radar(self, context: Context) -> bool:
+        """确保当前 UI 已经回到雷达界面。每步只做一次导航,不盲目 BackText。
+
+        状态识别 + 一步导航(避免跳出天空流程):
+
+          1. **雷达**:OCR ``探索信息`` 命中 → 直接返回
+          2. **SkyExplore 页**(显示"自动探索"按钮):
+             ``AutoSky_Enter_Radar_Interface`` (template + click,
+             next 链自动 OCR ``探索信息`` 验证)
+          3. **结算页 / 战术大厅**(能看到飞艇图标):
+             ``AutoSky_SkyExplore`` (template + click,
+             next 链自动跳到 SkyExplore 再到雷达)
+          4. **其他**(例如已经跳出到大地图):
+             不再做导航 — 让调用方终止任务,避免越按 BackText 越退越远。
+
+        Args:
+            context: MaaFramework 上下文。
+
+        Returns:
+            bool: True 表示已确认在雷达界面;False 表示已跳出天空流程,应中止。
+        """
+        # 探测当前状态
+        current_img = context.tasker.controller.post_screencap().wait().get()
+        if context.run_recognition(
+            "AutoSky_CheckExplorationInfo", current_img
+        ).hit:
+            return True  # 已在雷达,直接返回
+
+        logger.info("不在雷达,识别当前位置以做精确回退...")
+
+        # 状态 3: 在 SkyExplore 附近(看到飞艇图标)→ 进入 SkyExplore 后再进雷达
+        if context.run_recognition("AutoSky_SkyExplore", current_img).hit:
+            logger.info("检测到 SkyExplore 按钮,从当前页导航到 SkyExplore 页...")
+            context.run_task("AutoSky_SkyExplore")
+            time.sleep(1)
+            current_img = context.tasker.controller.post_screencap().wait().get()
+            # SkyExplore 的 next 链会自动跳到 AutoSky_Enter_Radar_Interface
+            return context.run_recognition(
+                "AutoSky_CheckExplorationInfo", current_img
+            ).hit
+
+        # 状态 2: 已在 SkyExplore 页(看到"自动探索"按钮/雷达能量等)
+        # 但 template 没找到 SkyExplore(可能我们实际上在结算页)
+        # 尝试 Enter_Radar(如果在 SkyExplore 会命中,在结算页则不会)
+        if context.run_recognition(
+            "AutoSky_Enter_Radar_Interface", current_img
+        ).hit:
+            logger.info("检测到雷达入口按钮,直接进入雷达...")
+            context.run_task("AutoSky_Enter_Radar_Interface")
+            time.sleep(1)
+            current_img = context.tasker.controller.post_screencap().wait().get()
+            return context.run_recognition(
+                "AutoSky_CheckExplorationInfo", current_img
+            ).hit
+
+        # 其他:跳过了战术大厅、大地图、或者其他无法识别的状态
+        # 不再做 BackText(避免越按越远跳出天空流程)
+        logger.warning(
+            "无法识别当前位置以回到雷达"
+            "(可能已跳出天空流程到大地图或异常页面),中止导航"
+        )
+        return False
 
     def run(
         self,
@@ -725,25 +816,41 @@ class AutoSky(CustomAction):
             if self._try_auto_explore(context):
                 self._last_progress = True
             else:
-                # --- 2) 自动失败 → 手动探索 ---
-                processed_any = self._do_manual_exploration(context)
-                if processed_any:
-                    self._last_progress = True
-
-                # --- 3) 补能量包(若启用且未用满)---
-                if use_battery and self._used_battery < target_battery:
-                    remaining = target_battery - self._used_battery
-                    batch = min(BATTERY_BATCH_SIZE, remaining)  # 末批 < 25 时一次性用完
-                    used_now = self._use_battery_pack(
-                        context, max_per_batch=batch
-                    )
-                    if used_now > 0:
-                        self._used_battery += used_now
+                # _try_auto_explore 已经尝试回雷达;
+                # 若仍不在雷达(返回 False 且不在雷达),跳过本轮手动探索
+                radar_img = context.tasker.controller.post_screencap().wait().get()
+                in_radar_now = context.run_recognition(
+                    "AutoSky_CheckExplorationInfo", radar_img
+                ).hit
+                if in_radar_now:
+                    # --- 2) 自动失败但已在雷达 → 手动探索 ---
+                    processed_any = self._do_manual_exploration(context)
+                    if processed_any:
                         self._last_progress = True
-                        logger.info(
-                            f"本轮使用 {used_now} 个能量包,"
-                            f"累计 {self._used_battery}/{target_battery}"
+
+                    # --- 3) 补能量包(若启用且未用满)---
+                    if use_battery and self._used_battery < target_battery:
+                        remaining = target_battery - self._used_battery
+                        batch = min(BATTERY_BATCH_SIZE, remaining)  # 末批 < 25 时一次性用完
+                        used_now = self._use_battery_pack(
+                            context, max_per_batch=batch
                         )
+                        if used_now > 0:
+                            self._used_battery += used_now
+                            self._last_progress = True
+                            logger.info(
+                                f"本轮使用 {used_now} 个能量包,"
+                                f"累计 {self._used_battery}/{target_battery}"
+                            )
+                else:
+                    # UI 不在雷达(可能跳出天空流程到大地图)→
+                    # 不进入手动探索(否则会乱点乱识别),
+                    # 置 _last_progress=False 让下一轮"连续无进展"检测触发
+                    logger.warning(
+                        "自动探索后 UI 不在雷达界面,跳过本轮手动,"
+                        "下一轮将因'连续无进展'退出任务"
+                    )
+                    self._last_progress = False
 
         # 主循环结束后的最终处理
         result_message = ""
