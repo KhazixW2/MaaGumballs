@@ -180,7 +180,7 @@
             159
         ],
         "post_delay": 500,
-        "timeout": 5000,
+        "timeout": 2000,
         "next": []
     },
     "AutoSky_ChangeTarget": {
@@ -397,7 +397,7 @@
             45
         ],
         "action": "Click",
-        "post_delay": 200,
+        "post_delay": 500,
         "timeout": 2000
     },
     "AutoSky_CheckTargetNum": {
@@ -710,6 +710,20 @@
         "post_delay": 0,
         "timeout": 1000
     },
+    "AutoSky_RobberyBattleEntry": {
+        "recognition": "OCR",
+        "doc": "商店勒索后对方生气,点进入战斗（走战斗流程 + 跳过）",
+        "expected": "进入战斗",
+        "roi": [
+            40,
+            380,
+            640,
+            780
+        ],
+        "action": "Click",
+        "post_delay": 1500,
+        "timeout": 3000
+    },
     "AutoSky_ClickOptionByName": {
         "doc": "按事件库推荐选项名点击（运行时由 Python 通过 pipeline_override 注入 expected）",
         "recognition": "OCR",
@@ -726,5 +740,11 @@
         "order_by": "Area",
         "post_delay": 500,
         "timeout": 3000
+    },
+    "AutoSky_BagConfig": {
+        "doc": "能量包使用配置（由 interface.json 的'能量包使用模式'选项注入 target_count）",
+        "custom_action_param": {
+            "target_count": 0
+        }
     }
 }
