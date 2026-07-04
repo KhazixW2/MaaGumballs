@@ -1368,11 +1368,11 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
-              "reason": "4星挑战符石(不可获取)"
+              "selected": false,
+              "reason": "原默认(4星挑战符石)"
             },
             {
-              "name": "勒索他们",
+              "name": "勒索它们",
               "rewards": [
                 {
                   "type": "battle",
@@ -1391,8 +1391,8 @@
                   "quantity": "1k"
                 }
               ],
-              "selected": false,
-              "reason": "次选(战斗)"
+              "selected": true,
+              "reason": "用户指定:勒索他们"
             },
             {
               "name": "偷窃他们",
@@ -7116,8 +7116,8 @@
                   ]
                 }
               ],
-              "selected": true,
-              "reason": "默认选项(满意态给电池包+改造材料)"
+              "selected": false,
+              "reason": "原默认(满意态给电池包+改造材料)"
             },
             {
               "name": "抢夺它",
@@ -7150,8 +7150,8 @@
                   ]
                 }
               ],
-              "selected": false,
-              "reason": "次选(战斗风险)"
+              "selected": true,
+              "reason": "用户指定:抢夺它"
             }
           ]
         },
@@ -8349,8 +8349,8 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
-              "reason": "含消耗钻石(3钻) + 战斗"
+              "selected": true,
+              "reason": "用户指定:全部打开"
             }
           ]
         },
@@ -8371,8 +8371,8 @@
                   "name": "狗罐头"
                 }
               ],
-              "selected": false,
-              "reason": "次选(1星符石)"
+              "selected": true,
+              "reason": "用户指定:你是阿努比斯么?"
             },
             {
               "name": "你能给我财富么?",
@@ -8401,8 +8401,8 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
-              "reason": "默认选项(2星幸运硬币不可获取)"
+              "selected": false,
+              "reason": "原默认(2星幸运硬币不可获取)"
             },
             {
               "name": "你能给我力量么?",
@@ -11471,6 +11471,27 @@
               },
               "selected": false,
               "reason": "次选(仅给灵魂,无额外材料)"
+            }
+          ]
+        },
+        {
+          "id": "wreckage_dead_star",
+          "floor": "1000",
+          "name": "死星残骸",
+          "level_range": "1000+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "不再理会",
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": true,
+                "requires_choice": false
+              },
+              "selected": true,
+              "reason": "用户指定:死星残骸只有'不再理会'选项(无翻找/无奖励)"
             }
           ]
         }
