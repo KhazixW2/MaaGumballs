@@ -870,7 +870,7 @@
             "dailyTask/weeklyRaid/六重天入口.png",
             "dailyTask/weeklyRaid/惑星走私集团入口.png"
         ],
-        "threshold": 0.8,
+        "threshold": 0.7,
         "roi": [
             47,
             262,
