@@ -178,7 +178,8 @@
             "name": "自动天空",
             "entry": "AutoSky",
             "option": [
-                "天空_出战阵营"
+                "天空_出战阵营",
+                "能量包使用模式"
             ],
             "doc": [
                 "### 工作内容",
@@ -191,6 +192,11 @@
                 "- **2**:发现克隆体阵亡，会取消战斗结果避免损失克隆体，此时会直接停止本任务",
                 "- **3**:自动探索触发后，未检测到成功界面，说明雷达界面已经满了，或者能量不够了，此时会直接停止本任务",
                 "- **4**:完成一定轮次后，停止任务，避免意料之外的情况导致无限循环",
+                "- **5**:到达\"能量包使用模式\"设定的电池数上限（如启用），或连续两轮无进展时，停止任务",
+                "",
+                "### 能量包说明",
+                "- 选择\"不使用\"：尽量把天空探索完，能量耗尽/雷达满时自然结束",
+                "- 选择 50/100/200/500 个：每消耗完一波能量，自动补一波能量包（每批最多 25 个 ≈ 125 能量），直到用满目标数",
                 ""
             ]
         },
@@ -501,6 +507,61 @@
                             "expected": [
                                 "刃"
                             ]
+                        }
+                    }
+                }
+            ]
+        },
+        "能量包使用模式": {
+            "default_case": "不使用",
+            "cases": [
+                {
+                    "name": "不使用",
+                    "pipeline_override": {
+                        "AutoSky_BagConfig": {
+                            "custom_action_param": {
+                                "target_count": 0
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "50个",
+                    "pipeline_override": {
+                        "AutoSky_BagConfig": {
+                            "custom_action_param": {
+                                "target_count": 50
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "100个",
+                    "pipeline_override": {
+                        "AutoSky_BagConfig": {
+                            "custom_action_param": {
+                                "target_count": 100
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "200个",
+                    "pipeline_override": {
+                        "AutoSky_BagConfig": {
+                            "custom_action_param": {
+                                "target_count": 200
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "500个",
+                    "pipeline_override": {
+                        "AutoSky_BagConfig": {
+                            "custom_action_param": {
+                                "target_count": 500
+                            }
                         }
                     }
                 }
