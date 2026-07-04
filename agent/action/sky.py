@@ -9,6 +9,9 @@ from maa.context import Context
 from utils import logger
 
 MAX_RETRY_ATTEMPTS = 3  # 定义最大重试次数
+BATTERY_PER_USE = 5      # AutoSky_Bag_UseBattery 单次调用使用的电池数(沿用 OCR '5个')
+BATTERY_BATCH_SIZE = 25  # 每次"补能阶段"的最大批次数(25 电池 ≈ 125 能量)
+MAX_ITERATIONS = 50      # 主循环硬性迭代上限(防止意外无限循环)
 
 # 事件库 JSON 路径（相对项目根）
 SKY_EVENTS_FILE = (
@@ -18,11 +21,11 @@ SKY_EVENTS_FILE = (
 )
 
 # 时空裂痕边框颜色 → 阵营映射
-# 青色 = 启示, 黄色 = 游荡, 红色 = 深渊, 蓝色 = 刃
+# 青色 = 启示, 黄色 = 游荡, 赤色 = 深渊, 蓝色 = 刃
 RIFT_COLOR_TO_FACTION: dict[str, str] = {
     "青": "启示",
     "黄": "游荡",
-    "红": "深渊",
+    "赤": "深渊",
     "蓝": "刃",
 }
 
@@ -35,6 +38,9 @@ class AutoSky(CustomAction):
     _target_round: int
     _clone_enabled: bool  # 记录克隆体是否启用
     _sky_events_index: dict  # name -> event，__init__ 时预加载
+    _used_battery: int  # 累计已使用电池数
+    _iteration: int  # 主循环当前迭代数
+    _last_progress: bool  # 上一轮是否有进展(用于无进展检测)
 
     def __init__(self):
         super().__init__()
@@ -54,6 +60,9 @@ class AutoSky(CustomAction):
         self._troopLoss = False
         self._target_round = 5
         self._clone_enabled = True  # 默认启用克隆体检查
+        self._used_battery = 0  # 累计已用电池数
+        self._iteration = 0  # 主循环迭代数
+        self._last_progress = True  # 默认认为有进展(避免首次就退出)
 
     # ------------------------------------------------------------------
     # 事件库：构造时预加载 + 检索
@@ -379,6 +388,274 @@ class AutoSky(CustomAction):
         logger.info("切回默认主分队...")
         self.switch_main_fleet(context)
 
+    # ------------------------------------------------------------------
+    # 主循环 helper: 读配置 / 自动探索 / 手动探索 / 使用能量包
+    # ------------------------------------------------------------------
+
+    def _read_battery_config(self, context: Context) -> tuple[int, bool]:
+        """读取用户在 UI 中选择的能量包配置。
+
+        通过 ``context.get_node_data("AutoSky_BagConfig")`` 读取
+        pipeline_override 注入的 ``custom_action_param.target_count``。
+
+        Returns:
+            (target_count, use_battery)
+            - target_count: 用户设定的电池数上限;0 表示不使用
+            - use_battery: target_count > 0 的便捷布尔
+        """
+        node = context.get_node_data("AutoSky_BagConfig")
+        target = 0
+        if node:
+            target = (
+                node.get("action", {})
+                .get("param", {})
+                .get("custom_action_param", {})
+                .get("target_count", 0)
+            )
+        try:
+            target = int(target)
+        except (TypeError, ValueError):
+            target = 0
+        return target, target > 0
+
+    def _try_auto_explore(self, context: Context) -> bool:
+        """尝试触发一次自动探索(消耗能量)。
+
+        流程:确认在雷达→离开雷达→触发自动探索→等待并确认消耗。
+
+        Args:
+            context: MaaFramework 上下文。
+
+        Returns:
+            bool: True 表示成功消耗了能量;False 表示无法触达消耗
+            (能量耗尽 / 雷达满 / UI 异常 / 重试用尽)。
+        """
+        logger.info("尝试自动探索...")
+
+        has_left_radar = False
+        auto_explore_successful = False
+
+        for retry_count in range(MAX_RETRY_ATTEMPTS):
+            if context.tasker.stopping:
+                return False
+
+            # 1. 离开雷达界面
+            if not has_left_radar:
+                if not context.run_recognition(
+                    "AutoSky_CheckExplorationInfo",
+                    context.tasker.controller.post_screencap().wait().get(),
+                ).hit:
+                    logger.error("不在雷达界面,自动探索失败")
+                    return False
+                logger.info("确认目前处于雷达界面")
+                context.run_task("AutoSky_Exit_Radar_Interface")
+                if context.run_recognition(
+                    "AutoSky_CheckExplorationInfo",
+                    context.tasker.controller.post_screencap().wait().get(),
+                ).hit:
+                    logger.warning(
+                        f"未能成功离开雷达界面,重试 ({retry_count+1}/{MAX_RETRY_ATTEMPTS})"
+                    )
+                    time.sleep(2)
+                    continue
+                has_left_radar = True
+                time.sleep(1)
+
+            # 2. 触发自动探索
+            sky_explore_start_result = context.run_task("AutoSky_SkyExplore_Start")
+            if not sky_explore_start_result.nodes:
+                logger.warning(
+                    f"未能触发自动探索,重试 ({retry_count+1}/{MAX_RETRY_ATTEMPTS})"
+                )
+                time.sleep(2)
+                continue
+            auto_explore_successful = True
+            break
+
+        if not auto_explore_successful:
+            logger.error(f"达到最大重试次数,自动探索失败")
+            return False
+
+        # 3. 等待并确认消耗
+        time.sleep(2)
+        if not context.run_recognition(
+            "AutoSky_SkyExplore_Confirm_Finish",
+            context.tasker.controller.post_screencap().wait().get(),
+        ).hit:
+            # 未成功消耗能量(可能没能量/雷达满)→ 尝试回到雷达让外层循环接手
+            logger.info("未成功消耗能量,可能没能量或者雷达满了")
+            context.run_task("AutoSky_SkyExplore_Finish")
+            return False
+
+        logger.info("自动探索成功,消耗了能量")
+        context.run_task("AutoSky_SkyExplore_Confirm_Finish")
+        return True
+
+    def _do_manual_exploration(self, context: Context) -> bool:
+        """在雷达界面手动扫描可见目标并处理各类事件。
+
+        处理的事件类型:时空裂痕(切阵营攻击)、探索类事件(查库点选项)、
+        交谈类事件(跳过)、战斗事件(进战斗/跳过/检测战损)。
+
+        Args:
+            context: MaaFramework 上下文。
+
+        Returns:
+            bool: True 表示本轮至少处理过一个目标;False 表示无可处理目标
+            (雷达空 或 全部事件被跳过)。
+            若返回过程中触发 _encountered_unbeatable / _troopLoss,
+            也视为有处理(返回 True)。
+        """
+        logger.info("开始手动探索...")
+
+        # 1. 获取目标数
+        max_manual_attempts = 7  # OCR 容易把 7 识别成门,留余量
+        target_num_reco = context.run_recognition(
+            "AutoSky_CheckTargetNum",
+            context.tasker.controller.post_screencap().wait().get(),
+        )
+        if target_num_reco and target_num_reco.hit:
+            try:
+                parsed_num = int(target_num_reco.best_result.text)
+                max_manual_attempts = parsed_num + 1
+                logger.info(
+                    f"识别到当前目标数: {parsed_num},本轮手动探索最多尝试 {max_manual_attempts} 次。"
+                )
+            except ValueError:
+                logger.warning("未能解析目标数,使用默认 7。")
+        else:
+            logger.warning("未能识别目标数,使用默认 7。")
+
+        # 2. 循环切换目标并处理
+        processed_any = False
+        manual_attempts_done = 0
+        logger.info(f"开始本轮手动探索 ({max_manual_attempts} 次尝试)")
+        while manual_attempts_done < max_manual_attempts:
+            if context.tasker.stopping:
+                return processed_any
+
+            context.run_task("AutoSky_ChangeTarget")
+            manual_attempts_done += 1
+            current_img = context.tasker.controller.post_screencap().wait().get()
+
+            # 2.1 时空裂痕(切阵营攻击)
+            if context.run_recognition(
+                "AutoSky_RiftDetection", current_img
+            ).hit:
+                self._handle_rift_by_color(context)
+                processed_any = True
+                logger.info(
+                    f"当前目标为时空裂痕,继续切换 ({manual_attempts_done}/{max_manual_attempts})"
+                )
+                continue
+
+            # 2.2 探索类事件(查库点选项)
+            if context.run_recognition(
+                "AutoSky_ExploreRandomEvent", current_img
+            ).hit:
+                reco = context.run_recognition(
+                    "AutoSky_CheckRandomEvent", current_img
+                )
+                if not reco or not reco.hit:
+                    logger.warning("未能 OCR 识别随机事件标题")
+                    continue
+                context.run_task("AutoSky_ExploreRandomEvent")
+                time.sleep(1)
+                current_img = context.tasker.controller.post_screencap().wait().get()
+                self._handle_random_event(context, current_img, reco.best_result.text)
+                processed_any = True
+                continue
+
+            # 2.3 交谈类事件(暂不处理,跳过)
+            if context.run_recognition(
+                "AutoSky_TalkEvent", current_img
+            ).hit:
+                logger.info("检测到交谈类事件,暂不处理,跳过")
+                continue
+
+            # 2.4 战斗事件
+            if context.run_recognition(
+                "AutoSky_EventDetection", current_img
+            ).hit:
+                logger.info("发现战斗目标~~")
+                context.run_task("AutoSky_EventDetection")
+
+                current_img = context.tasker.controller.post_screencap().wait().get()
+
+                # 打不过的敌人
+                if context.run_recognition("AutoSky_Lost", current_img).hit:
+                    logger.warning("遇到打不过的敌人,本轮探索结束")
+                    time.sleep(2)
+                    context.run_task("BackText_500ms")
+                    self._encountered_unbeatable = True
+                    return True  # 视为有处理动作
+
+                # 克隆体战损
+                if self._clone_enabled and context.run_recognition(
+                    "AutoSky_TroopLoss", current_img
+                ).hit:
+                    logger.warning("识别到克隆体战损,本轮探索结束")
+                    time.sleep(2)
+                    context.run_task("AutoSky_TroopLoss_Backtext")
+                    self._troopLoss = True
+                    return True
+
+                processed_any = True
+                continue
+
+            # 2.5 无法识别:Debug OCR dump
+            debug_img = context.tasker.controller.post_screencap().wait().get()
+            debug_reco = context.run_recognition(
+                "AutoSky_EventDetection",
+                debug_img,
+                pipeline_override={
+                    "AutoSky_EventDetection": {
+                        "action": "DoNothing",
+                        "post_delay": 0,
+                        "timeout": 1000,
+                    }
+                },
+            )
+            if debug_reco and debug_reco.all_results:
+                texts = [r.text for r in debug_reco.all_results[:8]]
+                logger.error(f"无法识别的数据类型,屏幕 OCR 文本: {texts}")
+            else:
+                logger.error("无法识别的数据类型,且 OCR 无结果")
+
+        return processed_any
+
+    def _use_battery_pack(
+        self,
+        context: Context,
+        max_per_batch: int = BATTERY_BATCH_SIZE,
+    ) -> int:
+        """在雷达界面使用能量包,本次最多 ``max_per_batch`` 个电池。
+
+        每次 ``context.run_task("AutoSky_Bag_UseBattery")`` 调用使用 5 个电池
+        (沿用 OCR "5个" 的语义),本次最多连续调用 ``max_per_batch // 5`` 次。
+
+        Args:
+            context: MaaFramework 上下文。
+            max_per_batch: 本次最多使用的电池数(默认 ``BATTERY_BATCH_SIZE``=25)。
+
+        Returns:
+            int: 实际使用的电池数(失败时可能小于 ``max_per_batch``;0 表示完全失败)。
+        """
+        logger.info(f"开始使用能量包,本次上限 {max_per_batch} 个")
+        used = 0
+        max_clicks = max_per_batch // BATTERY_PER_USE
+        for _ in range(max_clicks):
+            if context.tasker.stopping:
+                break
+            result = context.run_task("AutoSky_Bag_UseBattery")
+            if not result or not result.nodes:
+                logger.warning(f"单次使用能量包失败,已在 {used} 个处停止")
+                break
+            used += BATTERY_PER_USE
+        if used > 0:
+            logger.info(f"本批使用了 {used} 个能量包")
+        return used
+
     def run(
         self,
         context: Context,
@@ -409,222 +686,64 @@ class AutoSky(CustomAction):
         context.run_task("AutoSky_Enter_Clone")
         self._clone_enabled = False  # 进入克隆体界面说明克隆体被禁用
 
-        # 2. 探索目标轮数, 这个是外层的while 用于控制探索轮次（进雷达界面扫一圈+自动探索=完整的一轮）
-        while (
-            not self._encountered_unbeatable
-            and not self._troopLoss
-            and self._current_round < self._target_round
-        ):
-            if context.tasker.stopping:
-                logger.info("检测到停止任务请求, AutoSky 任务终止。")
-                return CustomAction.RunResult(success=False)
+        # 1.3 读能量包配置(目标数 + 是否启用)
+        target_battery, use_battery = self._read_battery_config(context)
+        if use_battery:
+            logger.info(
+                f"启用能量包补充,目标 {target_battery} 个(每批 ≤ {BATTERY_BATCH_SIZE})"
+            )
+        else:
+            logger.info("未启用能量包,尽量探索直到无进展为止")
 
-            # 开始探索
-            self._current_round += 1
-            logger.info(f"开始第 {self._current_round}/ {self._target_round} 轮探索")
-
-            # 2.1 获取当前目标数，确定本次手动探索的次数，默认尝试7次 为什么是7呢，因为ocr容易把7识别成门
-            max_manual_attempts = 7
-            if target_num_reco := context.run_recognition(
-                "AutoSky_CheckTargetNum",
-                context.tasker.controller.post_screencap().wait().get(),
-            ):
-                if target_num_reco.hit:
-                    try:
-                        parsed_num = int(target_num_reco.best_result.text)
-                        max_manual_attempts = parsed_num + 1
-                        logger.info(
-                            f"识别到当前目标数: {parsed_num}，本轮手动探索最多尝试 {max_manual_attempts} 次。"
-                        )
-                    except ValueError:
-                        logger.warning(
-                            "未能解析目标数，本轮手动探索使用默认尝试次数 7。"
-                        )
-                else:
-                    logger.warning("未能识别到目标数，本轮手动探索使用默认尝试次数 7。")
-            else:
-                logger.warning("未能识别到目标数，本轮手动探索使用默认尝试次数 7。")
-
-            # 2.2 循环进行“手动目标探索”
-            logger.info(f"开始本轮手动探索 ({max_manual_attempts} 次尝试)。")
-            manual_attempts_done = 0
-            while manual_attempts_done < max_manual_attempts:
-                if context.tasker.stopping:
-                    logger.info("检测到停止任务请求, 手动探索任务终止。")
-                    return CustomAction.RunResult(success=False)
-
-                context.run_task("AutoSky_ChangeTarget")  # 切换目标
-                manual_attempts_done += 1
-
-                # 检查是否为裂痕
-                if context.run_recognition(
-                    "AutoSky_RiftDetection",
-                    context.tasker.controller.post_screencap().wait().get(),
-                ).hit:
-                    # if context.run_recognition(
-                    #     "AutoSky_CombatEventDestory",
-                    #     context.tasker.controller.post_screencap().wait().get(),
-                    # ).hit:
-                    #     logger.info("识别到裂痕可以直接摧毁，摧毁！！")
-                    #     context.run_task("AutoSky_CombatEventDestory")
-                    # else:
-                        # 无法直接摧毁 → 识别颜色 → 切到对应阵营后攻击
-                    self._handle_rift_by_color(context)
-                        
-
-
-                    logger.info(
-                        f"当前目标为时空裂痕，继续切换 ({manual_attempts_done}/{max_manual_attempts} 次尝试)。"
-                    )
-                # 探索类事件处理
-                elif context.run_recognition(
-                        "AutoSky_ExploreRandomEvent",
-                        context.tasker.controller.post_screencap().wait().get(),
-                    ).hit:
-                    # 非战斗事件处理：先点"调查"进入事件详情页（如果还没进），
-                    # 再 OCR 事件标题查库 + 智能点选项。对战斗/神殿事件静默跳过。
-                    reco = context.run_recognition(
-                        "AutoSky_CheckRandomEvent",
-                        context.tasker.controller.post_screencap().wait().get()
-                    )
-                    if not reco or not reco.hit:
-                        logger.warning("未能 OCR 识别随机事件标题")
-                        continue
-                    context.run_task("AutoSky_ExploreRandomEvent")
-                    time.sleep(1)  # 等待事件详情页加载
-                    current_img = (
-                        context.tasker.controller.post_screencap().wait().get()
-                    )
-                    self._handle_random_event(context, current_img, reco.best_result.text)
-
-                # 交谈类事件：识别后跳过（处理逻辑复杂,暂不实现）
-                elif context.run_recognition(
-                        "AutoSky_TalkEvent",
-                        context.tasker.controller.post_screencap().wait().get(),
-                    ).hit:
-                    logger.info("检测到交谈类事件,暂不处理,跳过")
-
-                # 战斗事件处理
-                elif context.run_recognition(
-                        "AutoSky_EventDetection",
-                        context.tasker.controller.post_screencap().wait().get(),
-                    ).hit:
-                    # 处理战斗事件
-                    logger.info(f"发现战斗目标~~")
-                    context.run_task("AutoSky_EventDetection")  # 会自动完成战斗或探索
-
-                    current_img = (
-                        context.tasker.controller.post_screencap().wait().get()
-                    )
-
-                    # 遇到打不过的敌人跑路
-                    if context.run_recognition("AutoSky_Lost", current_img).hit:
-                        logger.warning("遇到打不过的敌人，本轮探索结束")
-                        time.sleep(2)
-                        context.run_task("BackText_500ms")
-                        self._encountered_unbeatable = True
-                        break
-
-                    # 只有在克隆体启用时才检查克隆体阵亡
-                    if self._clone_enabled:
-                        if context.run_recognition(
-                            "AutoSky_TroopLoss", current_img
-                        ).hit:
-                            logger.warning("识别到克隆体战损，本轮探索结束。")
-                            time.sleep(2)
-                            context.run_task("AutoSky_TroopLoss_Backtext")
-                            self._troopLoss = True
-                            break
-                # 无法识别的类型
-                else :
-                    # 调试:把屏幕 OCR 文本全部 dump 出来,方便排查
-                    debug_img = (
-                        context.tasker.controller.post_screencap().wait().get()
-                    )
-                    debug_reco = context.run_recognition(
-                        "AutoSky_EventDetection",
-                        debug_img,
-                        pipeline_override={
-                            "AutoSky_EventDetection": {
-                                "action": "DoNothing",
-                                "post_delay": 0,
-                                "timeout": 1000,
-                            }
-                        },
-                    )
-                    if debug_reco and debug_reco.all_results:
-                        texts = [r.text for r in debug_reco.all_results[:8]]
-                        logger.error(
-                            f"无法识别的数据类型,屏幕 OCR 文本: {texts}"
-                        )
-                    else:
-                        logger.error("无法识别的数据类型,且 OCR 无结果")
-
-
-            # 2.3 自动探索
-            logger.info("开始本轮的自动探索环节。")
-
-            # --- 为提高稳定性，确保顺利离开雷达界面并完成自动探索，添加重试功能 ---
-            hasLeftRadar = False
-            auto_explore_successful = False
-
-            for retry_count in range(MAX_RETRY_ATTEMPTS):
-                if context.tasker.stopping:
-                    logger.info(
-                        f"检测到停止任务请求（自动探索重试 {retry_count+1} 中), AutoSky 任务终止。"
-                    )
-                    return CustomAction.RunResult(success=False)
-
-                # 确保在雷达界面，如果不是，说明出现了异常情况
-                if hasLeftRadar == False and context.run_recognition(
-                    "AutoSky_CheckExplorationInfo",
-                    context.tasker.controller.post_screencap().wait().get(),
-                ):
-                    logger.info(f"确认目前处于雷达界面")
-                    context.run_task("AutoSky_Exit_Radar_Interface")
-                    if context.run_recognition(
-                        "AutoSky_CheckExplorationInfo",
-                        context.tasker.controller.post_screencap().wait().get(),
-                    ).hit:
-                        logger.warning("未能成功离开雷达界面，重新尝试。")
-                        time.sleep(2)
-                        continue  # 继续下一次重试
-                    else:
-                        hasLeftRadar = True
-                        time.sleep(1)
-                else:
-                    logger.warning(f"不在雷达界面，属于异常情况，自动退出")
-                    return CustomAction.RunResult(success=False)
-
-                # 2.4 开始自动探索
-                sky_explore_start_result = context.run_task("AutoSky_SkyExplore_Start")
-                if sky_explore_start_result.nodes:
-                    logger.info("成功触发自动探索。")
-                    auto_explore_successful = True
-                    break
-                else:
-                    logger.warning("未能成功触发自动探索，重新尝试。")
-                    time.sleep(2)  # 失败后等待一下
-
-            if not auto_explore_successful:
-                logger.error(
-                    f"达到最大重试次数 ({MAX_RETRY_ATTEMPTS})，未能成功触发自动探索。AutoSky 任务终止。"
-                )
-                return CustomAction.RunResult(success=False)
-
-            time.sleep(2)  # 给自动探索一些时间让其执行
-
-            # 检查自动探索结果
-            if not context.run_recognition(
-                "AutoSky_SkyExplore_Confirm_Finish",
-                context.tasker.controller.post_screencap().wait().get(),
-            ).hit:
-                logger.info("未成功消耗能量，可能没能量或者雷达满了，任务结束。")
-                self._current_round = self._target_round
+        # 2. 主循环: 能量包计数驱动
+        # 每轮: 先尝试自动探索 → 失败时手动处理 → 用电池(若启用且未满)
+        while True:
+            # --- 终止条件 ---
+            if self._encountered_unbeatable or self._troopLoss:
                 break
+            if context.tasker.stopping:
+                logger.info("检测到停止任务请求,AutoSky 任务终止")
+                return CustomAction.RunResult(success=False)
+            self._iteration += 1
+            self._current_round = self._iteration  # 保留供日志/上报
+            if self._iteration > MAX_ITERATIONS:
+                logger.error(f"达到最大迭代次数 {MAX_ITERATIONS},任务强制终止")
+                break
+            if use_battery and self._used_battery >= target_battery:
+                logger.info(
+                    f"已用满 {self._used_battery}/{target_battery} 个能量包,任务结束"
+                )
+                break
+            if not self._last_progress:
+                logger.info("连续无进展,任务自然结束")
+                break
+
+            self._last_progress = False  # 本轮有动作再置 True
+            logger.info(f"开始第 {self._iteration} 轮探索")
+
+            # --- 1) 自动探索(消耗能量,优先)---
+            if self._try_auto_explore(context):
+                self._last_progress = True
             else:
-                logger.info("自动探索成功，消耗了能量。")
-                context.run_task("AutoSky_SkyExplore_Confirm_Finish")
+                # --- 2) 自动失败 → 手动探索 ---
+                processed_any = self._do_manual_exploration(context)
+                if processed_any:
+                    self._last_progress = True
+
+                # --- 3) 补能量包(若启用且未用满)---
+                if use_battery and self._used_battery < target_battery:
+                    remaining = target_battery - self._used_battery
+                    batch = min(BATTERY_BATCH_SIZE, remaining)  # 末批 < 25 时一次性用完
+                    used_now = self._use_battery_pack(
+                        context, max_per_batch=batch
+                    )
+                    if used_now > 0:
+                        self._used_battery += used_now
+                        self._last_progress = True
+                        logger.info(
+                            f"本轮使用 {used_now} 个能量包,"
+                            f"累计 {self._used_battery}/{target_battery}"
+                        )
 
         # 主循环结束后的最终处理
         result_message = ""
@@ -635,8 +754,17 @@ class AutoSky(CustomAction):
             result_message = "AutoSky 任务因遇到打不过的敌人而终止"
         elif self._troopLoss:
             result_message = "AutoSky 任务因遇到克隆体战损而终止"
-        elif self._current_round >= self._target_round:
-            result_message = f"AutoSky 任务已成功完成全部 {self._target_round} 轮探索"
+        elif self._iteration > MAX_ITERATIONS:
+            result_message = (
+                f"AutoSky 任务达到最大迭代次数 {MAX_ITERATIONS},强制终止"
+            )
+        elif use_battery and self._used_battery >= target_battery:
+            result_message = (
+                f"AutoSky 任务已完成 {self._used_battery} 个能量包的使用,任务结束"
+            )
+            success_status = True
+        elif not self._last_progress:
+            result_message = "AutoSky 任务已完成全部天空探索(无可进展目标)"
             success_status = True
         else:
             result_message = "AutoSky 任务意外退出"
