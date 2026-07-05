@@ -197,8 +197,11 @@ class AutoSky(CustomAction):
             return False
 
         option_name = selected["name"]
-        # 去掉括号注释（如 "(需海怪船长/鱼人/...之一)"）再用于 OCR 匹配按钮
+        # 去掉括号注释（如 "(需海怪船长/鱼人/...之一)"）和
+        # "前缀:xxx"形式（如 "发音:Eve" → "Eve"），再用于 OCR 匹配按钮
         ocr_target = option_name.split("(", 1)[0].strip()
+        if ":" in ocr_target:
+            ocr_target = ocr_target.split(":", 1)[1].strip()
         reason = selected.get("reason", "")
         logger.info(
             f"事件 '{title}' → 点击 '{ocr_target}'"
@@ -242,6 +245,8 @@ class AutoSky(CustomAction):
         deadline = time.time() + timeout
         confirm_attempts = 0
         max_confirm_attempts = 5  # 防止误识别后无限点
+        battle_attempts = 0
+        max_battle_attempts = 3  # 防止误识别后无限点
 
         time.sleep(1)  # 初始等待，让点击效果生效
 
@@ -259,7 +264,30 @@ class AutoSky(CustomAction):
                 logger.info(f"事件 '{title}' 已完成,返回雷达界面")
                 return True
 
-            # 2. 检测到确认对话框 → 自动点击
+            # 2. 检测到"进入战斗"按钮(如走私者营地 勒索后)
+            #    点进入战斗 → 链 AutoSky_SkipDetection → 自动跳过战斗 → 回雷达
+            if battle_attempts < max_battle_attempts:
+                battle_reco = context.run_recognition(
+                    "AutoSky_RobberyBattleEntry",
+                    current_img,
+                    pipeline_override={
+                        "AutoSky_RobberyBattleEntry": {
+                            "action": "DoNothing",
+                            "post_delay": 0,
+                            "timeout": 1000,
+                        }
+                    },
+                )
+                if battle_reco and battle_reco.hit:
+                    logger.info(
+                        f"事件 '{title}' 出现'进入战斗'按钮,点击进入战斗"
+                    )
+                    context.run_task("AutoSky_RobberyBattleEntry")
+                    battle_attempts += 1
+                    time.sleep(2)
+                    continue
+
+            # 3. 检测到确认对话框 → 自动点击
             if confirm_attempts < max_confirm_attempts:
                 confirm_reco = context.run_recognition(
                     "AutoSky_ClickOptionByName",
@@ -351,7 +379,7 @@ class AutoSky(CustomAction):
     def _handle_rift_by_color(self, context: Context) -> None:
         """时空裂痕无法直接摧毁时的处理:
 
-        1. OCR 裂痕边框颜色(青/黄/红/蓝)
+        1. OCR 裂痕边框颜色(青/黄/赤/蓝)
         2. 颜色 → 阵营 映射(RIFT_COLOR_TO_FACTION)
         3. 切换主分队到对应阵营
         4. 攻击裂痕
@@ -365,7 +393,7 @@ class AutoSky(CustomAction):
 
         color = color_reco.best_result.text
         # OCR 可能返回 "时空裂痕·黄" 等带前缀的字符串,提取纯色字
-        color_char = next((c for c in ("青", "黄", "红", "蓝") if c in color), color)
+        color_char = next((c for c in ("青", "黄", "赤", "蓝") if c in color), color)
         target_faction = RIFT_COLOR_TO_FACTION.get(color_char)
         if not target_faction:
             logger.warning(f"未识别的裂痕颜色 '{color_char}' (源文本='{color}'),跳过攻击")
@@ -490,7 +518,7 @@ class AutoSky(CustomAction):
         ).hit:
             # 未成功消耗能量(可能没能量/雷达满)→ 显式回雷达后让外层循环接手
             logger.info("未成功消耗能量,尝试返回雷达界面")
-            context.run_task("AutoSky_SkyExplore_Finish")
+            context.run_task("AutoSky_Enter_Radar_Interface")
             self._back_to_radar(context)
             return False
 

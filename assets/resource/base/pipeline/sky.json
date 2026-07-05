@@ -209,11 +209,11 @@
     },
     "AutoSky_RiftColor": {
         "recognition": "OCR",
-        "doc": "时空裂痕的边框颜色字（青/黄/红/蓝）→ 对应阵营",
+        "doc": "时空裂痕的边框颜色字（青/黄/赤/蓝）→ 对应阵营",
         "expected": [
             "青",
             "黄",
-            "红",
+            "赤",
             "蓝"
         ],
         "roi": [
@@ -712,7 +712,7 @@
     },
     "AutoSky_RobberyBattleEntry": {
         "recognition": "OCR",
-        "doc": "商店勒索后对方生气,点进入战斗（走战斗流程 + 跳过）",
+        "doc": "商店勒索后对方生气,点进入战斗 → 自动接战斗+跳过流程",
         "expected": "进入战斗",
         "roi": [
             40,
@@ -722,7 +722,11 @@
         ],
         "action": "Click",
         "post_delay": 1500,
-        "timeout": 3000
+        "timeout": 3000,
+        "next": [
+            "AutoSky_SkipDetection",
+            "AutoSky_Lost"
+        ]
     },
     "AutoSky_ClickOptionByName": {
         "doc": "按事件库推荐选项名点击（运行时由 Python 通过 pipeline_override 注入 expected）",
@@ -736,8 +740,9 @@
             640,
             780
         ],
+        "index": -1,
         "action": "Click",
-        "order_by": "Area",
+        "order_by": "Vertical",
         "post_delay": 500,
         "timeout": 3000
     },
