@@ -1171,8 +1171,8 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
-              "reason": "默认选项(可购买限定飞艇芯片)"
+              "selected": false,
+              "reason": "原默认(可购买限定飞艇芯片,但需要钻石)"
             },
             {
               "name": "走开",
@@ -1181,8 +1181,8 @@
                   "type": "nothing"
                 }
               ],
-              "selected": false,
-              "reason": "无收益"
+              "selected": true,
+              "reason": "用户指定:走开(避免消耗钻石买飞艇芯片)"
             }
           ]
         },
@@ -1725,7 +1725,7 @@
               "reason": "前三次含消耗钻石(10/20/30钻),即使挂件不可获取也按规则排除"
             },
             {
-              "name": "勒索商店",
+              "name": "勒索他们",
               "rewards": [
                 {
                   "type": "rune",
@@ -3078,8 +3078,8 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
-              "reason": "称号'赫克托利亚的选民'(概率获得飞艇芯片)+4星探索符石(不可获取)"
+              "selected": false,
+              "reason": "原默认(称号+4星探索符石)"
             },
             {
               "name": "为了拯救我们的世界(拥有巫妖王冈布奥)",
@@ -3109,8 +3109,8 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
-              "reason": "次选"
+              "selected": true,
+              "reason": "用户指定:宏伟的雕像全部默认选拯救世界"
             }
           ]
         },
@@ -3292,8 +3292,8 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
-              "reason": "称号'弗拉基米尔的选民'(概率获得1000碎片)"
+              "selected": false,
+              "reason": "原默认(称号+1000碎片概率)"
             },
             {
               "name": "为了拯救我们的世界(拥有巫妖王冈布奥)",
@@ -3317,8 +3317,8 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
-              "reason": "次选"
+              "selected": true,
+              "reason": "用户指定:宏伟的雕像全部默认选拯救世界"
             }
           ]
         }
@@ -7617,8 +7617,8 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
-              "reason": "含消耗钻石"
+              "selected": true,
+              "reason": "用户指定:1颗钻石(消耗最少)"
             },
             {
               "name": "3颗钻石",
@@ -7675,7 +7675,7 @@
                 "requires_choice": false
               },
               "selected": false,
-              "reason": "含消耗钻石"
+              "reason": "消耗更多钻石(3颗 vs 1颗)"
             }
           ]
         },
