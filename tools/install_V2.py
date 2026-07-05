@@ -57,16 +57,12 @@ def install_resource():
         install_path / "resource",
         dirs_exist_ok=True,
     )
-
-    # 复制配置表(4 张表: sky_events.json + 3 张情报奖励表)
-    # 见 agent/utils/table_loader.py 了解路径加载方式
-    table_src = working_dir / "assets" / "table"
-    table_dst = install_path / "table"
-    if table_src.exists():
-        shutil.copytree(table_src, table_dst, dirs_exist_ok=True)
-        print(f"已复制配置表: {table_src} -> {table_dst}")
-    else:
-        print(f"警告: 配置表目录不存在 {table_src} (CI 打包会缺少配置表)")
+    
+    shutil.copytree(
+        working_dir / "assets" / "table",
+        install_path / "table",
+        dirs_exist_ok=True,
+    )
 
     shutil.copy2(
         working_dir / "assets" / "interface.json",

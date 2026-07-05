@@ -811,7 +811,7 @@
         "recognition": "OCR",
         "doc": "能量包使用数量(0=不使用)。selected 数量由 interface.json '能量包使用模式' 选项的 pipeline_override.expected 注入。",
         "expected": [
-            "25"
+            "0"
         ],
         "roi": [
             0,
