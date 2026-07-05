@@ -210,6 +210,18 @@ data = context.get_node_data("CustomTaskBlacklist")
 value = data.get("recognition", {}).get("param", {}).get("expected", [""])[0]
 ```
 
+### ⚠️ 常见错误:别用 `custom_action_param` 字段读参数
+
+> **不要**把用户输入塞到 `pipeline_override.custom_action_param`,然后用 `get_node_data()["custom_action_param"]` 读。
+>
+> **原因**:`pipeline_override.custom_action_param` 只影响 `argv.custom_action_param`(`context.run_task` 时的 CustomAction 调用参数),**不会**同步到 `get_node_data()` 返回值。
+>
+> **正确做法**(二选一):
+> - **input 类型**:用 `{name}` 占位符 + `expected` 字段(本节示例)
+> - **select 类型 + 数字识别**:用 `expected: ["100"]`,Python 读 `node["recognition"]["param"]["expected"][0]` parseInt
+>
+> **错误信号**:Python 代码里 `get_node_data("X").get("custom_action_param")` 永远返回 None 或默认值 → 用户选了 UI 但代码不响应。
+
 ---
 
 ## 模式 E：行为覆盖（pure override 现有节点字段）— 最简

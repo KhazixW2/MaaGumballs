@@ -168,6 +168,40 @@ python .claude/skills/pipeline-generate/generate_node.py "角色" UI_RoleListPag
 | `UI_TeamPage` | **20** | 0.997 | 城堡右边 |
 | `ClickGoToArchipelago` | **20** | 0.991 | 中间大地图按钮 |
 
+### 用 `color_filter` 减少 OCR 干扰(实战技巧)
+
+**场景**:ROI 里同时有**目标文字 + 周边装饰**(如"0/31"绿色能量条 vs "0/23"绿色节点数),OCR 可能误识别装饰色块。
+
+**方案**:先建一个 `ColorMatch` 节点(限定像素颜色范围),然后在其他 OCR 节点上加 `color_filter` 字段引用它。
+
+```jsonc
+"AutoSky_GreenCheck": {
+    "recognition": "ColorMatch",
+    "roi": [558, 802, 157, 45],
+    "method": 4,
+    "lower": [22, 123, 57],      // RGB 下界(暗绿)
+    "upper": [55, 215, 102],     // RGB 上界(亮绿)
+    "action": "DoNothing",
+    "post_delay": 200,
+    "timeout": 2000
+},
+
+"AutoSky_CheckEnergyZero": {
+    "recognition": "OCR",
+    "expected": ["0/\\d+"],
+    "roi": [850, 1280, 220, 50],
+    "color_filter": "AutoSky_GreenCheck",  // ← 只在绿色区域 OCR
+    "action": "DoNothing"
+}
+```
+
+**取色技巧**(用截图工具):
+- 目标区域:取目标**装饰/边框**色(非文字色,文字一般会变色)
+- RGB 范围要**宽松**一些(±20),覆盖光照变化
+- method=4 是 RGB(0=HSV)
+
+**实战案例**:本项目(MaaGumballs)用这个方法区分"能量条 0/31"vs"节点数 0/23",两者都是绿色 OCR 文本,周围装饰色也不同。
+
 ### 已验证：可滚动 UI 统一 ROI（10 城堡建筑）
 
 | 节点 | 统一 ROI | score | 备注 |
