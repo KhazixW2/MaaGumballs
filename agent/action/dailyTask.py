@@ -123,9 +123,13 @@ class WeeklyRaidFighting(CustomAction):
             "WeeklyRaid_Check",
             context.tasker.controller.post_screencap().wait().get(),
         ):
-            if recoDetail.best_result.text in self.weeklyRaidList:
+            if recoDetail.hit and recoDetail.best_result and \
+               recoDetail.best_result.text in self.weeklyRaidList:
                 taskName = recoDetail.best_result.text
                 logger.info(f"检测到周赛战斗为: {taskName}")
+            else:
+                logger.warning("未检测到周赛战斗(命中失败或文本不在列表)")
+                return CustomAction.RunResult(success=False)
         else:
             logger.warning("未检测到周赛战斗")
             return CustomAction.RunResult(success=False)
