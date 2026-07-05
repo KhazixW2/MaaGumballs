@@ -5,20 +5,20 @@
                 "/assets/resource/**/*.json",
                 "/install/resource/**/*.json"
             ],
-            "url": "/tools/pipeline.schema.json"
+            "url": "deps/tools/pipeline.schema.json"
         },
         {
             "fileMatch": [
                 "/assets/interface.json",
                 "/install/interface.json"
             ],
-            "url": "/tools/interface.schema.json"
+            "url": "deps/tools/interface.schema.json"
         },
         {
             "fileMatch": [
                 "/install/config/maa_pi_config.json"
             ],
-            "url": "/tools/interface_config.schema.json"
+            "url": "deps/tools/interface_config.schema.json"
         }
     ],
     "[json]": {
