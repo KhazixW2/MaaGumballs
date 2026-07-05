@@ -11494,6 +11494,60 @@
               "reason": "用户指定:死星残骸只有'不再理会'选项(无翻找/无奖励)"
             }
           ]
+        },
+        {
+          "id": "wreckage_alien",
+          "floor": "1500",
+          "name": "异族的残骸",
+          "level_range": "1500+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "翻找",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "活性细胞",
+                  "quantity": 100
+                },
+                {
+                  "type": "material",
+                  "name": "遗迹碎片",
+                  "quantity": 3000
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_search_action": true
+              },
+              "selected": true,
+              "reason": "数据表预置:残骸类统一选翻找"
+            },
+            {
+              "name": "埋葬",
+              "rewards": [
+                {
+                  "type": "material",
+                  "name": "灵魂",
+                  "quantity": 5
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_burial_action": true
+              },
+              "selected": false,
+              "reason": "次选(仅给灵魂,无额外材料)"
+            }
+          ]
         }
       ]
     },
