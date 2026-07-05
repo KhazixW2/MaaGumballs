@@ -71,10 +71,15 @@ class AutoSky(CustomAction):
     def _ensure_sky_events_loaded(self) -> dict:
         """加载 sky_events.json 并构建 name -> event 索引。
 
+        索引两种条目:
+          - event name → event 自身(精确匹配)
+          - category name → 该 category 的元信息字典
+            (用于 OCR 检测到 category 标题时,返回第一个 sub-event 的处理)
+
         首次在 ``__init__`` 调用，之后保持缓存。文件不存在时返回空字典。
 
         Returns:
-            dict: 事件名 -> 事件原始数据。
+            dict: 名称 -> event 或 category 元信息
         """
         if self._sky_events_index is not None:
             return self._sky_events_index
@@ -89,37 +94,65 @@ class AutoSky(CustomAction):
 
         index: dict = {}
         for cat in data.get("categories", []):
-            for ev in cat.get("events", []):
+            cat_name = cat.get("name")
+            events = cat.get("events", [])
+            # 1. 索引每个 event 名字
+            for ev in events:
                 name = ev.get("name")
                 if name:
                     index[name] = ev
+            # 2. 索引 category 名字 → 存 category 引用
+            #    让 _find_event_by_title 在 OCR 检测到 category 标题时
+            #    能匹配上(返回第一个 sub-event 作默认处理)
+            if cat_name and events:
+                index[cat_name] = {
+                    "__category__": True,
+                    "events": events,
+                }
         self._sky_events_index = index
-        logger.info(f"事件库预加载完成: {len(index)} 个事件")
+        logger.info(f"事件库预加载完成: {len(index)} 个条目(含 category 别名)")
         return self._sky_events_index
 
     def _find_event_by_title(self, title: str) -> dict | None:
         """根据 OCR 出的事件标题在事件库中查找。
 
-        三档匹配:
-          1. 精确匹配
-          2. 子串匹配（OCR 漏字或夹塞字也能命中）
-          3. 相似度匹配（SequenceMatcher，处理 OCR 错字）
+        四档匹配:
+          1. 精确匹配 event 名字
+          2. 精确匹配 category 名字(返回该 category 第一个 sub-event 作默认)
+          3. 子串匹配(OCR 漏字或夹塞字)
+          4. 相似度匹配(SequenceMatcher,处理 OCR 错字)
         """
         if not title:
             return None
         index = self._ensure_sky_events_loaded()
 
-        # 1. 精确匹配
+        # 1. 精确匹配 event 名
         if title in index:
-            return index[title]
+            ev = index[title]
+            if ev.get("__category__"):
+                # 命中 category 别名 → 返回第一个 sub-event 作默认处理
+                first_event = ev["events"][0]
+                logger.info(
+                    f"事件标题 category 别名匹配: OCR='{title}' → "
+                    f"子事件 '{first_event.get('name')}'"
+                )
+                return first_event
+            return ev
 
-        # 2. 子串匹配（OCR 文本可能在标题前/中/后夹塞字）
+        # 3. 子串匹配(OCR 文本可能在标题前/中/后夹塞字)
         for name, ev in index.items():
             if title in name or name in title:
+                if ev.get("__category__"):
+                    first_event = ev["events"][0]
+                    logger.info(
+                        f"事件标题子串匹配(category): OCR='{title}' → 库='{name}' → "
+                        f"子事件 '{first_event.get('name')}'"
+                    )
+                    return first_event
                 logger.info(f"事件标题子串匹配: OCR='{title}' → 库='{name}'")
                 return ev
 
-        # 3. 相似度匹配（兜底，处理 OCR 错字如 "垃圾烧炉" vs "垃圾焚烧炉"）
+        # 4. 相似度匹配(兜底,处理 OCR 错字如 "垃圾烧炉" vs "垃圾焚烧炉")
         best_match = None
         best_name = None
         best_ratio = 0.6  # 相似度阈值
@@ -130,6 +163,13 @@ class AutoSky(CustomAction):
                 best_match = ev
                 best_name = name
         if best_match is not None:
+            if best_match.get("__category__"):
+                first_event = best_match["events"][0]
+                logger.info(
+                    f"事件标题相似度匹配(category): OCR='{title}' → 库='{best_name}' "
+                    f"(ratio={best_ratio:.2f}) → 子事件 '{first_event.get('name')}'"
+                )
+                return first_event
             logger.info(
                 f"事件标题相似度匹配: OCR='{title}' → 库='{best_name}' (ratio={best_ratio:.2f})"
             )
@@ -193,7 +233,8 @@ class AutoSky(CustomAction):
                 return False
 
         if not selected:
-            logger.warning(f"事件 '{title}' 未在事件库中找到,跳过智能选择")
+            logger.warning(f"事件 '{title}' 未在事件库中找到,跳过智能选择并返回上一级UI")
+            context.run_task("BackText_500ms")
             return False
 
         option_name = selected["name"]
@@ -424,7 +465,8 @@ class AutoSky(CustomAction):
         """读取用户在 UI 中选择的能量包配置。
 
         通过 ``context.get_node_data("AutoSky_BagConfig")`` 读取
-        pipeline_override 注入的 ``custom_action_param.target_count``。
+        pipeline_override 注入的 ``recognition.param.expected`` 第一个元素
+        (字符串数字,parse 为 int)。
 
         Returns:
             (target_count, use_battery)
@@ -434,17 +476,35 @@ class AutoSky(CustomAction):
         node = context.get_node_data("AutoSky_BagConfig")
         target = 0
         if node:
-            target = (
-                node.get("action", {})
+            expected = (
+                node.get("recognition", {})
                 .get("param", {})
-                .get("custom_action_param", {})
-                .get("target_count", 0)
+                .get("expected", ["0"])
             )
-        try:
-            target = int(target)
-        except (TypeError, ValueError):
-            target = 0
+            if expected:
+                try:
+                    target = int(expected[0])
+                except (TypeError, ValueError):
+                    target = 0
         return target, target > 0
+
+    def _is_radar_empty(self, context: Context) -> bool:
+        """检查雷达上是否已无可探索节点(右下角 00/23 → 0 命中)。
+
+        Returns:
+            bool: True 表示雷达已无可探索节点。
+        """
+        img = context.tasker.controller.post_screencap().wait().get()
+        return context.run_recognition("AutoSky_CheckNodeCountZero", img).hit
+
+    def _is_energy_zero(self, context: Context) -> bool:
+        """检查能量是否为 0(右上角 0/31 → "0/" 前缀命中)。
+
+        Returns:
+            bool: True 表示能量为 0。
+        """
+        img = context.tasker.controller.post_screencap().wait().get()
+        return context.run_recognition("AutoSky_CheckEnergyZero", img).hit
 
     def _try_auto_explore(self, context: Context) -> bool:
         """尝试触发一次自动探索(消耗能量)。
@@ -544,6 +604,11 @@ class AutoSky(CustomAction):
         """
         logger.info("开始手动探索...")
 
+        # 0. 快速检查:雷达上是否还有可探索节点(避免节点为 0 时白跑 7 次 ChangeTarget)
+        if self._is_radar_empty(context):
+            logger.info("雷达上已无可探索节点(00/23),跳过手动扫描")
+            return False
+
         # 1. 获取目标数
         max_manual_attempts = 7  # OCR 容易把 7 识别成门,留余量
         target_num_reco = context.run_recognition(
@@ -565,6 +630,10 @@ class AutoSky(CustomAction):
         # 2. 循环切换目标并处理
         processed_any = False
         manual_attempts_done = 0
+        # 卡住检测: 连续 2 次同一目标说明按钮无反应(条件不满足/RepeatTargeted),跳过
+        last_event_title = ""
+        consecutive_same_title = 0
+        MAX_SAME_TITLE = 2  # 连续 2 次同一目标就跳过
         logger.info(f"开始本轮手动探索 ({max_manual_attempts} 次尝试)")
         while manual_attempts_done < max_manual_attempts:
             if context.tasker.stopping:
@@ -580,6 +649,9 @@ class AutoSky(CustomAction):
             ).hit:
                 self._handle_rift_by_color(context)
                 processed_any = True
+                # 重置卡住计数(已成功处理)
+                last_event_title = ""
+                consecutive_same_title = 0
                 logger.info(
                     f"当前目标为时空裂痕,继续切换 ({manual_attempts_done}/{max_manual_attempts})"
                 )
@@ -595,10 +667,30 @@ class AutoSky(CustomAction):
                 if not reco or not reco.hit:
                     logger.warning("未能 OCR 识别随机事件标题")
                     continue
+                current_title = reco.best_result.text
+
+                # 卡住检测: 连续同一目标多次说明按钮无反应(300层条件等)
+                if current_title == last_event_title:
+                    consecutive_same_title += 1
+                else:
+                    consecutive_same_title = 1
+                    last_event_title = current_title
+
+                if consecutive_same_title >= MAX_SAME_TITLE:
+                    logger.warning(
+                        f"连续 {consecutive_same_title} 次目标 '{current_title}' 未变化,"
+                        f"可能条件不满足(层数/机器人限制等),跳过此目标"
+                    )
+                    # 不 _handle_random_event,直接下一轮让 ChangeTarget 切下一个
+                    # 但因为 ChangeTarget 也没切走(雷达可能只剩这节点),
+                    # _do_manual_exploration 返回 False → main loop 退出
+                    processed_any = False
+                    break
+
                 context.run_task("AutoSky_ExploreRandomEvent")
                 time.sleep(1)
                 current_img = context.tasker.controller.post_screencap().wait().get()
-                self._handle_random_event(context, current_img, reco.best_result.text)
+                self._handle_random_event(context, current_img, current_title)
                 processed_any = True
                 continue
 
@@ -816,6 +908,7 @@ class AutoSky(CustomAction):
 
         # 2. 主循环: 能量包计数驱动
         # 每轮: 先尝试自动探索 → 失败时手动处理 → 用电池(若启用且未满)
+        # 关键: 用完电池不立即退出,等下一轮 _try_auto_explore 用掉新能量
         while True:
             # --- 终止条件 ---
             if self._encountered_unbeatable or self._troopLoss:
@@ -827,11 +920,6 @@ class AutoSky(CustomAction):
             self._current_round = self._iteration  # 保留供日志/上报
             if self._iteration > MAX_ITERATIONS:
                 logger.error(f"达到最大迭代次数 {MAX_ITERATIONS},任务强制终止")
-                break
-            if use_battery and self._used_battery >= target_battery:
-                logger.info(
-                    f"已用满 {self._used_battery}/{target_battery} 个能量包,任务结束"
-                )
                 break
             if not self._last_progress:
                 logger.info("连续无进展,任务自然结束")
@@ -851,25 +939,52 @@ class AutoSky(CustomAction):
                     "AutoSky_CheckExplorationInfo", radar_img
                 ).hit
                 if in_radar_now:
-                    # --- 2) 自动失败但已在雷达 → 手动探索 ---
-                    processed_any = self._do_manual_exploration(context)
-                    if processed_any:
-                        self._last_progress = True
-
-                    # --- 3) 补能量包(若启用且未用满)---
-                    if use_battery and self._used_battery < target_battery:
-                        remaining = target_battery - self._used_battery
-                        batch = min(BATTERY_BATCH_SIZE, remaining)  # 末批 < 25 时一次性用完
-                        used_now = self._use_battery_pack(
-                            context, max_per_batch=batch
-                        )
-                        if used_now > 0:
-                            self._used_battery += used_now
-                            self._last_progress = True
-                            logger.info(
-                                f"本轮使用 {used_now} 个能量包,"
-                                f"累计 {self._used_battery}/{target_battery}"
+                    # --- 检查雷达是否还有可探索节点 ---
+                    # 雷达空(0/0)说明本次探索已无目标,直接用电池补充
+                    if self._is_radar_empty(context):
+                        # 雷达空 + 自动失败 = 没能量 + 没目标
+                        if use_battery and self._used_battery < target_battery:
+                            # 还有能量包预算 → 用电池补充
+                            remaining = target_battery - self._used_battery
+                            batch = min(BATTERY_BATCH_SIZE, remaining)
+                            used_now = self._use_battery_pack(
+                                context, max_per_batch=batch
                             )
+                            if used_now > 0:
+                                self._used_battery += used_now
+                                self._last_progress = True
+                                logger.info(
+                                    f"雷达无目标,使用 {used_now} 个能量包,"
+                                    f"累计 {self._used_battery}/{target_battery}"
+                                )
+                            # 下一轮 _try_auto_explore 会用上新能量
+                        else:
+                            # 电池用完或未启用 → 任务完成
+                            logger.info(
+                                "雷达无目标且无可用能量包,任务完成"
+                            )
+                            self._last_progress = False
+                    else:
+                        # 雷达还有节点 → 手动探索
+                        # --- 2) 自动失败但雷达有目标 → 手动探索 ---
+                        processed_any = self._do_manual_exploration(context)
+                        if processed_any:
+                            self._last_progress = True
+
+                        # --- 3) 补能量包(若启用且未用满)---
+                        if use_battery and self._used_battery < target_battery:
+                            remaining = target_battery - self._used_battery
+                            batch = min(BATTERY_BATCH_SIZE, remaining)  # 末批 < 25 时一次性用完
+                            used_now = self._use_battery_pack(
+                                context, max_per_batch=batch
+                            )
+                            if used_now > 0:
+                                self._used_battery += used_now
+                                self._last_progress = True
+                                logger.info(
+                                    f"本轮使用 {used_now} 个能量包,"
+                                    f"累计 {self._used_battery}/{target_battery}"
+                                )
                 else:
                     # UI 不在雷达(可能跳出天空流程到大地图)→
                     # 不进入手动探索(否则会乱点乱识别),
