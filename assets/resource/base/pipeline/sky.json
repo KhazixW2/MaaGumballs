@@ -101,6 +101,9 @@
             "AutoSky_Enter_Radar_Interface"
         ]
     },
+    "AutoSky_SkyExplore_CheckUI": {
+        "doc": "检查当前是否在天空快速探索的页面"
+    },
     "AutoSky_SkyExplore_Start": {
         "recognition": "OCR",
         "doc": "这一步是在快捷探索界面点击自动探索按钮",
@@ -182,6 +185,63 @@
         "post_delay": 500,
         "timeout": 2000,
         "next": []
+    },
+    "AutoSky_CheckEnergyZero": {
+        "recognition": "OCR",
+        "doc": "检查右上角能量条 0/X - 能量为 0 时 hit(正则 '0/\\\\d+' 匹配 0/任何数字,不受 cap 变化影响)",
+        "expected": [
+            "0/"
+        ],
+        "roi": [
+            533,
+            790,
+            181,
+            57
+        ],
+        "color_filter": "AutoSky_GreenCheck",
+        "post_delay": 200,
+        "timeout": 2000,
+        "action": "DoNothing"
+    },
+    "AutoSky_CheckNodeCountZero": {
+        "recognition": "OCR",
+        "doc": "检查右下角 0/23 - 节点数为 0 时 hit(正则 '0/\\\\d+' 匹配 0/任何数字,不受总节点数变化影响)",
+        "expected": [
+            "00/"
+        ],
+        "roi": [
+            562,
+            1087,
+            147,
+            95
+        ],
+        "color_filter": "AutoSky_GreenCheck",
+        "post_delay": 200,
+        "timeout": 2000,
+        "action": "DoNothing"
+    },
+    "AutoSky_GreenCheck": {
+        "recognition": "ColorMatch",
+        "roi": [
+            558,
+            802,
+            157,
+            45
+        ],
+        "method": 4,
+        "lower": [
+            22,
+            123,
+            57
+        ],
+        "upper": [
+            55,
+            215,
+            102
+        ],
+        "action": "DoNothing",
+        "post_delay": 200,
+        "timeout": 2000
     },
     "AutoSky_ChangeTarget": {
         "recognition": "DirectHit",
@@ -343,6 +403,7 @@
         "next": [
             "AutoSky_TroopLoss",
             "AutoSky_CheckExplorationInfo",
+            "[JumpBack]ConfirmButton_500ms",
             "[JumpBack]ClickCenter_200ms"
         ]
     },
@@ -747,9 +808,19 @@
         "timeout": 3000
     },
     "AutoSky_BagConfig": {
-        "doc": "能量包使用配置（由 interface.json 的'能量包使用模式'选项注入 target_count）",
-        "custom_action_param": {
-            "target_count": 0
-        }
+        "recognition": "OCR",
+        "doc": "能量包使用数量(0=不使用)。selected 数量由 interface.json '能量包使用模式' 选项的 pipeline_override.expected 注入。",
+        "expected": [
+            "25"
+        ],
+        "roi": [
+            0,
+            0,
+            1,
+            1
+        ],
+        "action": "DoNothing",
+        "post_delay": 0,
+        "timeout": 100
     }
 }
