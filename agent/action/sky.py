@@ -1,24 +1,20 @@
 import difflib
 import json
 import time
-from pathlib import Path
 
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
 from utils import logger
+from utils.table_loader import get_table_path
 
 MAX_RETRY_ATTEMPTS = 3  # 定义最大重试次数
 BATTERY_PER_USE = 5      # AutoSky_Bag_UseBattery 单次调用使用的电池数(沿用 OCR '5个')
 BATTERY_BATCH_SIZE = 25  # 每次"补能阶段"的最大批次数(25 电池 ≈ 125 能量)
 MAX_ITERATIONS = 50      # 主循环硬性迭代上限(防止意外无限循环)
 
-# 事件库 JSON 路径（相对项目根）
-SKY_EVENTS_FILE = (
-    Path(__file__).resolve().parent.parent.parent
-    / "intelligence_data"
-    / "sky_events.json"
-)
+# 事件库 JSON 路径(用统一 helper,见 utils.table_loader)
+SKY_EVENTS_FILE = get_table_path("sky_events.json")
 
 # 时空裂痕边框颜色 → 阵营映射
 # 青色 = 启示, 黄色 = 游荡, 赤色 = 深渊, 蓝色 = 刃
