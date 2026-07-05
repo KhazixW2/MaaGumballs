@@ -284,7 +284,7 @@
             "doc": "该节点不点称号,仅吃狼人药剂叫狗"
         },
         {
-            "name": "马尔斯",
+            "name": "玛尔斯",
             "entry": "Mars",
             "repeatable": true,
             "repeat_count": 1,
@@ -519,9 +519,19 @@
                     "name": "不使用",
                     "pipeline_override": {
                         "AutoSky_BagConfig": {
-                            "custom_action_param": {
-                                "target_count": 0
-                            }
+                            "expected": [
+                                "0"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "25个",
+                    "pipeline_override": {
+                        "AutoSky_BagConfig": {
+                            "expected": [
+                                "25"
+                            ]
                         }
                     }
                 },
@@ -529,9 +539,9 @@
                     "name": "50个",
                     "pipeline_override": {
                         "AutoSky_BagConfig": {
-                            "custom_action_param": {
-                                "target_count": 50
-                            }
+                            "expected": [
+                                "50"
+                            ]
                         }
                     }
                 },
@@ -539,9 +549,9 @@
                     "name": "100个",
                     "pipeline_override": {
                         "AutoSky_BagConfig": {
-                            "custom_action_param": {
-                                "target_count": 100
-                            }
+                            "expected": [
+                                "100"
+                            ]
                         }
                     }
                 },
@@ -549,9 +559,9 @@
                     "name": "200个",
                     "pipeline_override": {
                         "AutoSky_BagConfig": {
-                            "custom_action_param": {
-                                "target_count": 200
-                            }
+                            "expected": [
+                                "200"
+                            ]
                         }
                     }
                 },
@@ -559,9 +569,9 @@
                     "name": "500个",
                     "pipeline_override": {
                         "AutoSky_BagConfig": {
-                            "custom_action_param": {
-                                "target_count": 500
-                            }
+                            "expected": [
+                                "500"
+                            ]
                         }
                     }
                 }
