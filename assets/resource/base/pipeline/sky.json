@@ -994,5 +994,37 @@
             "AutoSky_CheckExplorationInfo",
             "[JumpBack]ClickCenter"
         ]
+    },
+    "AutoSky_CheckSkyLevel": {
+        "next": [
+            "AutoSky_CheckSkyLevel_Check",
+            "[JumpBack]AutoSky_CheckSkyLevel_Click"
+        ]
+    },
+    "AutoSky_CheckSkyLevel_Click": {
+        "recognition": "OCR",
+        "expected": "探索信息",
+        "roi": [
+            0,
+            634,
+            256,
+            169
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 2000
+    },
+    "AutoSky_CheckSkyLevel_Check": {
+        "recognition": "OCR",
+        "expected": "\\d+",
+        "roi": [
+            399,
+            572,
+            100,
+            69
+        ],
+        "action": "DoNothing",
+        "post_delay": 500,
+        "timeout": 2000
     }
 }

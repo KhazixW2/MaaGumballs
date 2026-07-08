@@ -14,6 +14,7 @@ BATTERY_PER_USE = 5      # AutoSky_Bag_UseBattery 单次调用使用的电池数
 BATTERY_BATCH_SIZE = 25  # 每次"补能阶段"的最大批次数(25 电池 ≈ 125 能量)
 MAX_ITERATIONS = 50      # 主循环硬性迭代上限(防止意外无限循环)
 MAX_COMBAT_FAIL_COUNT = 3  # 连续战斗失败次数达到该值后判定打不过
+MAX_SKY_LEVEL_STAGNANT_ROUNDS = 2  # 连续天空等级未变化次数达到该值后判定无进展
 
 # 事件库 JSON 路径(用统一 helper,见 utils.table_loader)
 SKY_EVENTS_FILE = get_table_path("sky_events.json")
@@ -40,6 +41,9 @@ class AutoSky(CustomAction):
     _iteration: int  # 主循环当前迭代数
     _last_progress: bool  # 上一轮是否有进展(用于无进展检测)
     _combat_fail_count: int  # 连续命中 AutoSky_SkipDetection_Fail 的次数
+    _last_sky_level: int | None  # 上一次识别到的天空探索等级
+    _sky_level_stagnant_rounds: int  # 连续天空等级未变化次数
+    _sky_level_stalled: bool  # 天空等级连续未变化,判定探索不再推进
 
     def __init__(self):
         super().__init__()
@@ -63,6 +67,9 @@ class AutoSky(CustomAction):
         self._iteration = 0  # 主循环迭代数
         self._last_progress = True  # 默认认为有进展(避免首次就退出)
         self._combat_fail_count = 0
+        self._last_sky_level = None
+        self._sky_level_stagnant_rounds = 0
+        self._sky_level_stalled = False
 
     # ------------------------------------------------------------------
     # 事件库：构造时预加载 + 检索
@@ -560,6 +567,71 @@ class AutoSky(CustomAction):
             return True
 
         return False
+
+    @staticmethod
+    def _first_int_from_text(raw_text: str | None) -> int | None:
+        match = re.search(r"\d+", raw_text or "")
+        return int(match.group(0)) if match else None
+
+    @staticmethod
+    def _recognition_best_text(context: Context, node_name: str) -> str | None:
+        img = context.tasker.controller.post_screencap().wait().get()
+        reco = context.run_recognition(node_name, img)
+        if not (reco and reco.hit and reco.best_result):
+            return None
+        return reco.best_result.text
+
+    def _read_sky_level(self, context: Context) -> int | None:
+        """打开探索信息并读取天空探索等级。"""
+        opened = context.run_task("AutoSky_CheckSkyLevel_Click")
+        if not self._task_result_has_node(opened, {"AutoSky_CheckSkyLevel_Click"}):
+            logger.warning("打开探索信息失败，跳过天空等级检测")
+            return None
+
+        try:
+            raw_text = self._recognition_best_text(context, "AutoSky_CheckSkyLevel_Check")
+            sky_level = self._first_int_from_text(raw_text)
+            if sky_level is None:
+                logger.warning(f"未能识别天空探索等级(原始='{raw_text}')")
+                return None
+
+            logger.info(f"识别到天空探索等级: {sky_level} (原始='{raw_text}')")
+            return sky_level
+        finally:
+            context.run_task("BackText_500ms")
+
+    def _update_sky_level_stagnation(self, context: Context) -> bool:
+        """更新天空等级停滞计数；连续不变达到阈值时返回 True。"""
+        sky_level = self._read_sky_level(context)
+        if sky_level is None:
+            return False
+
+        if self._last_sky_level is None:
+            self._last_sky_level = sky_level
+            logger.info(f"记录天空探索等级基线: {sky_level}")
+            return False
+
+        if sky_level != self._last_sky_level:
+            logger.info(
+                f"天空探索等级变化: {self._last_sky_level} → {sky_level}，"
+                "连续未变化计数清零"
+            )
+            self._last_sky_level = sky_level
+            self._sky_level_stagnant_rounds = 0
+            return False
+
+        self._sky_level_stagnant_rounds += 1
+        logger.warning(
+            f"天空探索等级连续 {self._sky_level_stagnant_rounds}/"
+            f"{MAX_SKY_LEVEL_STAGNANT_ROUNDS} 轮未变化(当前 {sky_level})"
+        )
+        self._sky_level_stalled = (
+            self._sky_level_stagnant_rounds >= MAX_SKY_LEVEL_STAGNANT_ROUNDS
+        )
+        if self._sky_level_stalled:
+            self._last_progress = False
+            logger.info("连续两轮天空探索等级未变化，判定当前已探索不动")
+        return self._sky_level_stalled
 
     def _is_radar_empty(self, context: Context) -> bool:
         """检查雷达上是否已无可探索节点(右下角 00/23 → 0 命中)。
@@ -1103,6 +1175,9 @@ class AutoSky(CustomAction):
                     )
                     self._last_progress = False
 
+            if self._last_progress and self._update_sky_level_stagnation(context):
+                break
+
         # 主循环结束后的最终处理
         result_message = ""
         success_status = False
@@ -1116,6 +1191,12 @@ class AutoSky(CustomAction):
             result_message = (
                 f"AutoSky 任务达到最大迭代次数 {MAX_ITERATIONS},强制终止"
             )
+        elif self._sky_level_stalled:
+            result_message = (
+                f"AutoSky 任务已连续 {MAX_SKY_LEVEL_STAGNANT_ROUNDS} 轮天空探索等级未变化,"
+                "判定当前已无可推进目标"
+            )
+            success_status = True
         elif use_battery and self._used_battery >= target_battery:
             result_message = (
                 f"AutoSky 任务已完成 {self._used_battery} 个能量包的使用,任务结束"
