@@ -50,6 +50,51 @@ for node_name in pipeline_nodes:
 }
 ```
 
+## `run_task()` 结果判断 ⚠️
+
+MCP 的 `run_pipeline` 单节点结果和 Python CustomAction 里的 `context.run_task()` 结果不是同一个使用场景。`context.run_task()` 的 `result.nodes` 可能包含:
+
+- 真正命中并执行完成的节点
+- `next` 列表里被尝试过但失败的节点
+- 调试面板显示红叉的节点
+
+因此不要写:
+
+```python
+# ❌ 错：有 nodes 不代表目标节点命中
+result = context.run_task("AutoSky_CloneDied")
+if result and result.nodes:
+    handle_clone_loss()
+```
+
+应该检查节点是否真的完成或识别命中:
+
+```python
+def task_result_has_hit(result, names: set[str]) -> bool:
+    if not result or not result.nodes:
+        return False
+    for node in result.nodes:
+        if getattr(node, "name", None) not in names:
+            continue
+        if getattr(node, "completed", False):
+            return True
+        recognition = getattr(node, "recognition", None)
+        if recognition and getattr(recognition, "hit", False):
+            return True
+    return False
+```
+
+实战信号：调试面板里目标节点是红叉，但日志却进入了成功分支，基本就是把"节点出现过"误当成"节点命中"。
+
+对于会回到稳定页面的流程，建议先检测稳定状态:
+
+```python
+if task_result_has_hit(result, {"AutoSky_CheckExplorationInfo"}):
+    return "done"
+```
+
+再跑危险兜底动作（取消结算、购买确认、继续挑战等），避免页面已经回稳后误触发。
+
 ## 跨测试导航 ⚠️
 
 **Click 节点会让页面跳转，破坏后续测试初始状态**。必须用 `BackButton_500ms` 返回：

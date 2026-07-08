@@ -13,6 +13,68 @@ description: Universal Pipeline JSON 编写指南。基于 MaaFramework Pipeline
 4. **720p 基准**：所有坐标、ROI、图片必须基于 **720X1280**。
 5. **格式化**：JSON 遵循 `.prettierrc`（4 空格缩进，数组元素换行）。
 
+## 项目兼容与实战约定
+
+### 保持本文件既有语法风格
+
+MaaFramework 协议推荐 v2 object 形态，但本仓库不少历史 pipeline 仍使用平铺字段:
+
+```jsonc
+{
+    "AutoSky_CheckExplorationInfo": {
+        "recognition": "OCR",
+        "expected": "探索信息",
+        "roi": [32, 964, 214, 103],
+        "action": "DoNothing"
+    }
+}
+```
+
+编辑既有文件时优先沿用该文件已有风格，避免在同一个局部把 v1 平铺与 v2 object 混得过碎。若要新增 UI 选项或 Python 读取配置，先确认 `context.get_node_data()` 返回结构和当前代码读取路径。
+
+### `enabled` 与 `enable`
+
+协议字段是 `enabled`；部分项目/历史节点可能使用 `enable` 作为自定义开关字段。新增开关时:
+
+- 若节点由 MaaFramework 原生启停，优先使用 `enabled`。
+- 若 Python 代码显式读取 `enable` 或已有辅助函数兼容 `enable/enabled`，沿用该功能已有字段。
+- `interface.json` 的 `pipeline_override` 必须覆盖代码实际读取的字段；不要 UI 写 `enabled`，Python 却读 `enable`。
+
+### Python 中判断任务结果
+
+`context.run_task()` 返回的 `result.nodes` 可能包含已经尝试过但识别失败的节点。调试面板里的红叉节点也可能出现在列表中，所以不要用 `if result.nodes` 或"节点名出现过"当作命中。
+
+可靠判断顺序:
+
+1. 优先用 `context.run_recognition("Node", img).hit` 判断当前截图。
+2. 必须分析 `run_task()` 结果时，检查目标 node 的 `completed` 或 `node.recognition.hit`。
+3. 对会回到稳定页面的流程，先检测稳定状态节点（如 `AutoSky_CheckExplorationInfo`），避免已经回到页面后又误跑危险兜底动作。
+
+```python
+def task_result_has_hit(result, names: set[str]) -> bool:
+    if not result or not result.nodes:
+        return False
+    for node in result.nodes:
+        if getattr(node, "name", None) not in names:
+            continue
+        if getattr(node, "completed", False):
+            return True
+        recognition = getattr(node, "recognition", None)
+        if recognition and getattr(recognition, "hit", False):
+            return True
+    return False
+```
+
+### 宽入口与高风险分支拆开
+
+不要把"战斗"、"调查"、"开启神殿"、"领奖"等语义不同的节点全塞进一个宽泛 `EventDetection.next` 后再由 Python 统一当战斗处理。高风险分支应在 Python 或上层状态机里先做分类:
+
+- 非战斗事件：调查、拾取、神殿开启，命中后直接作为事件处理。
+- 战斗事件：袭击、进入战斗，只有这一类才进入战斗失败/克隆体战损检测。
+- 稳定状态：回到雷达/主界面后优先终止本次检测链。
+
+这能避免"空雷达/调查事件被误判成战斗结算"一类问题。
+
 ## 节点命名
 
 - 使用 **PascalCase**，同一任务内节点以任务名/模块名为前缀。

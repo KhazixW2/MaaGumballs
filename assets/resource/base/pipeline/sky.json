@@ -341,9 +341,7 @@
         "post_delay": 3500,
         "timeout": 10000,
         "next": [
-            "AutoSky_Lost_Continue",
-            "AutoSky_SkipDetection",
-            "AutoSky_Lost"
+            "AutoSky_SkipDetection"
         ]
     },
     "AutoSky_ActivateTemple": {
@@ -467,39 +465,6 @@
             "AutoSky_CheckExplorationInfo",
             "[JumpBack]ConfirmButton_500ms",
             "[JumpBack]ClickCenter"
-        ]
-    },
-    "AutoSky_Lost": {
-        "recognition": "OCR",
-        "doc": "战斗失败确认弹框(标题'怪物占据的浮岛',正文'继续袭击,需消耗XXX金币',按钮确定/取消)。仅做识别,真正的重试点击由 AutoSky_Lost_Continue 处理(由 sky.py 控制重试次数,默认 3 次)",
-        "expected": "继续袭击",
-        "roi": [
-            40,
-            380,
-            640,
-            240
-        ],
-        "post_delay": 200,
-        "timeout": 2000
-    },
-    "AutoSky_Lost_Continue": {
-        "recognition": "OCR",
-        "doc": "战斗失败弹框中的'确定'按钮(金色,左侧),点击后扣金币重新挑战。链 AutoSky_SkipDetection 处理战斗中跳过,AutoSky_Lost 再次命中表示又输了",
-        "expected": "确定",
-        "roi": [
-            70,
-            690,
-            600,
-            100
-        ],
-        "index": 0,
-        "order_by": "Horizontal",
-        "action": "Click",
-        "post_delay": 3500,
-        "timeout": 5000,
-        "next": [
-            "AutoSky_SkipDetection",
-            "AutoSky_Lost"
         ]
     },
     "AutoSky_TroopLoss": {
@@ -938,8 +903,7 @@
         "post_delay": 1500,
         "timeout": 3000,
         "next": [
-            "AutoSky_SkipDetection",
-            "AutoSky_Lost"
+            "AutoSky_SkipDetection"
         ]
     },
     "AutoSky_ClickOptionByName": {

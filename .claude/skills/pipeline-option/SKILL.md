@@ -27,7 +27,7 @@ description: Add runtime UI options (select/checkbox/switch/input) to interface.
 | type | 选择 | override 字段 | 节点预定义形态 |
 |------|------|---------------|---------------|
 | `select` | 单选互斥 | `expected` | `recognition: "OCR"` + `expected: [...]` |
-| `switch` | 二元 Yes/No | `enabled` | `{"enabled": bool}` |
+| `switch` | 二元 Yes/No | `enabled`（或项目已有的 `enable`） | `{"enabled": bool}` / `{"enable": bool}` |
 | `input` | 自由文本 | `custom_action_param` | `action.param.custom_action_param` |
 | `checkbox` | 多选 | `enabled` | `{"enabled": false}` |
 
@@ -42,6 +42,21 @@ description: Add runtime UI options (select/checkbox/switch/input) to interface.
 | 切换行为（点哪个按钮 / 走哪条 next 链）但不想改 Python | **E**（pure override 现有节点字段） |
 
 > **黄金法则**：能 pure override 解决就不加 Flag + Python 改动 —— 改动面越小越好维护。
+
+### 先确认代码读取路径
+
+加选项前先 `rg "get_node_data|_node_enabled|Flag_" agent assets`，确认这次配置到底由谁读取。
+
+常见对应关系:
+
+| UI override 写什么 | Python 应该读什么 | 备注 |
+|-------------------|-------------------|------|
+| `{ "Flag_X": { "enabled": true } }` | `node.get("enabled")` | MaaFramework 标准启停字段 |
+| `{ "Flag_X": { "enable": true } }` | `node.get("enable")` 或兼容 helper | 仅用于已有项目约定/历史字段 |
+| `{ "SomeOCR": { "expected": ["A"] } }` | `node["recognition"]["param"]["expected"][0]` | 节点必须预定义为 OCR |
+| `{ "SomeNode": { "next": ["A"] } }` | 不读，直接由 pipeline 行为生效 | pure override 模式 |
+
+**不要字段错位**：例如 UI 写 `AutoSky_CloneConfig.enable`，Python 却调用读取 `expected` 的函数；或 UI 写 `expected`，Python 只看 `enabled`。这种错误不会报 JSON 语法错，但运行时会表现为"选项没生效"。
 
 ---
 
@@ -74,6 +89,8 @@ description: Add runtime UI options (select/checkbox/switch/input) to interface.
 ```jsonc
 "Flag_EnableMarryTask": { "enabled": true }
 ```
+
+> 若项目历史节点使用 `enable` 而非 `enabled`，必须同时保证 Python 侧有兼容读取，例如 `node.get("enable", node.get("enabled", True))`。否则优先使用协议字段 `enabled`。
 
 ### 注册到 task
 
@@ -483,6 +500,7 @@ def handle_sailing_festival(context):
 | `select` | `data["recognition"]["param"]["expected"][0]` | 节点必须 `recognition: "OCR"` |
 | `input` | `data["action"]["param"]["custom_action_param"][key]` | 完全独立的机制 |
 | `switch` / `checkbox` | `data["enabled"]` | 最简单 |
+| 历史 `enable` 开关 | `data.get("enable", data.get("enabled", default))` | 仅在项目已有该字段时使用 |
 | 模式 E 不读 | （不读，直接看 override 后节点的运行时行为） | pure override 模式，Python 拿不到也不需要 flag |
 
 ### 5. 不要用非 `Yes`/`No` 的 switch case 名
@@ -596,6 +614,30 @@ def enter_growth_trial(context):
 - 我的"流程"是否**可以画成状态机图**？是 → 用 JSON `next` 链
 
 **注意**：MaaFramework 全局加载时跨文件节点引用会解析（`main_ui.json` 里的 `BigMap_Activity*` 能在 `growth_trial.json` 引用），但**`run_pipeline` 测试工具只加载单文件**——集成测试必须用 MaaFramework GUI/CLI 触发。
+
+### 11. 不要让 UI override 字段和 Python 读取字段不一致
+
+```jsonc
+// ❌ 错：UI 写 enable
+"开启克隆体": {
+    "type": "switch",
+    "cases": [
+        { "name": "Yes", "pipeline_override": { "AutoSky_CloneConfig": { "enable": true } } }
+    ]
+}
+```
+
+```python
+# ❌ 错：代码却读 expected，永远读不到用户开关
+self._clone_enabled = _read_expected_value(context, "AutoSky_CloneConfig")
+```
+
+```python
+# ✅ 对：读同一个字段，或提供 enable/enabled 兼容
+self._clone_enabled = _node_enabled(context, "AutoSky_CloneConfig")
+```
+
+自检口诀：**UI 写哪条路径，Python 就读哪条路径；pure override 则 Python 不读。**
 
 ---
 

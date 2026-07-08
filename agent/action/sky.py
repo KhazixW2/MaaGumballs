@@ -13,6 +13,7 @@ MAX_RETRY_ATTEMPTS = 3  # 定义最大重试次数
 BATTERY_PER_USE = 5      # AutoSky_Bag_UseBattery 单次调用使用的电池数(沿用 OCR '5个')
 BATTERY_BATCH_SIZE = 25  # 每次"补能阶段"的最大批次数(25 电池 ≈ 125 能量)
 MAX_ITERATIONS = 50      # 主循环硬性迭代上限(防止意外无限循环)
+MAX_COMBAT_FAIL_COUNT = 3  # 连续战斗失败次数达到该值后判定打不过
 
 # 事件库 JSON 路径(用统一 helper,见 utils.table_loader)
 SKY_EVENTS_FILE = get_table_path("sky_events.json")
@@ -38,6 +39,7 @@ class AutoSky(CustomAction):
     _used_battery: int  # 累计已使用电池数
     _iteration: int  # 主循环当前迭代数
     _last_progress: bool  # 上一轮是否有进展(用于无进展检测)
+    _combat_fail_count: int  # 连续命中 AutoSky_SkipDetection_Fail 的次数
 
     def __init__(self):
         super().__init__()
@@ -60,6 +62,7 @@ class AutoSky(CustomAction):
         self._used_battery = 0  # 累计已用电池数
         self._iteration = 0  # 主循环迭代数
         self._last_progress = True  # 默认认为有进展(避免首次就退出)
+        self._combat_fail_count = 0
 
     # ------------------------------------------------------------------
     # 事件库：构造时预加载 + 检索
@@ -360,7 +363,10 @@ class AutoSky(CustomAction):
                     logger.info(
                         f"事件 '{title}' 出现'进入战斗'按钮,点击进入战斗"
                     )
-                    context.run_task("AutoSky_RobberyBattleEntry")
+                    result = context.run_task("AutoSky_RobberyBattleEntry")
+                    self._handle_battle_result(result)
+                    if self._encountered_unbeatable:
+                        return True
                     battle_attempts += 1
                     continue
 
@@ -464,6 +470,7 @@ class AutoSky(CustomAction):
         # 攻击裂痕(点击袭击按钮)
         logger.info(f"用 {target_faction} 阵营攻击裂痕")
         result = context.run_task("AutoSky_CombatEventDetection")
+        self._handle_battle_result(result)
         if not (result and result.nodes):
             logger.warning(f"攻击裂痕失败")
 
@@ -527,6 +534,32 @@ class AutoSky(CustomAction):
             and self._task_result_node_hit(node)
             for node in result.nodes
         )
+
+    def _handle_battle_result(self, result) -> bool:
+        """根据跳过战斗后的胜负节点更新连续失败计数。
+
+        Returns:
+            bool: True 表示本次任务结果里已经识别到战斗胜/负结算节点。
+        """
+        if self._task_result_has_node(result, {"AutoSky_SkipDetection_Win"}):
+            if self._combat_fail_count > 0:
+                logger.info("战斗胜利，连续失败计数清零")
+            self._combat_fail_count = 0
+            return True
+
+        if self._task_result_has_node(result, {"AutoSky_SkipDetection_Fail"}):
+            self._combat_fail_count += 1
+            logger.warning(
+                f"战斗失败，连续失败 {self._combat_fail_count}/{MAX_COMBAT_FAIL_COUNT}"
+            )
+            if self._combat_fail_count >= MAX_COMBAT_FAIL_COUNT:
+                logger.error(
+                    f"连续 {MAX_COMBAT_FAIL_COUNT} 次战斗失败，判定为打不过敌人，AutoSky 将终止"
+                )
+                self._encountered_unbeatable = True
+            return True
+
+        return False
 
     def _is_radar_empty(self, context: Context) -> bool:
         """检查雷达上是否已无可探索节点(右下角 00/23 → 0 命中)。
@@ -754,7 +787,10 @@ class AutoSky(CustomAction):
             # 2.4 神殿解除封印是非战斗事件，不能进入克隆体战损检测链路
             if self._node_enabled(
                 context, "AutoSky_ActivateTemple"
-            ) and context.run_recognition("AutoSky_ActivateTemple", current_img).hit:
+            ):
+                logger.info("神殿事件默认跳过")
+                continue
+            elif  context.run_recognition("AutoSky_ActivateTemple", current_img).hit:
                 logger.info("检测到神殿解除封印，作为非战斗事件处理")
                 context.run_task("AutoSky_ActivateTemple")
                 processed_any = True
@@ -778,10 +814,14 @@ class AutoSky(CustomAction):
                 "AutoSky_CombatEventDetection", current_img
             ).hit:
                 logger.info("发现战斗目标~~")
-                context.run_task("AutoSky_EventDetection")
+                result = context.run_task("AutoSky_EventDetection")
+                self._handle_battle_result(result)
+                processed_any = True
+                if self._encountered_unbeatable:
+                    return True
 
                 current_img = context.tasker.controller.post_screencap().wait().get()
-                
+
                 continue
 
             # 2.7 普通调查/探索按钮(非事件库标题类)

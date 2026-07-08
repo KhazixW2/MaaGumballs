@@ -26,6 +26,8 @@
 | `focus`               | object                     | `null`        | 节点通知                                 |
 | `attach`              | object                     | `{}`          | 附加配置（dict merge）                   |
 
+> 兼容提醒：MaaFramework 协议字段是 `enabled`。部分项目历史 pipeline 可能使用自定义字段 `enable`，这只有在本项目代码显式读取/兼容时才有效。新增 UI 开关时先确认 Python 读取路径，避免 `interface.json` 写 `enable` 而代码读 `enabled`，或反过来。
+
 ## 节点生命周期
 
 `pre_wait_freezes` → `pre_delay` → `action` → [`repeat_wait_freezes` → `repeat_delay` → `action`] × (repeat-1) → `post_wait_freezes` → `post_delay` → 截图 → 识别 next
