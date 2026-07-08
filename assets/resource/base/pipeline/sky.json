@@ -133,25 +133,7 @@
         "post_delay": 500,
         "timeout": 5000,
         "next": [
-            "AutoSky_SkyExplore_Finish"
-        ]
-    },
-    "AutoSky_SkyExplore_Finish": {
-        "recognition": "OCR",
-        "doc": "识别到返回，说明本次自动探索消耗了能量，需要再次进入雷达界面检测一下有没有可以打的",
-        "expected": "返回",
-        "roi": [
-            494,
-            1173,
-            184,
-            75
-        ],
-        "post_delay": 500,
-        "timeout": 2000,
-        "action": "Click",
-        "next": [
-            "AutoSky_Enter_Radar_Interface",
-            "[JumpBack]BackText"
+            "BackText"
         ]
     },
     "AutoSky_Enter_Radar_Interface": {
@@ -462,15 +444,16 @@
         "timeout": 2000
     },
     "AutoSky_CheckTargetNum": {
-        "doc": "检测右下角目标数",
+        "doc": "检测右下角目标数(格式 X/Y,如 14/18)。带颜色过滤,与 AutoSky_CheckNodeCountZero 共用 AutoSky_GreenCheck 提高准确度",
         "recognition": "OCR",
-        "expected": "\\d+",
+        "expected": "\\d+/\\d+",
         "roi": [
-            619,
-            1125,
-            33,
-            32
+            585,
+            1120,
+            110,
+            45
         ],
+        "color_filter": "AutoSky_GreenCheck",
         "action": "DoNothing",
         "post_delay": 200,
         "timeout": 2000

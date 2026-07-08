@@ -590,7 +590,7 @@ class AutoSky(CustomAction):
         return None
 
     def _try_auto_explore(self, context: Context) -> bool:
-        """尝试触发一次自动探索(消耗能量)。
+        """尝试触发一次自动探索,直到无法继续自动探索时返回雷达界面(消耗能量)。
 
         流程:确认在雷达→离开雷达→触发自动探索→等待并确认消耗→**显式回到雷达**。
 
@@ -606,36 +606,17 @@ class AutoSky(CustomAction):
         """
         logger.info("尝试自动探索...")
 
-        has_left_radar = False
         auto_explore_successful = False
 
         for retry_count in range(MAX_RETRY_ATTEMPTS):
             if context.tasker.stopping:
-                self._back_to_radar(context)
                 return False
 
-            # 1. 离开雷达界面
-            if not has_left_radar:
-                if not context.run_recognition(
-                    "AutoSky_CheckExplorationInfo",
-                    context.tasker.controller.post_screencap().wait().get(),
-                ).hit:
-                    logger.error("不在雷达界面,自动探索失败")
-                    self._back_to_radar(context)
-                    return False
-                logger.info("确认目前处于雷达界面")
+            # 1. 离开雷达界面,如果在雷达界面的话
+            if context.run_recognition("AutoSky_CheckExplorationInfo",
+                context.tasker.controller.post_screencap().wait().get()).hit:
+                context.run_task("AutoSky_CheckExplorationInfo")
                 context.run_task("AutoSky_Exit_Radar_Interface")
-                if context.run_recognition(
-                    "AutoSky_CheckExplorationInfo",
-                    context.tasker.controller.post_screencap().wait().get(),
-                ).hit:
-                    logger.warning(
-                        f"未能成功离开雷达界面,重试 ({retry_count+1}/{MAX_RETRY_ATTEMPTS})"
-                    )
-                    time.sleep(2)
-                    continue
-                has_left_radar = True
-                time.sleep(1)
 
             # 2. 触发自动探索
             sky_explore_start_result = context.run_task("AutoSky_SkyExplore_Start")
@@ -662,12 +643,10 @@ class AutoSky(CustomAction):
             # 未成功消耗能量(可能没能量/雷达满)→ 显式回雷达后让外层循环接手
             logger.info("未成功消耗能量,尝试返回雷达界面")
             context.run_task("AutoSky_Enter_Radar_Interface")
-            self._back_to_radar(context)
             return False
 
         logger.info("自动探索成功,消耗了能量")
         context.run_task("AutoSky_SkyExplore_Confirm_Finish")
-        self._back_to_radar(context)
         return True
 
     def _do_manual_exploration(self, context: Context) -> bool:
