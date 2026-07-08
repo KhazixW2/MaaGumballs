@@ -2231,8 +2231,8 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
-              "reason": "含机器人+限1次驯鹿时装(不可获取)"
+              "selected": false,
+              "reason": "次选(消耗500k遗迹碎片)"
             },
             {
               "name": "勒索圣诞老人",
@@ -2249,8 +2249,8 @@
                 "is_standalone_unobtainable": false,
                 "requires_choice": false
               },
-              "selected": false,
-              "reason": "次选(2星机械人)"
+              "selected": true,
+              "reason": "默认选项(2星机械雪人,无消耗)"
             },
             {
               "name": "通知稽查队",
@@ -6467,7 +6467,7 @@
               "reason": "无需特定冈布奥即可稳定获得奖励(10活性细胞+随机3神器碎片/1000遗迹碎片)"
             },
             {
-              "name": "禁锢灵魂(拥有收魂者冈布奥概率成功)",
+              "name": "禁锢灵魂",
               "rewards": [
                 {
                   "type": "rune",
@@ -6484,10 +6484,10 @@
                 "requires_choice": false
               },
               "selected": false,
-              "reason": "概率成功需特定冈布奥"
+              "reason": "概率成功需特定冈布奥 拥有收魂者冈布奥概率成功"
             },
             {
-              "name": "超度灵魂(拥有牧师/神圣巨龙/贤者冈布奥之一,概率成功)",
+              "name": "超度灵魂",
               "rewards": [
                 {
                   "type": "rune",
@@ -6504,7 +6504,7 @@
                 "requires_choice": false
               },
               "selected": false,
-              "reason": "概率成功需特定冈布奥"
+              "reason": "需特定冈布奥，拥有牧师/神圣巨龙/贤者冈布奥之一,概率成功概率成功"
             }
           ]
         },
@@ -9529,8 +9529,8 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
-              "reason": "默认选项(世界树宝宝不可获取)"
+              "selected": false,
+              "reason": "改为默认战斗"
             },
             {
               "name": "一半赔偿金(扣除500k金币)",
@@ -9561,8 +9561,8 @@
                   "quantity": 5
                 }
               ],
-              "selected": false,
-              "reason": "次选(战斗)"
+              "selected": true,
+              "reason": "用户指定:默认选择战斗"
             }
           ]
         },
@@ -9702,7 +9702,7 @@
           "monitorable": true,
           "options": [
             {
-              "name": "选什么都一样(奖励随机)",
+              "name": "血腥要塞的年龄",
               "rewards": [
                 {
                   "type": "options",
@@ -9745,7 +9745,99 @@
                 "requires_choice": false
               },
               "selected": true,
-              "reason": "默认选项(奖励随机)"
+              "reason": "用户截图指定真实按钮文案；奖励随机，默认点击第一个可见选项"
+            },
+            {
+              "name": "巨大的雕像的年龄",
+              "rewards": [
+                {
+                  "type": "options",
+                  "options": [
+                    {
+                      "item": "伊甸加速器24h",
+                      "quantity": 1,
+                      "limit": 1
+                    },
+                    {
+                      "item": "随机加速器"
+                    }
+                  ]
+                },
+                {
+                  "type": "rune",
+                  "category": "探索",
+                  "rarity": "2星",
+                  "name": "同位素检测结果"
+                },
+                {
+                  "type": "options",
+                  "options": [
+                    {
+                      "material": "遗迹碎片",
+                      "quantity": "5k"
+                    },
+                    {
+                      "material": "遗迹碎片",
+                      "quantity": "10k"
+                    }
+                  ]
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": true,
+                "requires_choice": false
+              },
+              "selected": false,
+              "reason": "同一随机奖励事件，保留为可识别按钮"
+            },
+            {
+              "name": "马戏团的年龄",
+              "rewards": [
+                {
+                  "type": "options",
+                  "options": [
+                    {
+                      "item": "伊甸加速器24h",
+                      "quantity": 1,
+                      "limit": 1
+                    },
+                    {
+                      "item": "随机加速器"
+                    }
+                  ]
+                },
+                {
+                  "type": "rune",
+                  "category": "探索",
+                  "rarity": "2星",
+                  "name": "同位素检测结果"
+                },
+                {
+                  "type": "options",
+                  "options": [
+                    {
+                      "material": "遗迹碎片",
+                      "quantity": "5k"
+                    },
+                    {
+                      "material": "遗迹碎片",
+                      "quantity": "10k"
+                    }
+                  ]
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": true,
+                "requires_choice": false
+              },
+              "selected": false,
+              "reason": "同一随机奖励事件，保留为可识别按钮"
             }
           ]
         },
@@ -10817,6 +10909,92 @@
               },
               "selected": false,
               "reason": "需事件等级+150后才可选"
+            }
+          ]
+        },
+        {
+          "id": "normal_66",
+          "floor": "66",
+          "name": "信号发射台",
+          "level_range": "1101+",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "蓝色按钮",
+              "rewards": [
+                {
+                  "type": "rune",
+                  "category": "反击",
+                  "rarity": "2星",
+                  "name": "情报",
+                  "quantity": 2
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": true,
+                "requires_choice": false
+              },
+              "selected": false,
+              "reason": "次选(2星反击符石情报*2)"
+            },
+            {
+              "name": "黄色按钮",
+              "rewards": [
+                {
+                  "type": "battle",
+                  "enemy": "入侵者号",
+                  "stats": "1320w,317/289/332/312"
+                },
+                {
+                  "type": "item",
+                  "name": "入侵者号芯片",
+                  "quantity": 15
+                }
+              ],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": true,
+                "requires_choice": false
+              },
+              "selected": true,
+              "reason": "默认选项(战斗+入侵者号芯片x15,蓝色按钮符石次之)"
+            },
+            {
+              "name": "红色按钮",
+              "rewards": [
+                {
+                  "type": "options",
+                  "options": [
+                    {
+                      "item": {
+                        "name": "伊甸加速器60m",
+                        "quantity": 5,
+                        "limit": 3
+                      }
+                    },
+                    {
+                      "rewards": {
+                        "rune": {
+                          "category": "反击",
+                          "rarity": "1星",
+                          "name": "自爆"
+                        },
+                        "material": {
+                          "name": "古遗迹碎片",
+                          "quantity": "6k"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "selected": false,
+              "reason": "次选(随机奖励:加速器 or 自爆符石+古遗迹碎片)"
             }
           ]
         }
