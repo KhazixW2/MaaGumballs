@@ -338,8 +338,6 @@ class AutoSky(CustomAction):
             bool: True 表示已返回雷达界面；False 表示超时。
         """
         deadline = time.time() + timeout
-        confirm_attempts = 0
-        max_confirm_attempts = 5  # 防止误识别后无限点
         battle_attempts = 0
         max_battle_attempts = 3  # 防止误识别后无限点
 
@@ -352,70 +350,32 @@ class AutoSky(CustomAction):
 
             current_img = context.tasker.controller.post_screencap().wait().get()
 
-            # 1. 已返回雷达界面 → 事件完成
+            # 1. 检测到"进入战斗"按钮(如走私者营地 勒索后)
+            #    点进入战斗 → 链 AutoSky_SkipDetection → 自动跳过战斗 → 回雷达
+            if battle_attempts < max_battle_attempts:
+                if context.run_recognition(
+                    "AutoSky_RobberyBattleEntry",
+                    current_img
+                ).hit:
+                    logger.info(
+                        f"事件 '{title}' 出现'进入战斗'按钮,点击进入战斗"
+                    )
+                    context.run_task("AutoSky_RobberyBattleEntry")
+                    battle_attempts += 1
+                    continue
+
+            # 2. 检测到确认对话框 → 自动点击
+            if context.run_recognition("ConfirmButton", current_img).hit:
+                context.run_task("ConfirmButton")
+                continue
+
+            # 3. 已返回雷达界面 → 事件完成
             if context.run_recognition(
                 "AutoSky_CheckExplorationInfo", current_img
             ).hit:
                 logger.info(f"事件 '{title}' 已完成,返回雷达界面")
                 return True
 
-            # 2. 检测到"进入战斗"按钮(如走私者营地 勒索后)
-            #    点进入战斗 → 链 AutoSky_SkipDetection → 自动跳过战斗 → 回雷达
-            if battle_attempts < max_battle_attempts:
-                battle_reco = context.run_recognition(
-                    "AutoSky_RobberyBattleEntry",
-                    current_img,
-                    pipeline_override={
-                        "AutoSky_RobberyBattleEntry": {
-                            "action": "DoNothing",
-                            "post_delay": 0,
-                            "timeout": 1000,
-                        }
-                    },
-                )
-                if battle_reco and battle_reco.hit:
-                    logger.info(
-                        f"事件 '{title}' 出现'进入战斗'按钮,点击进入战斗"
-                    )
-                    context.run_task("AutoSky_RobberyBattleEntry")
-                    battle_attempts += 1
-                    time.sleep(2)
-                    continue
-
-            # 3. 检测到确认对话框 → 自动点击
-            if confirm_attempts < max_confirm_attempts:
-                confirm_reco = context.run_recognition(
-                    "AutoSky_ClickOptionByName",
-                    current_img,
-                    pipeline_override={
-                        "AutoSky_ClickOptionByName": {
-                            "recognition": "OCR",
-                            "expected": ["确定", "确认"],
-                            "action": "DoNothing",
-                            "post_delay": 0,
-                            "timeout": 1000,
-                        }
-                    },
-                )
-                if confirm_reco and confirm_reco.hit:
-                    confirm_text = confirm_reco.best_result.text
-                    logger.info(
-                        f"事件 '{title}' 出现确认按钮 '{confirm_text}',代为点击"
-                    )
-                    context.run_task(
-                        "AutoSky_ClickOptionByName",
-                        pipeline_override={
-                            "AutoSky_ClickOptionByName": {
-                                "recognition": "OCR",
-                                "expected": ["确定", "确认"],
-                            }
-                        },
-                    )
-                    confirm_attempts += 1
-                    time.sleep(1)
-                    continue
-
-            time.sleep(2)
 
         logger.warning(f"事件 '{title}' 等待完成超时 ({timeout}s)")
         return False
