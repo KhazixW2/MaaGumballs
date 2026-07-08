@@ -179,7 +179,9 @@
             "entry": "AutoSky",
             "option": [
                 "天空_出战阵营",
-                "能量包使用模式"
+                "能量包使用模式",
+                "开启神殿",
+                "开启克隆体"
             ],
             "doc": [
                 "### 工作内容",
@@ -189,7 +191,7 @@
                 "",
                 "### 结束条件",
                 "- **1**:遇到之前挑战失败的战斗目标，说明需要用户手动调整飞艇配置，消耗探索点或添加石头再打，此时会直接停止本任务",
-                "- **2**:发现克隆体阵亡，会取消战斗结果避免损失克隆体，此时会直接停止本任务",
+                "- **2**:发现克隆体战损，会取消本次战斗结算并重新挑战，避免损失克隆体",
                 "- **3**:自动探索触发后，未检测到成功界面，说明雷达界面已经满了，或者能量不够了，此时会直接停止本任务",
                 "- **4**:完成一定轮次后，停止任务，避免意料之外的情况导致无限循环",
                 "- **5**:到达\"能量包使用模式\"设定的电池数上限（如启用），或连续两轮无进展时，停止任务",
@@ -572,6 +574,50 @@
                             "expected": [
                                 "500"
                             ]
+                        }
+                    }
+                }
+            ]
+        },
+        "开启神殿": {
+            "type": "switch",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "AutoSky_ActivateTemple": {
+                            "enable": false
+                        }
+                    }
+                },
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "AutoSky_ActivateTemple": {
+                            "enable": true
+                        }
+                    }
+                }
+            ]
+        },
+        "开启克隆体": {
+            "type": "switch",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "AutoSky_CloneConfig": {
+                            "enable": false
+                        }
+                    }
+                },
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "AutoSky_CloneConfig": {
+                            "enable": true
                         }
                     }
                 }

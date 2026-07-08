@@ -137,6 +137,15 @@
         ]
     },
     "AutoSky_Enter_Radar_Interface": {
+        "focus": {
+            "Node.Action.Succeeded": {
+                "content": "正在进入雷达界面",
+                "display": [
+                    "log",
+                    "modal"
+                ]
+            }
+        },
         "recognition": "TemplateMatch",
         "doc": "点击这个小按钮进入雷达界面",
         "template": "dailyTask/AutoSky_Enter_Radar_Interface.png",
@@ -155,6 +164,22 @@
         ]
     },
     "AutoSky_CheckExplorationInfo": {
+        "focus": {
+            "Node.Action.Succeeded": {
+                "content": "确定已经来到了雷达界面",
+                "display": [
+                    "log",
+                    "modal"
+                ]
+            },
+            "Node.Action.Failed": {
+                "content": "当前不在雷达界面",
+                "display": [
+                    "log",
+                    "modal"
+                ]
+            }
+        },
         "recognition": "OCR",
         "doc": "确定已经来到了雷达界面",
         "expected": "探索信息",
@@ -272,8 +297,6 @@
         "expected": [
             "探索",
             "袭击",
-            "解除",
-            "摧毁",
             "调查"
         ],
         "roi": [
@@ -286,8 +309,7 @@
         "next": [
             "AutoSky_CombatEventDestory",
             "AutoSky_ExploreEventDetection",
-            "AutoSky_CombatEventDetection",
-            "AutoSky_ActivateTemple"
+            "AutoSky_CombatEventDetection"
         ]
     },
     "AutoSky_ExploreEventDetection": {
@@ -324,6 +346,8 @@
         ]
     },
     "AutoSky_ActivateTemple": {
+        "enable": false,
+        "doc": "开启神殿",
         "recognition": "OCR",
         "expected": "解除封印",
         "roi": [
@@ -340,6 +364,7 @@
         ]
     },
     "AutoSky_ActivateTemple_Confirm": {
+        "doc": "开启神殿确认",
         "recognition": "OCR",
         "expected": "开启",
         "roi": [
@@ -404,7 +429,7 @@
     },
     "AutoSky_TroopLoss": {
         "recognition": "OCR",
-        "doc": "出现这个界面，说明克隆体死了，要用logger给用户提示并退出任务",
+        "doc": "兼容旧版克隆体战损识别，命中后取消本次战斗结算并重新挑战",
         "expected": "克隆体战损",
         "roi": [
             244,
@@ -417,7 +442,7 @@
     },
     "AutoSky_TroopLoss_Backtext": {
         "recognition": "OCR",
-        "doc": "点击退出克隆体战损界面，这个roi我设置的很大，从屏幕中间一直到最底下，因为我不知道如果死的多了这个“取消结算”按钮的位置会不会变得靠下",
+        "doc": "克隆体战损时取消本次战斗结算；roi 较大以兼容按钮位置变化",
         "expected": "取消结算",
         "roi": [
             258,
@@ -430,6 +455,22 @@
         "timeout": 1000
     },
     "AutoSky_Exit_Radar_Interface": {
+        "focus": {
+            "Node.Action.Succeeded": {
+                "content": "已经离开雷达界面",
+                "display": [
+                    "log",
+                    "modal"
+                ]
+            },
+            "Node.Action.Failed": {
+                "content": "离开雷达界面失败",
+                "display": [
+                    "log",
+                    "modal"
+                ]
+            }
+        },
         "recognition": "TemplateMatch",
         "doc": "点击这个小按钮进离开雷达界面",
         "template": "dailyTask/AutoSky_Exit_Radar_Interface.png",
@@ -440,7 +481,7 @@
             45
         ],
         "action": "Click",
-        "post_delay": 500,
+        "post_delay": 1000,
         "timeout": 2000
     },
     "AutoSky_CheckTargetNum": {
@@ -458,12 +499,12 @@
         "post_delay": 200,
         "timeout": 2000
     },
-    "AutoSky_Enter_Clone": {
+    "AutoSky_Disable_Clone": {
         "next": [
-            "AutoSky_Enter_Clone_Start"
+            "AutoSky_Disable_Clone_Start"
         ]
     },
-    "AutoSky_Enter_Clone_Start": {
+    "AutoSky_Disable_Clone_Start": {
         "recognition": "TemplateMatch",
         "template": "dailyTask/AutoSky_Enter_Clone.png",
         "roi": [
@@ -476,11 +517,11 @@
         "post_delay": 1000,
         "timeout": 2000,
         "next": [
-            "AutoSky_Enter_CloneClosed",
-            "AutoSky_Enter_CloneOpened"
+            "AutoSky_Disable_CloneClosed",
+            "AutoSky_Disable_CloneOpened"
         ]
     },
-    "AutoSky_Enter_CloneClosed": {
+    "AutoSky_Disable_CloneClosed": {
         "recognition": "TemplateMatch",
         "template": "dailyTask/ClosedButton.png",
         "roi": [
@@ -496,7 +537,7 @@
             "BackText_500ms"
         ]
     },
-    "AutoSky_Enter_CloneOpened": {
+    "AutoSky_Disable_CloneOpened": {
         "recognition": "TemplateMatch",
         "template": "dailyTask/OpenButton.png",
         "roi": [
@@ -506,6 +547,60 @@
             280
         ],
         "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "BackText_500ms"
+        ]
+    },
+    "AutoSky_Enable_Clone": {
+        "next": [
+            "AutoSky_Enable_Clone_Start"
+        ]
+    },
+    "AutoSky_Enable_Clone_Start": {
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/AutoSky_Enter_Clone.png",
+        "roi": [
+            432,
+            1116,
+            261,
+            154
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "AutoSky_Enable_CloneClosed",
+            "AutoSky_Enable_CloneOpened"
+        ]
+    },
+    "AutoSky_Enable_CloneClosed": {
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/ClosedButton.png",
+        "roi": [
+            432,
+            746,
+            228,
+            280
+        ],
+        "action": "Click",
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": [
+            "BackText_500ms"
+        ]
+    },
+    "AutoSky_Enable_CloneOpened": {
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/OpenButton.png",
+        "roi": [
+            432,
+            746,
+            228,
+            280
+        ],
+        "action": "DoNothing",
         "post_delay": 1000,
         "timeout": 2000,
         "next": [
@@ -811,5 +906,54 @@
         "action": "DoNothing",
         "post_delay": 0,
         "timeout": 100
+    },
+    "AutoSky_CloneConfig": {
+        "enable": false
+    },
+    "AutoSky_CloneDied": {
+        "recognition": "OCR",
+        "doc": "检测战斗结算时是否出现克隆体战损",
+        "roi": [
+            192,
+            318,
+            319,
+            196
+        ],
+        "expected": "战损",
+        "action": "DoNothing",
+        "post_delay": 200,
+        "timeout": 2000,
+        "next": [
+            "AutoSky_CloneDied_Cancel"
+        ]
+    },
+    "AutoSky_CloneDied_Cancel": {
+        "focus": {
+            "Node.Action.Succeeded": {
+                "content": "识别到克隆体战损，已取消本次战斗结算，准备重新挑战",
+                "display": [
+                    "log",
+                    "modal"
+                ]
+            }
+        },
+        "recognition": "OCR",
+        "doc": "克隆体战损时取消本次战斗结算",
+        "roi": [
+            139,
+            551,
+            446,
+            419
+        ],
+        "expected": "取消结算",
+        "action": "Click",
+        "order_by": "Vertical",
+        "index": -1,
+        "post_delay": 500,
+        "timeout": 2000,
+        "next": [
+            "AutoSky_CheckExplorationInfo",
+            "[JumpBack]ClickCenter"
+        ]
     }
 }

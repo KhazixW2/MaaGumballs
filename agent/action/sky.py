@@ -542,6 +542,32 @@ class AutoSky(CustomAction):
                     target = 0
         return target, target > 0
 
+
+    @staticmethod
+    def _node_enabled(context: Context, node_name: str) -> bool:
+        """读取 pipeline 节点是否启用，兼容 enable / enabled 两种字段。"""
+        node = context.get_node_data(node_name)
+        if not node:
+            return True
+        return bool(node.get("enable", node.get("enabled", True)))
+
+    @staticmethod
+    def _task_result_node_hit(node) -> bool:
+        if getattr(node, "completed", False):
+            return True
+
+        recognition = getattr(node, "recognition", None)
+        return bool(recognition and getattr(recognition, "hit", False))
+
+    def _task_result_has_node(self, result, node_names: set[str]) -> bool:
+        if not result or not result.nodes:
+            return False
+        return any(
+            getattr(node, "name", None) in node_names
+            and self._task_result_node_hit(node)
+            for node in result.nodes
+        )
+
     def _is_radar_empty(self, context: Context) -> bool:
         """检查雷达上是否已无可探索节点(右下角 00/23 → 0 命中)。
 
@@ -765,37 +791,51 @@ class AutoSky(CustomAction):
                 logger.info("检测到交谈类事件,暂不处理,跳过")
                 continue
 
-            # 2.4 战斗事件
+            # 2.4 神殿解除封印是非战斗事件，不能进入克隆体战损检测链路
+            if self._node_enabled(
+                context, "AutoSky_ActivateTemple"
+            ) and context.run_recognition("AutoSky_ActivateTemple", current_img).hit:
+                logger.info("检测到神殿解除封印，作为非战斗事件处理")
+                context.run_task("AutoSky_ActivateTemple")
+                processed_any = True
+                last_event_title = ""
+                consecutive_same_title = 0
+                continue
+
+            # 2.5 可摧毁事件(炮轰，不进入战斗)
             if context.run_recognition(
-                "AutoSky_EventDetection", current_img
+                "AutoSky_CombatEventDestory", current_img
+            ).hit:
+                logger.info("检测到可摧毁事件，执行摧毁")
+                context.run_task("AutoSky_CombatEventDestory")
+                processed_any = True
+                last_event_title = ""
+                consecutive_same_title = 0
+                continue
+
+            # 2.6 袭击战斗事件：只有这里进入克隆体战损检测
+            if context.run_recognition(
+                "AutoSky_CombatEventDetection", current_img
             ).hit:
                 logger.info("发现战斗目标~~")
                 context.run_task("AutoSky_EventDetection")
 
                 current_img = context.tasker.controller.post_screencap().wait().get()
-
-                # 打不过的敌人
-                if context.run_recognition("AutoSky_Lost", current_img).hit:
-                    logger.warning("遇到打不过的敌人,本轮探索结束")
-                    time.sleep(2)
-                    context.run_task("BackText_500ms")
-                    self._encountered_unbeatable = True
-                    return True  # 视为有处理动作
-
-                # 克隆体战损
-                if self._clone_enabled and context.run_recognition(
-                    "AutoSky_TroopLoss", current_img
-                ).hit:
-                    logger.warning("识别到克隆体战损,本轮探索结束")
-                    time.sleep(2)
-                    context.run_task("AutoSky_TroopLoss_Backtext")
-                    self._troopLoss = True
-                    return True
-
-                processed_any = True
+                
                 continue
 
-            # 2.5 无法识别:Debug OCR dump
+            # 2.7 普通调查/探索按钮(非事件库标题类)
+            if context.run_recognition(
+                "AutoSky_ExploreEventDetection", current_img
+            ).hit:
+                logger.info("检测到调查/探索类事件，执行点击")
+                context.run_task("AutoSky_ExploreEventDetection")
+                processed_any = True
+                last_event_title = ""
+                consecutive_same_title = 0
+                continue
+
+            # 2.8 无法识别:Debug OCR dump
             debug_img = context.tasker.controller.post_screencap().wait().get()
             debug_reco = context.run_recognition(
                 "AutoSky_EventDetection",
@@ -952,14 +992,18 @@ class AutoSky(CustomAction):
             logger.error("任务开始后未能识别到探索信息界面,AutoSky 任务终止。")
             return CustomAction.RunResult(success=False)
 
-        logger.info("已成功进入天空探索雷达界面。")
 
         # 1.1 切换主分队为用户在 UI 中选择的分队（默认深渊）
         self.switch_main_fleet(context)
 
-        # 1.2 进入克隆体界面, 默认关闭克隆体
-        context.run_task("AutoSky_Enter_Clone")
-        self._clone_enabled = False  # 进入克隆体界面说明克隆体被禁用
+        # 1.2 根据用户选项设置克隆体。不开启时沿用原行为:关闭克隆体。
+        self._clone_enabled = self._node_enabled(context, "AutoSky_CloneConfig")
+        if self._clone_enabled:
+            logger.info("已启用克隆体，尝试开启克隆体并启用战损检测")
+            context.run_task("AutoSky_Enable_Clone")
+        else:
+            logger.info("未启用克隆体，尝试关闭克隆体并跳过战损检测")
+            context.run_task("AutoSky_Disable_Clone")
 
         # 1.3 读能量包配置(目标数 + 是否启用)
         target_battery, use_battery = self._read_battery_config(context)
