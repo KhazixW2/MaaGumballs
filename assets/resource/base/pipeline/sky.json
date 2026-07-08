@@ -778,6 +778,12 @@
         "expected": [
             "_PLACEHOLDER_"
         ],
+        "replace": [
+            [
+                "翻羽找",
+                "翻找"
+            ]
+        ],
         "roi": [
             40,
             380,
