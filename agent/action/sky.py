@@ -1,5 +1,6 @@
 import difflib
 import json
+import re
 import time
 
 from maa.agent.agent_server import AgentServer
@@ -208,6 +209,63 @@ class AutoSky(CustomAction):
                 return opt
         return None
 
+    @staticmethod
+    def _normalize_option_name_for_ocr(option_name: str) -> str:
+        """把事件库选项名清洗成游戏按钮上的短文本。"""
+        ocr_target = option_name.strip()
+        ocr_target = re.split(r"[（(【\[]", ocr_target, maxsplit=1)[0].strip()
+        if ":" in ocr_target:
+            ocr_target = ocr_target.split(":", 1)[1].strip()
+        if "：" in ocr_target:
+            ocr_target = ocr_target.split("：", 1)[1].strip()
+        return ocr_target
+
+    def _handle_unknown_wreckage_event(self, context: Context, title: str) -> bool:
+        """处理未入库的残骸事件。
+
+        飞船残骸经常表现为“调查后直接领取芯片/奖励”，标题又会随飞船名变化。
+        这里不回退 UI，而是先尝试常见残骸按钮，若没有按钮则尝试确认奖励弹窗。
+        """
+        logger.info(
+            f"事件 '{title}' 命中残骸兜底: 未在事件库中精确配置，尝试通用处理"
+        )
+
+        for option_name in ("翻找", "调查"):
+            current_img = context.tasker.controller.post_screencap().wait().get()
+            option_reco = context.run_recognition(
+                "AutoSky_ClickOptionByName",
+                current_img,
+                pipeline_override={
+                    "AutoSky_ClickOptionByName": {
+                        "recognition": "OCR",
+                        "expected": [option_name],
+                        "action": "DoNothing",
+                        "post_delay": 0,
+                        "timeout": 1000,
+                    }
+                },
+            )
+            if not (option_reco and option_reco.hit):
+                continue
+
+            logger.info(f"事件 '{title}' 残骸兜底 → 点击 '{option_name}'")
+            result = context.run_task(
+                "AutoSky_ClickOptionByName",
+                pipeline_override={
+                    "AutoSky_ClickOptionByName": {
+                        "recognition": "OCR",
+                        "expected": [option_name],
+                    }
+                },
+            )
+            if result and result.nodes:
+                return self._wait_for_event_completion(context, title)
+
+        logger.info(
+            f"事件 '{title}' 残骸兜底未发现翻找/调查按钮，尝试处理奖励确认"
+        )
+        return self._wait_for_event_completion(context, title, timeout=15)
+
     def _handle_random_event(self, context: Context, img, title: str) -> bool:
         """处理非战斗类随机事件：OCR 标题 → 查库 → 点击推荐选项 → 等待完成。
 
@@ -224,21 +282,21 @@ class AutoSky(CustomAction):
         if event:
             selected = self._get_recommended_option(event, title)
             if not selected:
+                if "残骸" in title:
+                    return self._handle_unknown_wreckage_event(context, title)
                 # 事件在库中但没 selected 选项(占位事件/待补全)→ 静默跳过
                 logger.info(f"事件 '{title}' 库中无 selected 选项(占位/未配置),跳过")
                 return False
 
         if not selected:
+            if "残骸" in title:
+                return self._handle_unknown_wreckage_event(context, title)
             logger.warning(f"事件 '{title}' 未在事件库中找到,跳过智能选择并返回上一级UI")
             context.run_task("BackText_500ms")
             return False
 
         option_name = selected["name"]
-        # 去掉括号注释（如 "(需海怪船长/鱼人/...之一)"）和
-        # "前缀:xxx"形式（如 "发音:Eve" → "Eve"），再用于 OCR 匹配按钮
-        ocr_target = option_name.split("(", 1)[0].strip()
-        if ":" in ocr_target:
-            ocr_target = ocr_target.split(":", 1)[1].strip()
+        ocr_target = self._normalize_option_name_for_ocr(option_name)
         reason = selected.get("reason", "")
         logger.info(
             f"事件 '{title}' → 点击 '{ocr_target}'"
@@ -502,6 +560,35 @@ class AutoSky(CustomAction):
         img = context.tasker.controller.post_screencap().wait().get()
         return context.run_recognition("AutoSky_CheckEnergyZero", img).hit
 
+    @staticmethod
+    def _parse_target_count(raw_text: str) -> int | None:
+        """从 OCR 文本里解析右下角目标数。
+
+        OCR 常见结果有 ``05/18``、``：05/18``、``05 / 18``。这里取斜杠
+        左侧数字作为当前可切换目标数；如果没有斜杠，则退化为取第一个数字。
+        """
+        if not raw_text:
+            return None
+
+        fraction_match = re.search(r"(\d+)\s*/\s*(\d+)", raw_text)
+        if fraction_match:
+            current_text = fraction_match.group(1)
+            current = int(current_text)
+            total = int(fraction_match.group(2))
+            if total > 0 and current > total:
+                for start in range(1, len(current_text)):
+                    candidate = int(current_text[start:])
+                    if candidate <= total:
+                        return candidate
+                return None
+            return current
+
+        number_match = re.search(r"\d+", raw_text)
+        if number_match:
+            return int(number_match.group(0))
+
+        return None
+
     def _try_auto_explore(self, context: Context) -> bool:
         """尝试触发一次自动探索(消耗能量)。
 
@@ -595,8 +682,6 @@ class AutoSky(CustomAction):
         Returns:
             bool: True 表示本轮至少处理过一个目标;False 表示无可处理目标
             (雷达空 或 全部事件被跳过)。
-            若返回过程中触发 _encountered_unbeatable / _troopLoss,
-            也视为有处理(返回 True)。
         """
         logger.info("开始手动探索...")
 
@@ -612,14 +697,18 @@ class AutoSky(CustomAction):
             context.tasker.controller.post_screencap().wait().get(),
         )
         if target_num_reco and target_num_reco.hit:
-            try:
-                parsed_num = int(target_num_reco.best_result.text)
+            raw_text = target_num_reco.best_result.text
+            parsed_num = self._parse_target_count(raw_text)
+            if parsed_num is not None:
                 max_manual_attempts = parsed_num + 1
                 logger.info(
-                    f"识别到当前目标数: {parsed_num},本轮手动探索最多尝试 {max_manual_attempts} 次。"
+                    f"识别到当前目标数: {parsed_num} (原始='{raw_text}'),"
+                    f"本轮手动探索最多尝试 {max_manual_attempts} 次。"
                 )
-            except ValueError:
-                logger.warning("未能解析目标数,使用默认 7。")
+            else:
+                logger.warning(
+                    f"未能解析目标数(原始='{raw_text}'),使用默认 7。"
+                )
         else:
             logger.warning("未能识别目标数,使用默认 7。")
 
