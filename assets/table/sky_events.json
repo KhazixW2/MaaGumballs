@@ -10997,6 +10997,29 @@
               "reason": "次选(随机奖励:加速器 or 自爆符石+古遗迹碎片)"
             }
           ]
+        },
+        {
+          "id": "normal_67",
+          "floor": "X",
+          "name": "古老的石台",
+          "level_range": "any",
+          "monitorable": true,
+          "options": [
+            {
+              "name": "翻找",
+              "rewards": [],
+              "tags": {
+                "has_title": false,
+                "has_robot": false,
+                "consumes_diamond": false,
+                "is_standalone_unobtainable": false,
+                "requires_choice": false,
+                "is_search_action": true
+              },
+              "selected": true,
+              "reason": "唯一选项:翻找"
+            }
+          ]
         }
       ]
     },
