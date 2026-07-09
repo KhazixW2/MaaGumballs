@@ -141,8 +141,7 @@
             "Node.Action.Succeeded": {
                 "content": "正在进入雷达界面",
                 "display": [
-                    "log",
-                    "modal"
+                    "log"
                 ]
             }
         },
@@ -168,15 +167,13 @@
             "Node.Action.Succeeded": {
                 "content": "确定已经来到了雷达界面",
                 "display": [
-                    "log",
-                    "modal"
+                    "log"
                 ]
             },
             "Node.Action.Failed": {
                 "content": "当前不在雷达界面",
                 "display": [
-                    "log",
-                    "modal"
+                    "log"
                 ]
             }
         },
@@ -418,8 +415,7 @@
             "Node.Action.Succeeded": {
                 "content": "战斗失败",
                 "display": [
-                    "log",
-                    "modal"
+                    "log"
                 ]
             }
         },
@@ -445,8 +441,7 @@
             "Node.Action.Succeeded": {
                 "content": "战斗胜利",
                 "display": [
-                    "log",
-                    "modal"
+                    "log"
                 ]
             }
         },
@@ -499,15 +494,13 @@
             "Node.Action.Succeeded": {
                 "content": "已经离开雷达界面",
                 "display": [
-                    "log",
-                    "modal"
+                    "log"
                 ]
             },
             "Node.Action.Failed": {
                 "content": "离开雷达界面失败",
                 "display": [
-                    "log",
-                    "modal"
+                    "log"
                 ]
             }
         },
@@ -971,8 +964,7 @@
             "Node.Action.Succeeded": {
                 "content": "识别到克隆体战损，已取消本次战斗结算，准备重新挑战",
                 "display": [
-                    "log",
-                    "modal"
+                    "log"
                 ]
             }
         },

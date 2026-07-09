@@ -459,7 +459,7 @@ logs
 python/
 settings.local.json
 
-
+docs\zh_cn\video_scripts\
 # mcp
 .playwright-mcp
 
