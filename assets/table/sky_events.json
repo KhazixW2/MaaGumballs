@@ -128,7 +128,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(3星反击符石+月白契约)"
             },
             {
@@ -170,7 +170,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "需250前条件，且开启大门收益更高"
             },
             {
@@ -232,7 +232,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "含机器人选项优先(限1次机器人+改造材料)"
             },
             {
@@ -243,7 +243,7 @@
                   "name": "随机改造材料"
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "收益单一"
             }
           ]
@@ -353,7 +353,7 @@
                   "desc": "随机摧毁总计3~5个雷达上的怪物浮岛和玩家飞艇(不足3个则全部摧毁)，不能摧毁遗迹浮岛、天空巨像、时空裂痕、神殿和其他事件"
                 }
               ],
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(效果型，不可监控)"
             },
             {
@@ -373,7 +373,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "次选(4星符石但浮岛已引爆炸弹优先)"
             }
           ]
@@ -419,7 +419,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "含机器人+4星挑战符石(不可获取的幼龙机器人+巨龙之力)"
             },
             {
@@ -442,7 +442,7 @@
                   "quantity": 150
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "1星符石+战斗无机器人"
             }
           ]
@@ -637,7 +637,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "4星探索符石+时装(不可获取)+黄金之罐组合"
             },
             {
@@ -654,7 +654,7 @@
                   "quantity": "1k"
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选"
             }
           ]
@@ -698,7 +698,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "含限1次古仪式祭品(不可获取)"
             },
             {
@@ -711,7 +711,7 @@
                   "quantity": 50
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "收益低"
             },
             {
@@ -864,7 +864,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "含限4次大恶魔基因碎片+4星挑战符石(不可获取)"
             },
             {
@@ -881,7 +881,7 @@
                   "quantity": 20
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选"
             }
           ]
@@ -920,7 +920,7 @@
                 "is_standalone_unobtainable": false,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "包含消耗钻石奖励"
             },
             {
@@ -951,7 +951,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(炼金坊工匠限5次+2星符石)"
             }
           ]
@@ -1078,7 +1078,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(3星符石+炼金坊工匠)"
             },
             {
@@ -1090,7 +1090,7 @@
                   "quantity": "30k 或 50k"
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选(纯金币)"
             },
             {
@@ -1213,7 +1213,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(3星反击符石)"
             },
             {
@@ -1251,7 +1251,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "概率成功,默认给物品更稳"
             }
           ]
@@ -1450,7 +1450,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项"
             },
             {
@@ -1486,7 +1486,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "勒索综合收益高但需战斗"
             },
             {
@@ -1537,7 +1537,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(神器碎片)"
             },
             {
@@ -1559,7 +1559,7 @@
                   "quantity": 5
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选(战斗)"
             },
             {
@@ -1622,7 +1622,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "含机器人选项优先(限1次机械人)"
             },
             {
@@ -1654,7 +1654,7 @@
                   "quantity": 1
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选(战斗)"
             },
             {
@@ -1721,7 +1721,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "前三次含消耗钻石(10/20/30钻),即使挂件不可获取也按规则排除"
             },
             {
@@ -1739,7 +1739,7 @@
                   "quantity": "30k~100k"
                 }
               ],
-              "selected": true,
+              "selected": false,
               "reason": "三次后选项需5w金币换3星艺术品,勒索无消耗更优"
             },
             {
@@ -1815,7 +1815,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "含消耗钻石奖励"
             },
             {
@@ -1832,7 +1832,7 @@
                   "quantity": 2
                 }
               ],
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(无消耗)"
             },
             {
@@ -1880,7 +1880,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(双符石)"
             },
             {
@@ -1944,7 +1944,7 @@
                   "quantity": 1
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "概率成功,次选"
             }
           ]
@@ -2132,7 +2132,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "前三次含消耗钻石(5/10/15钻),即使挂件不可获取也按规则排除"
             },
             {
@@ -2158,7 +2158,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(无消耗双3星符石)"
             },
             {
@@ -2249,7 +2249,7 @@
                 "is_standalone_unobtainable": false,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(2星机械雪人,无消耗)"
             },
             {
@@ -2273,7 +2273,7 @@
                   "quantity": "2~3"
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选(战斗)"
             }
           ]
@@ -2315,7 +2315,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(头像限3次,三次后返还金币+4星符石)"
             },
             {
@@ -2345,7 +2345,7 @@
                   "quantity": 1
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选(单一电池包)"
             }
           ]
@@ -2384,7 +2384,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "含称号(随机属性+5)+4星符石(不可获取)"
             },
             {
@@ -2419,7 +2419,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "战斗选项,给它物品更稳(称号更稀)"
             },
             {
@@ -2475,7 +2475,7 @@
                   ]
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "祭拜累计,长线收益低"
             },
             {
@@ -2517,7 +2517,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "挖掘综合收益高(≥30次可拿30钻+古仪式祭品)"
             }
           ]
@@ -2739,7 +2739,7 @@
                   "desc": "削弱次数+1;初始1800w,最多削弱5次后1100w,继续削弱无效"
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "中间动作"
             },
             {
@@ -2804,7 +2804,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "含机器人(炽炎剑僚机不可获取)+4星/3星符石"
             }
           ]
@@ -3357,7 +3357,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "称号'光之继承者'(火力+9,含火机属性,优先)+4星探索符石(不可获取)"
             },
             {
@@ -3397,7 +3397,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "含消耗钻石奖励(100钻)"
             }
           ]
@@ -5800,7 +5800,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "含称号'颂读者'(机动+2,优先)+1星符石三选一"
             },
             {
@@ -5817,7 +5817,7 @@
                   "quantity": "10k"
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选(雕像+金币)"
             },
             {
@@ -5872,7 +5872,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "含称号'堕落者'(全属性+1)+双符石可选(优先3星挑战)"
             },
             {
@@ -5912,7 +5912,7 @@
                 "requires_choice": false,
                 "is_search_action": true
               },
-              "selected": false,
+              "selected": true,
               "reason": "次选(翻找动作,但非残骸选项,不优先)"
             },
             {
@@ -5974,7 +5974,7 @@
                   ]
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选(无称号)"
             },
             {
@@ -6022,7 +6022,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "含称号'萨满'(火力+2,按规则优先)"
             }
           ]
@@ -6042,7 +6042,7 @@
                   "name": "随机两种同阶矿石"
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选"
             },
             {
@@ -6067,7 +6067,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "含称号'灭火人'(敌方火力-2,负向称号,但按规则仍优先)"
             }
           ]
@@ -6205,7 +6205,7 @@
                   "name": "灰烬"
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选"
             },
             {
@@ -6254,7 +6254,7 @@
                   "quantity": "2~3"
                 }
               ],
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(翻找含钻石消耗,选搬走无消耗)"
             }
           ]
@@ -6360,7 +6360,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(2星探索符石,稳定收益)"
             },
             {
@@ -6421,7 +6421,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "含消耗钻石奖励(虽含称号'幸运儿',但规则排除钻石)"
             }
           ]
@@ -6463,7 +6463,7 @@
                 "requires_choice": false,
                 "is_search_action": true
               },
-              "selected": true,
+              "selected": false,
               "reason": "无需特定冈布奥即可稳定获得奖励(10活性细胞+随机3神器碎片/1000遗迹碎片)"
             },
             {
@@ -6503,7 +6503,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "需特定冈布奥，拥有牧师/神圣巨龙/贤者冈布奥之一,概率成功概率成功"
             }
           ]
@@ -6656,7 +6656,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(三种限次混合液不可获取)"
             },
             {
@@ -6690,7 +6690,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "次选(3星符石三选一)"
             }
           ]
@@ -6749,7 +6749,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "称号'炮灰'非火力/机动属性"
             },
             {
@@ -6774,7 +6774,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "称号'重刑犯'(装甲+2,按规则非火机但仍是称号优先)"
             }
           ]
@@ -6936,7 +6936,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(3星探索符石不可获取)"
             },
             {
@@ -6956,7 +6956,7 @@
                   ]
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选"
             }
           ]
@@ -6984,7 +6984,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(5个飞艇芯片不可获取)"
             },
             {
@@ -7038,7 +7038,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "含钻石消耗不对,是给钻石"
             }
           ]
@@ -7116,7 +7116,7 @@
                   ]
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "原默认(满意态给电池包+改造材料)"
             },
             {
@@ -7150,7 +7150,7 @@
                   ]
                 }
               ],
-              "selected": true,
+              "selected": false,
               "reason": "用户指定:抢夺它"
             }
           ]
@@ -7187,7 +7187,7 @@
                   "quantity": 20
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选(战斗)"
             },
             {
@@ -7207,7 +7207,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(4星反击符石不可获取)"
             }
           ]
@@ -7430,7 +7430,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "称号'记者'(天空探索点+2,稳定收益)"
             },
             {
@@ -7461,7 +7461,7 @@
                   "limit": "不能超出上限"
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选(活力恢复)"
             }
           ]
@@ -7547,7 +7547,7 @@
                   "desc": "增加【30~50】探索等级"
                 }
               ],
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(增加探索等级)"
             },
             {
@@ -7565,7 +7565,7 @@
                   "quantity": 2000
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选"
             }
           ]
@@ -7946,7 +7946,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(4星死亡之指不可获取)"
             },
             {
@@ -7980,7 +7980,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "次选"
             }
           ]
@@ -8171,7 +8171,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "称号'英雄'(全属性+2,含火机属性)"
             },
             {
@@ -8239,7 +8239,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "称号'英雄'(全属性+2,含火机属性,4星战神之刃不可获取,最优)"
             }
           ]
@@ -8309,7 +8309,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "概率事件"
             },
             {
@@ -8349,7 +8349,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "用户指定:全部打开"
             }
           ]
@@ -8371,7 +8371,7 @@
                   "name": "狗罐头"
                 }
               ],
-              "selected": true,
+              "selected": false,
               "reason": "用户指定:你是阿努比斯么?"
             },
             {
@@ -8401,7 +8401,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "原默认(2星幸运硬币不可获取)"
             },
             {
@@ -8576,7 +8576,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(活力≥7时可获世界树宝宝不可获取)"
             },
             {
@@ -8586,7 +8586,7 @@
                   "type": "nothing"
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "无收益"
             }
           ]
@@ -8664,7 +8664,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "需阵营限定"
             },
             {
@@ -8702,7 +8702,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "根据玩家阵营选择,不可获取碎片"
             }
           ]
@@ -8731,7 +8731,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(3星挑战符石不可获取)"
             },
             {
@@ -8757,7 +8757,7 @@
                   ]
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选"
             },
             {
@@ -9057,7 +9057,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "固定概率事件,概率不可控"
             },
             {
@@ -9095,7 +9095,7 @@
                   "quantity": "10 或 20 或 50"
                 }
               ],
-              "selected": true,
+              "selected": false,
               "reason": "谜之雕像较稀有(默认选项)"
             }
           ]
@@ -9129,7 +9129,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "次选(电力)"
             },
             {
@@ -9179,7 +9179,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(4星符石不可获取,根据需求选择资源)"
             }
           ]
@@ -9253,7 +9253,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "未开启伊甸的过渡选项"
             },
             {
@@ -9281,7 +9281,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(不可获取的限定冈布奥)"
             },
             {
@@ -9605,7 +9605,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "含消耗钻石(1钻)"
             },
             {
@@ -9625,7 +9625,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(砸碎含钻石消耗)"
             }
           ]
@@ -9654,7 +9654,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(无钻石消耗)"
             },
             {
@@ -9689,7 +9689,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "含消耗钻石(1钻)+战斗"
             }
           ]
@@ -10431,7 +10431,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "称号'光明信徒'(免疫负面状态,实用)"
             },
             {
@@ -10456,7 +10456,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "次选(称号'黑暗信徒'敌方减益,负向)"
             }
           ]
@@ -10654,7 +10654,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(战力提升不可获取)"
             },
             {
@@ -10680,7 +10680,7 @@
                   "name": "随机改造材料"
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选(战斗)"
             }
           ]
@@ -10727,7 +10727,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "次选(消耗金币50k)"
             },
             {
@@ -10752,7 +10752,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "称号'垂钓者'(概率获得活性细胞)"
             },
             {
@@ -10838,7 +10838,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": false,
+              "selected": true,
               "reason": "称号'恐慌者'(幸运-5,负向称号)"
             },
             {
@@ -10870,7 +10870,7 @@
                   "quantity": 5
                 }
               ],
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(战斗+综合收益,住宿称号为负向)"
             },
             {
@@ -10961,7 +10961,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "默认选项(战斗+入侵者号芯片x15,蓝色按钮符石次之)"
             },
             {
@@ -10993,7 +10993,7 @@
                   ]
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "次选(随机奖励:加速器 or 自爆符石+古遗迹碎片)"
             }
           ]
