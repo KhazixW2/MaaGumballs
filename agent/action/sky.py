@@ -857,18 +857,17 @@ class AutoSky(CustomAction):
                 continue
 
             # 2.4 神殿解除封印是非战斗事件，不能进入克隆体战损检测链路
-            if self._node_enabled(
-                context, "AutoSky_ActivateTemple"
-            ):
-                logger.info("神殿事件默认跳过")
-                continue
-            elif  context.run_recognition("AutoSky_ActivateTemple", current_img).hit:
-                logger.info("检测到神殿解除封印，作为非战斗事件处理")
-                context.run_task("AutoSky_ActivateTemple")
-                processed_any = True
-                last_event_title = ""
-                consecutive_same_title = 0
-                continue
+            if self._node_enabled(context, "AutoSky_ActivateTemple"):
+                temple_reco = context.run_recognition(
+                    "AutoSky_ActivateTemple", current_img
+                )
+                if temple_reco and temple_reco.hit:
+                    logger.info("检测到神殿解除封印，作为非战斗事件处理")
+                    context.run_task("AutoSky_ActivateTemple")
+                    processed_any = True
+                    last_event_title = ""
+                    consecutive_same_title = 0
+                    continue
 
             # 2.5 可摧毁事件(炮轰，不进入战斗)
             if context.run_recognition(
