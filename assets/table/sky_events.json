@@ -1680,7 +1680,7 @@
           "monitorable": true,
           "options": [
             {
-              "name": "给它物品(扣除店主所需)",
+              "name": "给他物品(扣除店主所需)",
               "consumes": {
                 "type": "negotiation"
               },
@@ -1721,7 +1721,7 @@
                 "is_standalone_unobtainable": true,
                 "requires_choice": false
               },
-              "selected": true,
+              "selected": false,
               "reason": "前三次含消耗钻石(10/20/30钻),即使挂件不可获取也按规则排除"
             },
             {
@@ -1739,7 +1739,7 @@
                   "quantity": "30k~100k"
                 }
               ],
-              "selected": false,
+              "selected": true,
               "reason": "三次后选项需5w金币换3星艺术品,勒索无消耗更优"
             },
             {

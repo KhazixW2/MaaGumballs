@@ -338,7 +338,8 @@
         "post_delay": 3500,
         "timeout": 10000,
         "next": [
-            "AutoSky_SkipDetection"
+            "AutoSky_SkipDetection",
+            "[JumpBack]ConfirmButton"
         ]
     },
     "AutoSky_ActivateTemple": {
