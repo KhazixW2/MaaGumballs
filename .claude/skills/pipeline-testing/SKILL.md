@@ -1,8 +1,30 @@
+---
+name: pipeline-testing
+description: "Test and validate MaaFramework Pipeline JSON, recognition nodes, action nodes, CustomAction/CustomRecognition wiring, resource loading, and end-to-end task behavior. Use when running `run_pipeline`, checking OCR/TemplateMatch/ColorMatch ROI, validating `context.run_task()` results, auditing `action: Custom` or `recognition: Custom` registrations, or choosing the right resource-check command."
+---
+
 # Pipeline Testing Skill
 
 ## 概述
 
 测试 MaaFramework Pipeline JSON 中的 node，验证识别和操作是否正常工作。
+
+## 历史审查后的测试边界
+
+- **资源加载检查是 smoke test，不是端到端证明**：`python tools/ci/check_resource.py assets/resource/base` 能证明资源包可加载，但不能证明 CustomAction/CustomRecognition 名称存在、参数路径正确、`run_task()` 分支判断正确。
+- **Custom 映射必须单独查**：所有 `action: Custom` / `action.type = Custom` 的 `custom_action` 都要能映射到 `@AgentServer.custom_action(...)`；所有 `recognition.type = Custom` 的 `custom_recognition` 都要能映射到 `@AgentServer.custom_recognition(...)`。
+- **CustomRecognition 也要测**：M9A 证明复杂 OCR/list/image 逻辑经常放在 CustomRecognition，不要只测 CustomAction。
+- **高风险链路要复测稳定态**：购买、消耗、战斗开始、继续挑战、结算确认等动作后，先识别稳定页面或完成态，再继续危险动作。
+- **关闭节点不能继续调用**：当 option 把可执行节点的 `enable`/`enabled` 设为 false 时，Python 必须先短路，不能再调用该节点的 `run_recognition()`/`run_task()`；同时验证关闭可选分支后，同级战斗/调查分支仍会继续识别。
+
+### Custom 映射快速检查
+
+```powershell
+rg -n '"Custom"|custom_action|custom_recognition' assets/resource -g '*.json'
+rg -n '@AgentServer\.custom_action|@AgentServer\.custom_recognition' agent -g '*.py'
+```
+
+人工对照时按名字精确匹配。资源检查通过但这里缺注册，运行时仍会失败。
 
 ## 核心流程
 
@@ -118,7 +140,7 @@ run_pipeline(..., entry="NodeB", ...)
 
 操作流程：
 1. **生成测试 pipeline** — 同一节点，多个 expand 变体
-2. **关键**：`expected` 必须是中文（`["角色"]`），不是英文 key（`["Role"]`）
+2. **关键**：`expected` 必须匹配当前资源实际显示文本；在 MaaGumballs 中文资源里是 `["角色"]`，不是英文 key `["Role"]`
 3. `run_pipeline` 逐个跑，记录 score
 4. 选 score ≥ 0.99 且 ROI 不重叠相邻元素的 expand
 5. 用 `generate_node.py --expand X --overwrite` 正式写入

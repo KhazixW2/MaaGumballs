@@ -1,0 +1,26 @@
+{
+  "skill_name": "pipeline-option",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "disabled-executable-node-short-circuit",
+      "prompt": "给可执行 OCR 节点 OptionalTemple 加开关。关闭后节点不能调用，但扫描器还要继续识别后面的怪物战斗分支。",
+      "expected_output": "先读 enable/enabled，只有开启才 run_recognition/run_task；关闭时不调用该节点，也不提前 continue 整个扫描循环",
+      "files": []
+    },
+    {
+      "id": 2,
+      "eval_name": "input-injection-channel",
+      "prompt": "添加 input，让用户输入目标数量。一个版本由普通 Python 读取节点 expected，另一个版本传给 CustomAction。",
+      "expected_output": "区分 recognition.param.expected 与 action.param.custom_action_param/argv.custom_action_param，两种都允许但写入和读取路径必须闭环",
+      "files": []
+    },
+    {
+      "id": 3,
+      "eval_name": "pure-override-existing-node",
+      "prompt": "加一个开关，只决定现有确认节点 next 走 Confirm 还是 Cancel，不需要 Python 业务判断。",
+      "expected_output": "使用 pure pipeline_override 修改已有节点 next，确认目标节点预定义，不额外添加 Flag 和 Python 转发",
+      "files": []
+    }
+  ]
+}

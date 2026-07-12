@@ -1,0 +1,26 @@
+{
+  "skill_name": "pipeline-history-audit",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "nested-pipeline-history-coverage",
+      "prompt": "请从根提交审查这个 Maa 项目的 Pipeline 历史。Pipeline 既有 pipeline/*.json，也有 pipeline/activity/*.json，所有提交都要分类。",
+      "expected_output": "同时覆盖直接和嵌套 Pipeline JSON，附全量提交索引，不把只修改 pipeline/activity/*.json 的提交误判为无关",
+      "files": []
+    },
+    {
+      "id": 2,
+      "eval_name": "class-decorator-custom-mapping",
+      "prompt": "审核 action: Custom 到 Python 注册的映射。项目用 @AgentServer.custom_action 装饰 CustomAction class，不是函数。",
+      "expected_output": "AST 扫描包含 ast.ClassDef.decorator_list，正确建立节点到类注册的映射并只报告真实断链",
+      "files": []
+    },
+    {
+      "id": 3,
+      "eval_name": "audit-target-without-checkout",
+      "prompt": "审核指定历史提交，但我当前工作区有未提交改动，不要切分支或覆盖文件。",
+      "expected_output": "使用 git show/git log 直接读取目标对象，必要验证时使用临时 worktree，并保护当前工作区",
+      "files": []
+    }
+  ]
+}

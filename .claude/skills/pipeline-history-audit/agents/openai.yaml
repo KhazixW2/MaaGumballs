@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pipeline History Audit"
+  short_description: "Audit Maa pipeline and CustomAction history"
+  default_prompt: "Audit this Maa project history for pipeline JSON, CustomAction usage, interface options, and skill improvement lessons."

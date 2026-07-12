@@ -1,6 +1,6 @@
 ---
 name: "pipeline-generate"
-description: "自动生成 Pipeline OCR 文本节点。直接调 ocr() 拿目标文字 box，扩大 ROI 后合并到目标 pipeline 文件。提供单节点生成 (generate_node.py) + ROI 扫描找最佳 expand (generate_sweep.py) 两个脚本。"
+description: "Generate MaaFramework Pipeline nodes and recognition snippets from screenshots or observed UI state. Use for OCR node generation, ROI sweep, choosing TemplateMatch/OCR/ColorMatch/CustomRecognition, preserving target-file schema style, and designing `next`/`[JumpBack]` links before merging generated nodes into pipeline JSON."
 ---
 
 # pipeline-generate
@@ -135,12 +135,20 @@ python .claude/skills/pipeline-generate/generate_node.py "角色" UI_RoleListPag
 
 ## 关键经验
 
-1. **`ocr()` 自动截图**：内部已调 `controller.post_screencap()`，**不要**再手动 screencap。证据：[vision.py:58](../MaaMCP/maa_mcp/vision.py#L58)。
+### 历史审查后的生成策略
+
+- 先判断节点类型，不要默认所有问题都是 OCR：稳定图标/按钮优先 TemplateMatch，颜色状态可用 ColorMatch，动态文本用 OCR，列表/复杂图像后处理用 CustomRecognition。
+- MaaGumballs 的历史文件多为平铺字段风格；M9A HEAD 多为 v5 object-form：`action: { type, param }`、`recognition: { type, param }`。生成时沿用目标文件的既有风格，不要在同一局部混用两套格式。
+- 生成链路时先画父级 `next` 状态机：稳定页面、成功态、弹窗 `[JumpBack]`、加载 `[JumpBack]`、危险确认分支分开建节点。
+- 对会消耗资源或改变账号状态的节点，默认生成 `DoNothing` 或单独验证节点；只有用户明确要执行时才生成直接点击确认。
+- 如果需要 Python，先决定是 CustomAction 还是 CustomRecognition：动作/控制流用 CustomAction；识别后处理和动态 box 返回用 CustomRecognition。
+
+1. **`ocr()` 自动截图**：MaaMCP 的 `ocr()` 工具会自行获取当前画面，调用前不要重复 `screencap()`；如果换了 MCP provider，先读该工具的参数说明确认截图语义。
 2. **ROI 不是越大越好**：默认 `expand=75` 会失败（OCR 把"角色"拆成"电"+"色"）。多数节点 sweet spot 是 `expand=20-30`。
 3. **特殊节点需要小 ROI**："城堡" expand≥20 全失败，**只接受 0-15**（上方有图标 M/3.9m/1077/👍 干扰）。
-4. **`expected` 必须是中文**：`["角色"]` 正确，`["Role"]` 永远找不到。
+4. **`expected` 必须匹配当前资源实际显示文本**：在 MaaGumballs 中文资源里 `["角色"]` 正确、`["Role"]` 找不到；跨语言项目要按目标资源/locale 写实际 OCR 文本或项目约定的 i18n 形式。
 5. **OCR 非确定性**：同一 ROI 不同次结果可能不同，`timeout: 2000` 期间会重试。
-6. **OCR 失败不要换 TemplateMatch**：先用 sweep 找 sweet spot，多数情况能解决。
+6. **OCR 失败不要立刻换 TemplateMatch**：先看截图、扫 ROI、检查 `expected` 与颜色干扰；如果目标本质是稳定图标/按钮，TemplateMatch 本来就是正确选择，不必死守 OCR。
 7. **可滚动 UI 用大 ROI + 父级 orchestrator**（**重要**）：
    - **不要**在 Click 节点的 `next` 里放 `[JumpBack]CastleSwipeDown/Up` —— 找不到文字时会**死循环滑动**！
    - 正确模式参考 marry.json 里的 `CastleHall` 节点：父级 orchestrator 节点的 `next` 列表里放 `[JumpBack]XXXEntry` + `[JumpBack]XXXSwipeDown` + `[JumpBack]XXXSwipeUp` 等

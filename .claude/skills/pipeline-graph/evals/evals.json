@@ -5,7 +5,7 @@
       "id": 1,
       "eval_name": "visualize-pipeline-relationships",
       "prompt": "我们这个项目是 MaaFramework 的 Pipeline + Python 调度结构,我接手项目想先理解整体架构,能帮我把节点关系、Python 调用关系、用户级入口都画出来吗?",
-      "expected_output": "用 pipeline-graph skill 生成 17 张 HTML 图谱(总览 + Python 调用 + 工具 + 13 单文件),含导航栏和 index 主页",
+      "expected_output": "先发现仓库是否存在图谱工具；存在则按实际 Pipeline 文件数生成带导航的图谱，不存在则输出临时 Mermaid/关系表并明确工具缺口，不虚构固定的 17 张 HTML",
       "files": []
     },
     {

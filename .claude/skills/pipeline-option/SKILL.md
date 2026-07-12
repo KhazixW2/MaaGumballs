@@ -1,24 +1,33 @@
 ---
 name: pipeline-option
-description: Add runtime UI options (select/checkbox/switch/input) to interface.json. Two implementation styles: (1) wire to Python via context.get_node_data() for in-code decisions, or (2) pure pipeline_override on existing node fields (e.g. `next` array) for behavior-only changes that don't touch Python. Critical 3-place pattern: option definition + task option array + pre-defined pipeline node. Use when adding a new user-facing toggle, multi-choice selector, or custom input that must persist through MaaFramework's v2.3.0+ protocol.
+description: "Add runtime UI options (select/checkbox/switch/input) to MaaFramework option surfaces such as `assets/interface.json` or `assets/resource/tasks/**/*.json`. Use when adding a user-facing toggle, selector, checkbox, or input; wiring options to `pipeline_override`; aligning option paths with Python `context.get_node_data()` or CustomAction params; or reviewing option behavior across Pipeline JSON and Python."
 ---
 
 # Pipeline Option 工作流
 
-## TL;DR：3 处联动
+## TL;DR：先识别 option surface
 
-新增一个 UI 选项需要**同时**改 3 个地方，缺一不可：
+新增一个 UI 选项需要先识别本项目使用的 option surface。MaaGumballs 主要是 `assets/interface.json`，M9A 同时使用 `assets/interface.json` 与 `assets/resource/tasks/**/*.json`。不要假设所有 Maa 项目只有一种入口。
+
+常见联动点如下，按项目实际协议取用，缺关键点会导致 UI 看不到选项或运行时读不到值：
 
 | # | 位置 | 内容 |
 |---|------|------|
-| 1 | `assets/interface.json` 的 `option` 字典 | 选项定义（type / cases / pipeline_override） |
-| 2 | `assets/interface.json` 对应 task 的 `option: []` 数组 | 注册到具体任务（否则 UI 上看不到） |
+| 1 | option 定义处 | `assets/interface.json` 的 `option` 字典，或 `assets/resource/tasks/**/*.json` 里的 task option 定义 |
+| 2 | task 注册处 | `interface.json` task 的 `option: []`，或 tasks JSON 的任务/预设引用 |
 | 3 | `assets/resource/base/pipeline/*.json` | **预定义**目标节点（pipeline_override 不会创建节点） |
-| 4 | Python 代码（**仅模式 A 必需**） | `context.get_node_data()` 读取 + 业务分支；模式 E 用 pure override 可绕过 |
+| 4 | Python 代码（仅 Python 需要读取或执行 Custom 时必需） | `context.get_node_data()`、`argv.custom_action_param`、`argv.custom_recognition_param` 与 option 路径保持一致 |
 
 > ⚠️ **pipeline_override 只做属性合并，不会凭空创建节点。** 少了第 3 步，`context.get_node_data()` 会返回 `None`，运行时静默失败。
 
 完整协议参考（嵌套 option、global_option、controller/resource 限制、占位符注入）：[references/protocol.md](references/protocol.md)
+
+## 历史校正
+
+- **不要把 pure override 当成唯一最佳解**：只改已有节点字段时 pure override 最小；但涉及运行时事件库、计数、动态目标、识别后处理、失败策略、跨节点状态时，CustomAction/CustomRecognition 更合适。
+- **不要把 Flag 节点当成唯一配置入口**：M9A 的 v5 object-form 里，参数经常通过 `action.param.custom_action_param`、`custom_action_param_code`、`recognition.param.custom_recognition_param` 进入 Custom；这和 `context.get_node_data("Flag")` 是不同通道。
+- **字段路径必须闭环**：UI 写哪条路径，Python 就读哪条路径；pure override 则 Python 不读，直接观察运行时行为。
+- **`enabled`/`enable` 不是审美选择**：MaaFramework 原生启停用 `enabled`；历史项目若已有 `enable` helper，可沿用并兼容，否则优先 `enabled`。
 
 ---
 
@@ -28,7 +37,7 @@ description: Add runtime UI options (select/checkbox/switch/input) to interface.
 |------|------|---------------|---------------|
 | `select` | 单选互斥 | `expected` | `recognition: "OCR"` + `expected: [...]` |
 | `switch` | 二元 Yes/No | `enabled`（或项目已有的 `enable`） | `{"enabled": bool}` / `{"enable": bool}` |
-| `input` | 自由文本 | `custom_action_param` | `action.param.custom_action_param` |
+| `input` | 自由文本 | `{name}` 占位符可注入目标字段 | 按最终读取方预定义 `expected` 或 `action.param.custom_action_param` |
 | `checkbox` | 多选 | `enabled` | `{"enabled": false}` |
 
 ## 选哪个模式？
@@ -41,7 +50,7 @@ description: Add runtime UI options (select/checkbox/switch/input) to interface.
 | 用户输入自定义文本 | **D**（input + 占位符注入） |
 | 切换行为（点哪个按钮 / 走哪条 next 链）但不想改 Python | **E**（pure override 现有节点字段） |
 
-> **黄金法则**：能 pure override 解决就不加 Flag + Python 改动 —— 改动面越小越好维护。
+> **经验法则**：行为只等于“覆盖已有节点字段”时优先 pure override；一旦需要运行时数据、计数、动态识别、失败策略或跨节点状态，改用 Flag + Python / CustomAction / CustomRecognition。目标是让改动面和逻辑复杂度匹配。
 
 ### 先确认代码读取路径
 
@@ -57,6 +66,20 @@ description: Add runtime UI options (select/checkbox/switch/input) to interface.
 | `{ "SomeNode": { "next": ["A"] } }` | 不读，直接由 pipeline 行为生效 | pure override 模式 |
 
 **不要字段错位**：例如 UI 写 `AutoSky_CloneConfig.enable`，Python 却调用读取 `expected` 的函数；或 UI 写 `expected`，Python 只看 `enabled`。这种错误不会报 JSON 语法错，但运行时会表现为"选项没生效"。
+
+### 启停节点必须短路调用
+
+如果同一个节点既保存 `enable`/`enabled` 开关，又是可执行的 Recognition/Action 节点，先读取开关，只有开启时才调用它。关闭节点后继续检查同级候选分支，不能调用已关闭节点，也不能因为开关值直接 `continue` 整个事件扫描。
+
+```python
+if _node_enabled(context, "OptionalNode"):
+    result = context.run_recognition("OptionalNode", image)
+    if result and result.hit:
+        context.run_task("OptionalNode")
+        continue
+
+# OptionalNode 关闭或未命中，继续识别 CombatNode、ExploreNode 等同级分支。
+```
 
 ---
 
@@ -196,7 +219,7 @@ def _get_enabled_checks(context) -> list:
 
 ## 模式 D：自由输入（input + 占位符注入）
 
-**适用**：用户输入自定义关卡号、自定义黑名单任务等。
+**适用**：用户输入自定义关卡号、自定义黑名单任务等。`input` 只是 UI surface；占位符可以注入 `expected` 或 `action.param.custom_action_param`，最终路径由消费方决定。
 
 ### interface.json
 
@@ -227,17 +250,15 @@ data = context.get_node_data("CustomTaskBlacklist")
 value = data.get("recognition", {}).get("param", {}).get("expected", [""])[0]
 ```
 
-### ⚠️ 常见错误:别用 `custom_action_param` 字段读参数
+### ⚠️ 常见错误:混淆 `get_node_data()` 和 CustomAction 参数通道
 
-> **不要**把用户输入塞到 `pipeline_override.custom_action_param`,然后用 `get_node_data()["custom_action_param"]` 读。
->
-> **原因**:`pipeline_override.custom_action_param` 只影响 `argv.custom_action_param`(`context.run_task` 时的 CustomAction 调用参数),**不会**同步到 `get_node_data()` 返回值。
->
-> **正确做法**(二选一):
-> - **input 类型**:用 `{name}` 占位符 + `expected` 字段(本节示例)
-> - **select 类型 + 数字识别**:用 `expected: ["100"]`,Python 读 `node["recognition"]["param"]["expected"][0]` parseInt
->
-> **错误信号**:Python 代码里 `get_node_data("X").get("custom_action_param")` 永远返回 None 或默认值 → 用户选了 UI 但代码不响应。
+`custom_action_param` 可以用，但要读对地方：
+
+- 如果参数是给当前 CustomAction 执行时使用，写入 `action.param.custom_action_param`，在 Python 里读 `argv.custom_action_param`。
+- 如果参数是给普通业务代码提前读取，写到一个预定义节点的 `recognition.param.expected`、`enabled`、`enable` 或其他明确字段，再用 `context.get_node_data("Node")` 读取对应路径。
+- 不要把用户输入塞到 `pipeline_override.custom_action_param` 后，再用 `get_node_data("X").get("custom_action_param")` 读顶层字段；这两个不是同一条通道。
+
+**错误信号**：UI 显示已选择，但 Python 读到默认值或 `None`。排查时打印完整 `context.get_node_data("X")`，确认字段实际落点。
 
 ---
 
@@ -445,10 +466,10 @@ MaaFramework 全局加载时，所有 `assets/resource/base/pipeline/*.json` 会
 
 1. **先复用现有模式**：参考同项目里现成的同类选项（开关 → `开启5月城堡相亲`；选择 → `选择刷取任务国家`）
 2. **3 处同步改完再跑**：不要中途停下来"先编译试试"
-3. **JSON 改完跑 `python check_resource.py`**：pipeline 加载错误（如重复 key）会立刻报
+3. **JSON 改完跑资源加载检查**：本仓库与 M9A 的真实路径是 `python tools/ci/check_resource.py assets/resource/base`；如果目标项目路径不同，先用 `Get-ChildItem tools -Recurse -Filter check_resource.py` 发现真实脚本。pipeline 加载错误（如重复 key）会立刻报
 4. **默认值遵循现状**：选项是"开"还是"关"取决于旧代码行为，不是你的偏好
 5. **在 task 的 `doc` 数组里加一行说明**：用户能看懂每个选项的作用
-6. **能用 pure override 解决就不要加 Flag + Python 改动**（模式 E）。Flag 节点仅在"Python 代码需要根据 flag 走不同分支"时才必要 —— 行为切换只动 pipeline 节点字段时一律用模式 E
+6. **让 option 通道匹配实际复杂度**：行为只动已有 pipeline 字段时用 pure override；Python 需要做真实判断、计数、动态识别或安全策略时，用 Flag + Python / CustomAction / CustomRecognition，不要为了少写 Python 把复杂逻辑硬塞进 JSON。
 
 ---
 
@@ -463,7 +484,7 @@ MaaFramework 全局加载时，所有 `assets/resource/base/pipeline/*.json` 会
 "Flag_EnableSailingFestivalPurchase": { "enabled": true }
 ```
 
-**验证方法**：加完后跑 `python check_resource.py`，并在 Python 里加个 `None` 兜底日志。
+**验证方法**：加完后跑 `python tools/ci/check_resource.py assets/resource/base`（或目标项目真实资源检查命令），并在 Python 里加个 `None` 兜底日志。
 
 ### 2. 不要忘了注册到 task 的 option 数组
 
@@ -498,7 +519,8 @@ def handle_sailing_festival(context):
 | 用途 | 字段路径 | 备注 |
 |------|---------|------|
 | `select` | `data["recognition"]["param"]["expected"][0]` | 节点必须 `recognition: "OCR"` |
-| `input` | `data["action"]["param"]["custom_action_param"][key]` | 完全独立的机制 |
+| `input` 注入 CustomAction | `data["action"]["param"]["custom_action_param"][key]` 或执行时的 `argv.custom_action_param` | 取决于参数消费位置 |
+| `input` 注入普通节点字段 | 读取被占位符覆盖的真实路径，如 `recognition.param.expected` | input 不限定注入目标 |
 | `switch` / `checkbox` | `data["enabled"]` | 最简单 |
 | 历史 `enable` 开关 | `data.get("enable", data.get("enabled", default))` | 仅在项目已有该字段时使用 |
 | 模式 E 不读 | （不读，直接看 override 后节点的运行时行为） | pure override 模式，Python 拿不到也不需要 flag |
@@ -513,9 +535,9 @@ def handle_sailing_festival(context):
 { "name": "Yes" } / { "name": "No" }
 ```
 
-### 6. 不要在 input 里塞 OCR expected 路径
+### 6. 不要让 input 注入路径和读取路径错位
 
-`input` 用 `custom_action_param` 注入自定义文本，**与 `select` 的 `expected` 是两套独立机制**。混用会导致节点配置混乱、后续维护者读不懂。
+`input` 的 `{name}` 占位符既可以注入 OCR `expected`，也可以注入 `action.param.custom_action_param`。选择哪条路径取决于最终消费方：普通 OCR/配置读取用实际节点字段，CustomAction 执行参数用 `argv.custom_action_param`。不要写入一条路径却从另一条路径读取。
 
 ### 7. 不要用中文做 pipeline 节点名
 
@@ -655,7 +677,7 @@ self._clone_enabled = _node_enabled(context, "AutoSky_CloneConfig")
 2. **资源加载检查**
 
    ```bash
-   python check_resource.py ./assets/resource/base
+   python tools/ci/check_resource.py assets/resource/base
    ```
 
    期望输出 `All directories checked.`

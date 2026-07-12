@@ -1,0 +1,26 @@
+{
+  "skill_name": "pipeline-testing",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "resource-check-versus-custom-wiring",
+      "prompt": "资源检查通过了，但运行时报 CustomAction 找不到。请设计验证步骤。",
+      "expected_output": "把资源加载与 Custom 注册映射分开验证，对照 JSON custom_action 和 Python decorator 名称",
+      "files": []
+    },
+    {
+      "id": 2,
+      "eval_name": "run-task-hit-semantics",
+      "prompt": "context.run_task 返回了 nodes，但调试面板里目标节点是红叉。代码现在只判断 result.nodes。",
+      "expected_output": "不把 nodes 非空当命中，检查 completed 或 recognition.hit，并优先验证稳定页面",
+      "files": []
+    },
+    {
+      "id": 3,
+      "eval_name": "disabled-node-and-sibling-regression",
+      "prompt": "测试一个受开关控制的神殿识别节点：关闭时不可调用，同时怪物浮岛分支必须仍然执行。",
+      "expected_output": "覆盖关闭不调用、开启未命中继续同级分支、开启命中只处理神殿三种情况，并避免危险点击",
+      "files": []
+    }
+  ]
+}
