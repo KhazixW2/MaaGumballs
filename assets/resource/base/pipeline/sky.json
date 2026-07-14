@@ -894,7 +894,7 @@
             780
         ],
         "action": "Click",
-        "post_delay": 1500,
+        "post_delay": 3500,
         "timeout": 3000,
         "next": [
             "AutoSky_SkipDetection"

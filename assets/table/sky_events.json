@@ -1541,7 +1541,7 @@
               "reason": "默认选项(神器碎片)"
             },
             {
-              "name": "勒索他们",
+              "name": "勒索它们",
               "rewards": [
                 {
                   "type": "battle",
@@ -11747,6 +11747,63 @@
               },
               "selected": false,
               "reason": "次选(仅给灵魂,无额外材料)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "airship_wreckage",
+      "name": "飞艇残骸类(调查后事件结束,无翻找)",
+      "events": [
+        {
+          "id": "wreckage_phoenix",
+          "name": "菲尼克斯残骸",
+          "level_range": "any",
+          "monitorable": false,
+          "options": [
+            {
+              "name": "调查",
+              "tags": {
+                "is_investigate_action": true,
+                "completes_event": true
+              },
+              "selected": true,
+              "reason": "飞艇类残骸:点调查后事件直接结束,无翻找/无奖励选项"
+            }
+          ]
+        },
+        {
+          "id": "wreckage_spaceship",
+          "name": "飞船的残骸",
+          "level_range": "any",
+          "monitorable": false,
+          "options": [
+            {
+              "name": "调查",
+              "tags": {
+                "is_investigate_action": true,
+                "completes_event": true
+              },
+              "selected": true,
+              "reason": "飞艇类残骸:点调查后事件直接结束,无翻找/无奖励选项"
+            }
+          ]
+        },
+        {
+          "id": "wreckage_airship",
+          "name": "飞艇的残骸",
+          "level_range": "any",
+          "monitorable": false,
+          "options": [
+            {
+              "name": "调查",
+              "tags": {
+                "is_investigate_action": true,
+                "completes_event": true
+              },
+              "selected": true,
+              "reason": "飞艇类残骸:点调查后事件直接结束,无翻找/无奖励选项"
             }
           ]
         }

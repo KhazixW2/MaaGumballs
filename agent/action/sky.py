@@ -36,6 +36,7 @@ class AutoSky(CustomAction):
     _troopLoss: bool  # 记录是否出现克隆体战损
     _target_round: int
     _clone_enabled: bool  # 记录克隆体是否启用
+    _temple_enabled: bool  # 记录神殿是否启用(start 时由 pipeline 节点读取)
     _sky_events_index: dict  # name -> event，__init__ 时预加载
     _used_battery: int  # 累计已使用电池数
     _iteration: int  # 主循环当前迭代数
@@ -63,6 +64,7 @@ class AutoSky(CustomAction):
         self._troopLoss = False
         self._target_round = 5
         self._clone_enabled = True  # 默认启用克隆体检查
+        self._temple_enabled = True  # 默认启用神殿(start 时会被 pipeline 覆盖)
         self._used_battery = 0  # 累计已用电池数
         self._iteration = 0  # 主循环迭代数
         self._last_progress = True  # 默认认为有进展(避免首次就退出)
@@ -233,46 +235,49 @@ class AutoSky(CustomAction):
     def _handle_unknown_wreckage_event(self, context: Context, title: str) -> bool:
         """处理未入库的残骸事件。
 
-        飞船残骸经常表现为“调查后直接领取芯片/奖励”，标题又会随飞船名变化。
-        这里不回退 UI，而是先尝试常见残骸按钮，若没有按钮则尝试确认奖励弹窗。
+        外层 ``AutoSky_ExploreRandomEvent`` 已经点击过"调查"按钮:
+          - 尸体类: 调查后新弹窗含"翻找"/"埋葬",需要再点翻找
+          - 飞艇类: 调查后事件直接结束,无需二次操作
+
+        通过 OCR 是否能找到"翻找"按钮来区分两类。
         """
         logger.info(
             f"事件 '{title}' 命中残骸兜底: 未在事件库中精确配置，尝试通用处理"
         )
 
-        for option_name in ("翻找", "调查"):
-            current_img = context.tasker.controller.post_screencap().wait().get()
-            option_reco = context.run_recognition(
-                "AutoSky_ClickOptionByName",
-                current_img,
-                pipeline_override={
-                    "AutoSky_ClickOptionByName": {
-                        "recognition": "OCR",
-                        "expected": [option_name],
-                        "action": "DoNothing",
-                        "post_delay": 0,
-                        "timeout": 1000,
-                    }
-                },
-            )
-            if not (option_reco and option_reco.hit):
-                continue
-
-            logger.info(f"事件 '{title}' 残骸兜底 → 点击 '{option_name}'")
+        # 尸体类: 调查后再点翻找
+        current_img = context.tasker.controller.post_screencap().wait().get()
+        search_reco = context.run_recognition(
+            "AutoSky_ClickOptionByName",
+            current_img,
+            pipeline_override={
+                "AutoSky_ClickOptionByName": {
+                    "recognition": "OCR",
+                    "expected": ["翻找"],
+                    "action": "DoNothing",
+                    "post_delay": 0,
+                    "timeout": 2000,
+                }
+            },
+        )
+        if search_reco and search_reco.hit:
+            logger.info(f"事件 '{title}' 残骸兜底 → 点击 '翻找' (尸体类)")
             result = context.run_task(
                 "AutoSky_ClickOptionByName",
                 pipeline_override={
                     "AutoSky_ClickOptionByName": {
                         "recognition": "OCR",
-                        "expected": [option_name],
+                        "expected": ["翻找"],
                     }
                 },
             )
             if result and result.nodes:
                 return self._wait_for_event_completion(context, title)
 
+        # 飞艇类 / 其他: 调查已点完,事件结束,等待回到雷达界面
         logger.info(
-            f"事件 '{title}' 残骸兜底未发现翻找/调查按钮，尝试处理奖励确认"
+            f"事件 '{title}' 残骸兜底未发现翻找按钮,"
+            f"按飞艇类/单步事件处理(已点过调查,等待完成)"
         )
         return self._wait_for_event_completion(context, title, timeout=15)
 
@@ -856,13 +861,15 @@ class AutoSky(CustomAction):
                 logger.info("检测到交谈类事件,暂不处理,跳过")
                 continue
 
-            # 2.4 神殿解除封印是非战斗事件，不能进入克隆体战损检测链路
-            if self._node_enabled(context, "AutoSky_ActivateTemple"):
+            # 2.4 神殿解除封印是非战斗事件,不能进入克隆体战损检测链路
+            # 神殿禁用时(start 时已缓存到 _temple_enabled)整段跳过,
+            # 避免每轮无谓的 OCR 调用;启用时再识别+处理
+            if self._temple_enabled:
                 temple_reco = context.run_recognition(
                     "AutoSky_ActivateTemple", current_img
                 )
                 if temple_reco and temple_reco.hit:
-                    logger.info("检测到神殿解除封印，作为非战斗事件处理")
+                    logger.info("检测到神殿解除封印,作为非战斗事件处理")
                     context.run_task("AutoSky_ActivateTemple")
                     processed_any = True
                     last_event_title = ""
@@ -1069,6 +1076,8 @@ class AutoSky(CustomAction):
 
         # 1.2 根据用户选项设置克隆体。不开启时沿用原行为:关闭克隆体。
         self._clone_enabled = self._node_enabled(context, "AutoSky_CloneConfig")
+        # 1.2.1 缓存神殿启用状态,避免每轮 OCR 探测(神殿禁用时直接跳过整个 2.4 分支)
+        self._temple_enabled = self._node_enabled(context, "AutoSky_ActivateTemple")
         if self._clone_enabled:
             logger.info("已启用克隆体，尝试开启克隆体并启用战损检测")
             context.run_task("AutoSky_Enable_Clone")
@@ -1110,6 +1119,7 @@ class AutoSky(CustomAction):
             # --- 1) 自动探索(消耗能量,优先)---
             if self._try_auto_explore(context):
                 self._last_progress = True
+                # auto-explore 不保证回雷达 → 不在此处检测等级,留到手动探索分支
             else:
                 # _try_auto_explore 已经尝试回雷达;
                 # 若仍不在雷达(返回 False 且不在雷达),跳过本轮手动探索
@@ -1118,6 +1128,11 @@ class AutoSky(CustomAction):
                     "AutoSky_CheckExplorationInfo", radar_img
                 ).hit
                 if in_radar_now:
+                    # 等级检测必须在雷达界面 → 放在手动探索之前
+                    # 此点已通过 in_radar_now 验证,而 _try_auto_explore
+                    # 完成后不一定回到雷达界面(用户反馈)
+                    if self._update_sky_level_stagnation(context):
+                        break
                     # --- 检查雷达是否还有可探索节点 ---
                     # 雷达空(0/0)说明本次探索已无目标,直接用电池补充
                     if self._is_radar_empty(context):
@@ -1173,9 +1188,6 @@ class AutoSky(CustomAction):
                         "下一轮将因'连续无进展'退出任务"
                     )
                     self._last_progress = False
-
-            if self._last_progress and self._update_sky_level_stagnation(context):
-                break
 
         # 主循环结束后的最终处理
         result_message = ""
