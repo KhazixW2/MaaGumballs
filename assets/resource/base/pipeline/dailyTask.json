@@ -868,7 +868,8 @@
         "template": [
             "dailyTask/weeklyRaid/永恒王座入口.png",
             "dailyTask/weeklyRaid/六重天入口.png",
-            "dailyTask/weeklyRaid/惑星走私集团入口.png"
+            "dailyTask/weeklyRaid/惑星走私集团入口.png",
+            "dailyTask/weeklyRaid/破碎的元素大陆入口.png"
         ],
         "threshold": 0.7,
         "roi": [
@@ -894,7 +895,8 @@
         "expected": [
             "永恒王座",
             "六重天",
-            "惑星走私集团"
+            "惑星走私集团",
+            "破碎的元素大陆"
         ],
         "roi": [
             38,
@@ -937,7 +939,7 @@
             157
         ],
         "action": "Click",
-        "post_delay": 3000,
+        "post_delay": 3500,
         "timeout": 5000,
         "next": [
             "WeeklyRaid_Attack_Skip"
@@ -987,7 +989,8 @@
         "template": [
             "dailyTask/weeklyRaid/永恒王座彩蛋.png",
             "dailyTask/weeklyRaid/六重天彩蛋.png",
-            "dailyTask/weeklyRaid/惑星走私集团彩蛋.png"
+            "dailyTask/weeklyRaid/惑星走私集团彩蛋.png",
+            "dailyTask/weeklyRaid/破碎的元素大陆彩蛋.png"
         ],
         "roi": [
             158,

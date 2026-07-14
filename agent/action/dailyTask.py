@@ -76,7 +76,12 @@ class DailyTask(CustomAction):
 @AgentServer.custom_action("WeeklyRaidFighting")
 class WeeklyRaidFighting(CustomAction):
     def __init__(self):
-        self.weeklyRaidList = ["永恒王座", "六重天","惑星走私集团"]
+        self.weeklyRaidList = [
+            "永恒王座",
+            "六重天",
+            "惑星走私集团",
+            "破碎的元素大陆"
+        ]
         super().__init__()
         # 这个做成一个map，通过我们的副本名称一个string来映射一个string列表
         self.MonsterCheckPath: str = "dailyTask/weeklyRaid/"
@@ -107,10 +112,20 @@ class WeeklyRaidFighting(CustomAction):
             self.MonsterCheckPath + "惑星走私集团6.png",
             self.MonsterCheckPath + "惑星走私集团7.png",
         ]
+        self.MonsterList4 = [
+            self.MonsterCheckPath + "破碎的元素大陆土元素.png",
+            self.MonsterCheckPath + "破碎的元素大陆风元素.png",
+            self.MonsterCheckPath + "破碎的元素大陆火元素.png",
+            self.MonsterCheckPath + "破碎的元素大陆水元素.png",
+            self.MonsterCheckPath + "破碎的元素大陆光元素.png",
+            self.MonsterCheckPath + "破碎的元素大陆暗元素.png",
+            self.MonsterCheckPath + "破碎的元素大陆凤凰.png",
+        ]
         self.MonsterMap = {
             "永恒王座": self.MonsterList1,
             "六重天": self.MonsterList2,
-            "惑星走私集团": self.MonsterList3
+            "惑星走私集团": self.MonsterList3,
+            "破碎的元素大陆": self.MonsterList4,
         }
 
     def run(
@@ -154,7 +169,7 @@ class WeeklyRaidFighting(CustomAction):
                         box = item.box
                         center_x, center_y = box[0] + box[2] // 2, box[1] + box[3] // 2
                         context.tasker.controller.post_click(center_x, center_y).wait()
-                        time.sleep(0.5)
+                        time.sleep(1)
                         # 2.2 袭击怪物
                         context.run_task("WeeklyRaid_Attack")
                 context.run_task("WeeklyRaid_SwipeToRight")
