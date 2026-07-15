@@ -1,4 +1,9 @@
-# collect_game_item_data
+---
+name: collect-game-item-data
+description: Collect structured game item data by navigating Android or Windows application interfaces with MaaMCP. Use when cataloging equipment, weapons, props, or similar in-game collections through OCR, clicks, scrolling, and JSON export.
+---
+
+# collect-game-item-data
 
 收集游戏物品数据的自动化流程，使用 maa-mcp 工具操作。
 

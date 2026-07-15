@@ -5,6 +5,10 @@ description: 生成 MaaFramework Pipeline 项目的可交互状态机图谱。�
 
 # Pipeline 状态机图谱生成
 
+## 项目初始化接力
+
+画图前先查目标根目录的 `basic_info.md`。存在且包含第 0 节时，读取“0. Maa Skills 接力协议”和第 2/3/6 节，把 task entry、Pipeline 文件清单、JSON 边与 Python 外部入口作为图谱种子；随后仍须扫描当前 `interface.json`、全部目标 Pipeline 文件，以及 `agent/**/*.py` 的 `run_task()` / `run_recognition()`，不能把缓存当完整图数据库。文件缺失或没有第 0 节，且 `project-pipeline-init` 可用时先跑摘要模式；源码比文档新时先刷新摘要，不得静默覆盖已有非空文档。
+
 ## TL;DR
 
 把"声明式 JSON 节点 + 命令式 Python 调度"的项目(Pipeline 节点 + `context.run_task()` / `context.override_pipeline()` 调用 + option/task 入口)整理成状态机图或关系表。

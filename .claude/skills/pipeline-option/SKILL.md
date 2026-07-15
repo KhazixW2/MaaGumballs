@@ -5,6 +5,10 @@ description: "Add runtime UI options (select/checkbox/switch/input) to MaaFramew
 
 # Pipeline Option 工作流
 
+## 项目初始化接力
+
+新增选项前先查目标项目根目录的 `basic_info.md`。存在且包含第 0 节时，读取“0. Maa Skills 接力协议”和第 1/2/3/6 节，先确认 interface、resource/task entry、目标节点与 Python 外部调用，再按本 skill 查实际 option surface 和读取路径。文档只是缓存：`pipeline_override`、`context.get_node_data()` 和 Custom 参数路径必须在当前文件中闭环核实。文件缺失或没有第 0 节，且 `project-pipeline-init` 可用时先跑摘要模式；相关源码比文档新时视为可能过期，不得静默覆盖已有非空文档。
+
 ## TL;DR：先识别 option surface
 
 新增一个 UI 选项需要先识别本项目使用的 option surface。MaaGumballs 主要是 `assets/interface.json`，M9A 同时使用 `assets/interface.json` 与 `assets/resource/tasks/**/*.json`。不要假设所有 Maa 项目只有一种入口。

@@ -5,6 +5,10 @@ description: "Generate MaaFramework Pipeline nodes and recognition snippets from
 
 # pipeline-generate
 
+## 项目初始化接力
+
+生成节点前先在目标项目根目录查找 `basic_info.md`。存在且包含第 0 节时，读取“0. Maa Skills 接力协议”和第 3/4/5/7/8/9 节，用它快速定位目标文件、公共节点、返回路径、OCR 文本、模板目录与 ROI 基准。它是缓存，不替代当前目标文件和当前设备画面；生成前仍须核实目标文件语法风格，并重新 OCR/截图确认页面。文件缺失或没有第 0 节，且 `project-pipeline-init` 可用时先跑摘要模式；若相关源码更新更晚，则把缓存视为可能过期且不要静默覆盖。
+
 ## 概念
 
 Pipeline 由 Node 组成。本 skill 针对**OCR 文本识别节点**，按 Pipeline 协议生成节点 JSON 并合并到目标 pipeline 文件。
