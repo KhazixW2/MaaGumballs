@@ -19,9 +19,8 @@ on:
 
 # 环境变量定义，用于统一管理依赖版本
 env:
-  MAA_FRAMEWORK_VERSION: "v5.10.5"
-  MFA_AVALONIA_VERSION: "v2.12.1"
-
+  MFA_AVALONIA_VERSION: "v2.14.0"
+  MAA_FRAMEWORK_VERSION: "v5.12.3"
 
 permissions:
   contents: write

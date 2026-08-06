@@ -466,3 +466,5 @@ docs\zh_cn\video_scripts\
 
 # skills
 minimax_scripts/
+.agents
+.codex
