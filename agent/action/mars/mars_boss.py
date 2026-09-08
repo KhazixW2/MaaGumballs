@@ -31,11 +31,27 @@ class MarsBossHandler:
             return True
 
         context.run_task(
-            "WaitStableNode_ForOverride",
-            pipeline_override={
-                "WaitStableNode_ForOverride": {"pre_wait_freezes": {"time": 200}}
-            },
-        )
+                    "WaitStableNode_ForOverride",
+                    pipeline_override={
+                        "WaitStableNode_ForOverride": {"pre_wait_freezes": {"time": 200}}
+                    },
+                )
+        image = context.tasker.controller.post_screencap().wait().get()
+        # result=
+        # logger.debug(f"下楼钥匙识别结果: {result},{result.status if result else 'No result'}")
+        if context.run_recognition("下楼钥匙",image).hit:
+            logger.info("检测到下楼钥匙，尝试点击")
+            context.run_task("下楼钥匙")
+            return True
+
+        # 检查boss是否存在
+        if context.run_recognition(
+            "Fight_CheckBossStatus",
+            context.tasker.controller.post_screencap().wait().get(),
+        ).hit:
+            logger.info(f"当前层数 {self.mars.layers} 已经击杀boss")
+        if context.run_recognition("Fight_OpenedDoor", image).hit:
+            return True
         fightUtils.cast_magic_special("生命颂歌", context)
         if self.mars.target_magicgumball_para == "波塞冬":
             fightUtils.cast_magic(
@@ -55,7 +71,8 @@ class MarsBossHandler:
         if self.mars.layers >= 120:
             fightUtils.cast_magic("土", "石肤术", context, (boss_x, boss_y))
         fightUtils.cast_magic_special("生命颂歌", context)
-
+        if context.run_recognition("Fight_OpenedDoor", image).hit:
+            return True
         actions = []
         if self.mars.target_magicgumball_para == "波塞冬":
             if self.mars.layers < 110:
@@ -137,5 +154,6 @@ class MarsBossHandler:
                 "WaitStableNode_ForOverride": {"pre_wait_freezes": {"time": 100}}
             },
         )
+        context.run_task("Mars_Inter_Confirm_Fail")#防止卡在柱子界面
 
         return True

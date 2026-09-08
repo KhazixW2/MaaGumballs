@@ -99,7 +99,7 @@
         "post_delay": 500,
         "timeout": 2000
     },
-    "TitlePanel_Learnable_Fnish": {
+    "TitlePanel_Learnable_Finish": {
         "recognition": "TemplateMatch",
         "roi": [
             182,
@@ -109,10 +109,11 @@
         ],
         "template": [
             "fight/UniversalUI/new_Star_3.png",
-            "fight/UniversalUI/new_Moon_3.png"
+            "fight/UniversalUI/new_Moon_3.png",
+            "fight/UniversalUI/Star_3_H.png",
+            "fight/UniversalUI/Moon_3_H.png"
         ],
         "action": "DoNothing",
-        "threshold": 0.9,
         "next": [
             "BackText_700ms"
         ],
@@ -154,7 +155,7 @@
         ],
         "next": [
             "TitlePanel_Learnable_Check",
-            "TitlePanel_Learnable_Fnish",
+            "TitlePanel_Learnable_Finish",
             "[JumpBack]TitlePanel_Learnable_ClickOnce"
         ],
         "post_delay": 1000,
