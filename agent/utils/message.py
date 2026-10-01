@@ -28,50 +28,49 @@ def read_config() -> bool:
         with open(config_path, "r", encoding="utf-8") as f:
             config = json.load(f)
             message_types = config.get("ExternalNotificationEnabled")
-            list = message_types.split(",")
+            channels = message_types.split(",")
             logger.debug("配置文件读取成功！开始解密配置...")
-            for message_type in list:
-                if message_type == "SMTP":
-                    config["ExternalNotificationSmtpFrom"] = decrypt(
-                        config["ExternalNotificationSmtpFrom"]
-                    ).strip()
-                    config["ExternalNotificationSmtpTo"] = decrypt(
-                        config["ExternalNotificationSmtpTo"]
-                    ).strip()
-                    config["ExternalNotificationSmtpPassword"] = decrypt(
-                        config["ExternalNotificationSmtpPassword"]
-                    ).strip()
-                    config["ExternalNotificationSmtpServer"] = decrypt(
-                        config["ExternalNotificationSmtpServer"]
-                    ).strip()
-                    config["ExternalNotificationSmtpPort"] = decrypt(
-                        config["ExternalNotificationSmtpPort"]
-                    ).strip()
-                elif message_type == "DingTalk":
-                    config["ExternalNotificationDingTalkToken"] = decrypt(
-                        config["ExternalNotificationDingTalkToken"]
-                    ).strip()
-                    config["ExternalNotificationDingTalkSecret"] = decrypt(
-                        config["ExternalNotificationDingTalkSecret"]
-                    ).strip()
-                elif message_type == "Qmsg":
-                    config["ExternalNotificationQmsgServer"] = decrypt(
-                        config["ExternalNotificationQmsgServer"]
-                    ).strip()
-                    config["ExternalNotificationQmsgKey"] = decrypt(
-                        config["ExternalNotificationQmsgKey"]
-                    ).strip()
-                    config["ExternalNotificationQmsgBot"] = decrypt(
-                        config["ExternalNotificationQmsgBot"]
-                    ).strip()
-                    config["ExternalNotificationQmsgUser"] = decrypt(
-                        config["ExternalNotificationQmsgUser"]
-                    ).strip()
-                elif message_type == "PushPlus":
-                    config["pushplus_token"] = decrypt(config["pushplus_token"]).strip()
-                elif message_type == "Telegram":
-                    config["telegram_token"] = decrypt(config["ExternalNotificationTelegramBotToken"]).strip()
-                    config["telegram_chat_id"] = decrypt(config["ExternalNotificationTelegramChatId"]).strip()
+
+            # 通道配置键映射表
+            # str: 键名即是目标键名，默认值为空
+            # tuple: (目标键, 来源键, 默认值)，来源键为 None 时等同于目标键
+            CHANNEL_KEYS = {
+                "SMTP": ["ExternalNotificationSmtpFrom", "ExternalNotificationSmtpTo",
+                         "ExternalNotificationSmtpPassword", "ExternalNotificationSmtpServer",
+                         "ExternalNotificationSmtpPort"],
+                "DingTalk": ["ExternalNotificationDingTalkToken", "ExternalNotificationDingTalkSecret"],
+                "Qmsg": ["ExternalNotificationQmsgServer", "ExternalNotificationQmsgKey",
+                         "ExternalNotificationQmsgBot", "ExternalNotificationQmsgUser"],
+                "pushplus_token": ["pushplus_token"],
+                "Telegram": [("telegram_token", "ExternalNotificationTelegramBotToken", ""),
+                             ("telegram_chat_id", "ExternalNotificationTelegramChatId", "")],
+                "Lark": ["ExternalNotificationLarkWebhookUrl", "ExternalNotificationLarkID",
+                         "ExternalNotificationLarkToken"],
+                "WxPusher": ["ExternalNotificationWxPusherToken", "ExternalNotificationWxPusherUID"],
+                "Discord": ["ExternalNotificationDiscordBotToken", "ExternalNotificationDiscordChannelId"],
+                "DiscordWebhook": ["ExternalNotificationDiscordWebhookUrl", "ExternalNotificationDiscordWebhookName"],
+                "ServerChan": ["ExternalNotificationServerChanKey"],
+                "CustomWebhook": [("ExternalNotificationCustomWebhookUrl", None, ""),
+                                  ("ExternalNotificationCustomWebhookContentType", None, "application/json"),
+                                  ("ExternalNotificationCustomWebhookPayloadTemplate", None, '{"message": "{message}"}')],
+                "OneBot": ["ExternalNotificationOneBotServer", "ExternalNotificationOneBotKey",
+                           "ExternalNotificationOneBotUser"],
+                "Email": ["ExternalNotificationEmailAccount", "ExternalNotificationEmailSecret"],
+            }
+
+            for channel in channels:
+                for item in CHANNEL_KEYS.get(channel, []):
+                    if isinstance(item, str):
+                        target = source = item
+                        default = ""
+                    else:
+                        target, source, default = item
+                        if source is None:
+                            source = target
+                    if config.get(source, default) is None:
+                        config[target] = ""
+                    else:
+                        config[target] = decrypt(config.get(source, default)).strip()
             logger.debug("配置文件解密成功！")
             return True
     except Exception:
@@ -202,14 +201,15 @@ def send_qmsg(dp: dict, title: str, text: str) -> bool:
     bot = dp.get("ExternalNotificationQmsgBot")
     user = dp.get("ExternalNotificationQmsgUser")
 
-    if server and key and bot and user:
+    if server:
 
-        url = f"{ server }/send/{ key }"
+        url = f"{ server }/jsend/{ key }"
         data = {"msg": text, "qq": user, "bot": bot}
         logger.debug(f"Qmsg_url：{url}")
+        headers = {"Content-Type": "application/json"}
         try:
             if is_valid_url(url):
-                response = post_request(url, data=data)
+                response = post_request(url, data=data, headers=headers)
                 if response.get("status") == 200:
                     if response.get("json")["code"] == 0:
                         logger.info("消息推送成功")
@@ -303,7 +303,7 @@ def send_dingTalk(dp: dict, title: str, text: str) -> bool:
             return False
 
 
-def send_telegram(dp: dict, text: str) -> bool:
+def send_telegram(dp: dict, title, text: str) -> bool:
     """
     发送消息到 Telegram
     Args:
@@ -331,6 +331,443 @@ def send_telegram(dp: dict, text: str) -> bool:
         return False
 
 
+def lark_sign(timestamp: str, secret: str) -> str:
+    """
+    飞书签名
+    Args:
+        timestamp(str): 时间戳
+        secret(str): 密钥
+
+    Returns:
+        sign(str): 签名
+    """
+    string_to_sign = f"{timestamp}\n{secret}"
+    hmac_code = hmac.new(
+        secret.encode("utf-8"), string_to_sign.encode("utf-8"), digestmod=hashlib.sha256
+    ).digest()
+    return base64.b64encode(hmac_code).decode("utf-8")
+
+
+def send_lark(dp: dict, title: str, text: str) -> bool:
+    """
+    发送飞书(Lark)消息
+    Args:
+        dp(dict): 配置字典
+        title(str): 标题
+        text(str): 内容
+    Returns:
+        发送成功返回True，否则返回False
+    """
+    start = time.time()
+    webhook_url = dp.get("ExternalNotificationLarkWebhookUrl")
+    app_id = dp.get("ExternalNotificationLarkID")
+    app_secret = dp.get("ExternalNotificationLarkToken")
+
+    if not webhook_url and not app_id:
+        logger.error("飞书配置不完整，请检查配置文件")
+        return False
+
+    headers = {"Content-Type": "application/json"}
+    data = {"msg_type": "text", "content": {"text": text}}
+
+    try:
+        if webhook_url and is_valid_url(webhook_url):
+            # 直接使用WebHook URL发送
+            response = post_request(
+                webhook_url, data=json.dumps(data).encode("utf-8"), headers=headers
+            )
+        elif app_id and app_secret:
+            # 使用应用ID和签名发送
+            timestamp = str(int(time.time()))
+            sign = lark_sign(timestamp, app_secret)
+            url = f"https://open.feishu.cn/open-apis/bot/v2/hook/{app_id}?timestamp={timestamp}&sign={sign}"
+            response = post_request(
+                url, data=json.dumps(data).encode("utf-8"), headers=headers
+            )
+        else:
+            logger.error("飞书配置不完整，请检查配置文件")
+            return False
+
+        if response.get("status") == 200:
+            logger.info("飞书消息推送成功")
+            end = time.time()
+            logger.debug(f"飞书消息发送耗时: {end - start}s")
+            return True
+        else:
+            logger.error(f"飞书消息推送失败，状态码：{response.get('status')}")
+            return False
+    except Exception as e:
+        logger.error(f"发送飞书消息失败: {str(e)}")
+        return False
+
+
+def send_wxpusher(dp: dict, title: str, text: str) -> bool:
+    """
+    发送WxPusher(微信公众号)消息
+    Args:
+        dp(dict): 配置字典
+        title(str): 标题
+        text(str): 内容
+    Returns:
+        发送成功返回True，否则返回False
+    """
+    start = time.time()
+    app_token = dp.get("ExternalNotificationWxPusherToken")
+    uid = dp.get("ExternalNotificationWxPusherUID")
+
+    if not uid:
+        logger.error("WxPusher配置不完整，UID不能为空")
+        return False
+
+    headers = {"Content-Type": "application/json"}
+
+    try:
+        if app_token:
+            # 普通推送：使用appToken和uid
+            url = "https://wxpusher.zjiecode.com/api/send/message"
+            payload = {
+                "appToken": app_token,
+                "content": text,
+                "contentType": 1,
+                "uids": [uid]
+            }
+            response = post_request(
+                url, data=json.dumps(payload).encode("utf-8"), headers=headers
+            )
+        else:
+            # 极简推送：uid作为SPT处理
+            url = "https://wxpusher.zjiecode.com/api/send/message/simple-push"
+            payload = {
+                "content": text,
+                "contentType": 1,
+                "summary": text[:20] if len(text) > 20 else text,
+                "spt": uid
+            }
+            response = post_request(
+                url, data=json.dumps(payload).encode("utf-8"), headers=headers
+            )
+
+        if response.get("status") == 200:
+            json_resp = response.get("json")
+            if json_resp and json_resp.get("success", True):
+                logger.info("WxPusher消息推送成功")
+                end = time.time()
+                logger.debug(f"WxPusher消息发送耗时: {end - start}s")
+                return True
+
+        logger.error(f"WxPusher消息推送失败，状态码：{response.get('status')}")
+        return False
+    except Exception as e:
+        logger.error(f"发送WxPusher消息失败: {str(e)}")
+        return False
+
+
+def send_discord(dp: dict, title: str, text: str) -> bool:
+    """
+    发送Discord消息(通过Bot Token)
+    Args:
+        dp(dict): 配置字典
+        title(str): 标题
+        text(str): 内容
+    Returns:
+        发送成功返回True，否则返回False
+    """
+    start = time.time()
+    bot_token = dp.get("ExternalNotificationDiscordBotToken")
+    channel_id = dp.get("ExternalNotificationDiscordChannelId")
+
+    if not bot_token or not channel_id:
+        logger.error("Discord配置不完整，请检查配置文件")
+        return False
+
+    url = f"https://discord.com/api/v10/channels/{channel_id}/messages"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bot {bot_token}"
+    }
+    payload = {
+        "content": text,
+        "allowed_mentions": {"parse": ["users"]}
+    }
+
+    try:
+        response = post_request(
+            url, data=json.dumps(payload).encode("utf-8"), headers=headers
+        )
+        if response.get("status") == 200:
+            logger.info("Discord消息推送成功")
+            end = time.time()
+            logger.debug(f"Discord消息发送耗时: {end - start}s")
+            return True
+        else:
+            logger.error(f"Discord消息推送失败，状态码：{response.get('status')}")
+            return False
+    except Exception as e:
+        logger.error(f"发送Discord消息失败: {str(e)}")
+        return False
+
+
+def send_discord_webhook(dp: dict, title: str, text: str) -> bool:
+    """
+    发送Discord Webhook消息
+    Args:
+        dp(dict): 配置字典
+        title(str): 标题
+        text(str): 内容
+    Returns:
+        发送成功返回True，否则返回False
+    """
+    start = time.time()
+    webhook_url = dp.get("ExternalNotificationDiscordWebhookUrl")
+    webhook_name = dp.get("ExternalNotificationDiscordWebhookName")
+
+    if not webhook_url:
+        logger.error("Discord Webhook配置不完整，URL不能为空")
+        return False
+
+    if not is_valid_url(webhook_url):
+        logger.error("Discord Webhook URL无效，请检查配置")
+        return False
+
+    headers = {"Content-Type": "application/json"}
+    payload = {
+        "username": webhook_name if webhook_name else "Notifier",
+        "content": text,
+        "allowed_mentions": {"parse": ["users"]}
+    }
+
+    try:
+        response = post_request(
+            webhook_url, data=json.dumps(payload).encode("utf-8"), headers=headers
+        )
+        if response.get("status") == 200 or response.get("status") == 204:
+            logger.info("Discord Webhook消息推送成功")
+            end = time.time()
+            logger.debug(f"Discord Webhook消息发送耗时: {end - start}s")
+            return True
+        else:
+            logger.error(f"Discord Webhook消息推送失败，状态码：{response.get('status')}")
+            return False
+    except Exception as e:
+        logger.error(f"发送Discord Webhook消息失败: {str(e)}")
+        return False
+
+
+def send_serverchan(dp: dict, title: str, text: str) -> bool:
+    """
+    发送ServerChan(Server酱)消息
+    Args:
+        dp(dict): 配置字典
+        title(str): 标题
+        text(str): 内容
+    Returns:
+        发送成功返回True，否则返回False
+    """
+    start = time.time()
+    send_key = dp.get("ExternalNotificationServerChanKey")
+
+    if not send_key:
+        logger.error("ServerChan配置不完整，sendKey不能为空")
+        return False
+
+    try:
+        # 判断 sendkey 是否以 "sctp" 开头并提取数字部分
+        match = re.match(r"^sctp(\d+)t", send_key)
+        if match:
+            num = match.group(1)
+            url = f"https://{num}.push.ft07.com/send/{send_key}.send"
+        else:
+            url = f"https://sctapi.ftqq.com/{send_key}.send"
+
+        post_data = f"title={urllib.parse.quote('[MFA] Notification Service')}&desp={urllib.parse.quote(text)}"
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        response = post_request(
+            url, data=post_data.encode("utf-8"), headers=headers
+        )
+
+        if response.get("status") == 200:
+            logger.info("ServerChan消息推送成功")
+            end = time.time()
+            logger.debug(f"ServerChan消息发送耗时: {end - start}s")
+            return True
+        else:
+            logger.error(f"ServerChan消息推送失败，状态码：{response.get('status')}")
+            return False
+    except Exception as e:
+        logger.error(f"发送ServerChan消息失败: {str(e)}")
+        return False
+
+
+def send_custom_webhook(dp: dict, title: str, text: str) -> bool:
+    """
+    发送通用Webhook(CustomWebhook)消息
+    Args:
+        dp(dict): 配置字典
+        title(str): 标题
+        text(str): 内容
+    Returns:
+        发送成功返回True，否则返回False
+    """
+    start = time.time()
+    webhook_url = dp.get("ExternalNotificationCustomWebhookUrl")
+    content_type = dp.get("ExternalNotificationCustomWebhookContentType", "application/json")
+    payload_template = dp.get("ExternalNotificationCustomWebhookPayloadTemplate", "")
+
+    if not webhook_url:
+        logger.error("通用Webhook URL不能为空")
+        return False
+
+    if not is_valid_url(webhook_url):
+        logger.error("通用Webhook URL无效，请检查配置")
+        return False
+
+    try:
+        # 处理payload模板，将{message}替换为实际消息
+        if not payload_template:
+            payload = json.dumps({"message": text})
+        else:
+            # 转义消息中的引号，再替换模板中的{message}
+            escaped_text = text.replace('"', '\\"')
+            payload = payload_template.replace("{message}", escaped_text)
+
+        headers = {"Content-Type": content_type}
+        response = post_request(
+            webhook_url, data=payload.encode("utf-8"), headers=headers
+        )
+
+        if response.get("status") == 200:
+            logger.info("通用Webhook消息推送成功")
+            end = time.time()
+            logger.debug(f"通用Webhook消息发送耗时: {end - start}s")
+            return True
+        else:
+            logger.error(f"通用Webhook消息推送失败，状态码：{response.get('status')}")
+            return False
+    except Exception as e:
+        logger.error(f"发送通用Webhook消息失败: {str(e)}")
+        return False
+
+
+def send_onebot(dp: dict, title: str, text: str) -> bool:
+    """
+    发送OneBot消息
+    Args:
+        dp(dict): 配置字典
+        title(str): 标题
+        text(str): 内容
+    Returns:
+        发送成功返回True，否则返回False
+    """
+    start = time.time()
+    server_url = dp.get("ExternalNotificationOneBotServer")
+    api_key = dp.get("ExternalNotificationOneBotKey")
+    user_qq = dp.get("ExternalNotificationOneBotUser")
+
+    if not server_url or not user_qq:
+        logger.error("OneBot配置不完整，请检查配置文件")
+        return False
+
+    api_endpoint = f"{server_url}/send_msg"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}"
+    }
+    payload = {
+        "message": text,
+        "user_id": user_qq
+    }
+
+    try:
+        response = post_request(
+            api_endpoint, data=json.dumps(payload).encode("utf-8"), headers=headers
+        )
+        if response.get("status") == 200:
+            json_resp = response.get("json")
+            if json_resp and json_resp.get("status") == "ok":
+                logger.info("OneBot消息推送成功")
+                end = time.time()
+                logger.debug(f"OneBot消息发送耗时: {end - start}s")
+                return True
+
+        logger.error(f"OneBot消息推送失败，状态码：{response.get('status')}")
+        return False
+    except Exception as e:
+        logger.error(f"发送OneBot消息失败: {str(e)}")
+        return False
+
+
+def send_email_auto(dp: dict, title: str, text: str) -> bool:
+    """
+    通过自动检测SMTP配置发送邮件(对应C#的Email通道)
+    根据邮箱域名自动选择SMTP服务器
+    Args:
+        dp(dict): 配置字典
+        title(str): 标题
+        text(str): 内容
+    Returns:
+        发送成功返回True，否则返回False
+    """
+    start = time.time()
+    email = dp.get("ExternalNotificationEmailAccount")
+    password = dp.get("ExternalNotificationEmailSecret")
+
+    if not email or not password:
+        logger.error("邮件配置不完整，请检查配置文件")
+        return False
+
+    if not is_valid_email(email):
+        logger.error("邮箱地址格式错误，请检查邮件配置文件")
+        return False
+
+    # 根据邮箱域名自动选择SMTP配置
+    domain = email.split("@")[1].lower().strip()
+    smtp_configs = {
+        "qq.com": ("smtp.qq.com", 465, True),
+        "163.com": ("smtp.163.com", 994, True),
+        "gmail.com": ("smtp.gmail.com", 465, True),
+        "outlook.com": ("smtp-mail.outlook.com", 587, False),
+        "hotmail.com": ("smtp-mail.outlook.com", 587, False),
+        "126.com": ("smtp.126.com", 994, True),
+        "yeah.net": ("smtp.yeah.net", 994, True),
+        "sina.com": ("smtp.sina.com", 465, True),
+        "sohu.com": ("smtp.sohu.com", 465, True),
+        "aliyun.com": ("smtp.aliyun.com", 465, True),
+    }
+
+    smtp_config = smtp_configs.get(domain)
+    if not smtp_config:
+        logger.error(f"不支持的邮箱服务: {domain}")
+        return False
+
+    smtp_server, smtp_port, use_ssl = smtp_config
+
+    try:
+        if use_ssl:
+            server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+        else:
+            server = smtplib.SMTP(smtp_server, smtp_port)
+            server.starttls()
+
+        server.login(email, password)
+
+        message = MIMEMultipart()
+        message["From"] = email
+        message["To"] = email
+        message["Subject"] = "MaaGumballs:" + title
+        message.attach(MIMEText(text, "plain"))
+
+        server.sendmail(email, email, message.as_string())
+        server.quit()
+
+        logger.info("邮件发送成功！")
+        end = time.time()
+        logger.debug(f"邮件发送耗时: {end - start}s")
+        return True
+    except Exception as e:
+        logger.error(f"邮件发送失败: {e}")
+        return False
+
+
 def send_message(title: str, text: str) -> bool:
     """
     发送消息的主函数
@@ -348,24 +785,31 @@ def send_message(title: str, text: str) -> bool:
         logger.info("未配置外部通知，请检查配置文件！")
         return False
 
-    message_types = config.get("ExternalNotificationEnabled")
-    list = message_types.split(",")
-    for message_type in list:
-        if message_type:
-            if message_type == "SMTP":
-                send_email(config, title, text=text)
-            elif message_type == "pushplus":
-                send_byPushplus(config, title, text=text)
-            elif message_type == "Qmsg":
-                send_qmsg(config, title, text=text)
-            elif message_type == "DingTalk":
-                send_dingTalk(config, title, text=text)
-            elif message_type == "Telegram":
-                send_telegram(config, text=text)
-            else:
-                logger.info("未配置消息类型或暂不支持此消息类型！")
-                return False
-        else:
+    # 渠道分发映射表
+    SEND_FUNCS = {
+        "SMTP": send_email,
+        "pushplus": send_byPushplus,
+        "Qmsg": send_qmsg,
+        "DingTalk": send_dingTalk,
+        "Telegram": send_telegram,
+        "Lark": send_lark,
+        "WxPusher": send_wxpusher,
+        "Discord": send_discord,
+        "DiscordWebhook": send_discord_webhook,
+        "ServerChan": send_serverchan,
+        "CustomWebhook": send_custom_webhook,
+        "OneBot": send_onebot,
+        "Email": send_email_auto,
+    }
+
+    channels = config["ExternalNotificationEnabled"].split(",")
+    for channel in channels:
+        if not channel:
             logger.info("未配置消息发送，请检查配置文件！")
             return False
+        send_func = SEND_FUNCS.get(channel)
+        if not send_func:
+            logger.info("未配置消息类型或暂不支持此消息类型！")
+            return False
+        send_func(config, title, text=text)
     return True

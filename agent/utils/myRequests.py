@@ -1,7 +1,7 @@
 from urllib.request import Request, urlopen
 from urllib.parse import urlencode, urlsplit, urlunsplit
 from urllib.error import HTTPError, URLError
-import json
+import json, ssl
 
 
 def get_request(url, params=None, headers=None, timeout=10):
@@ -38,18 +38,25 @@ def post_request(url, data=None, headers=None, timeout=10):
         字典包含 {status, url, content, text, json, headers, error}
     """
     # 处理请求体数据
+    headers = headers or {}          # 提前初始化，避免 None 报错
     post_data = None
     if data is not None:
         if isinstance(data, dict):
-            post_data = urlencode(data).encode("utf-8")
-            # 设置默认 Content-Type
-            headers = headers or {}
-            if "Content-Type" not in headers:
+            content_type = headers.get("Content-Type", "")
+            if "application/json" in content_type:
+                post_data = json.dumps(data).encode("utf-8")
+            else:
+                post_data = urlencode(data).encode("utf-8")
+                # 只有走表单分支时才补默认 Content-Type
                 headers.setdefault("Content-Type", "application/x-www-form-urlencoded")
         elif isinstance(data, bytes):
             post_data = data
+        elif isinstance(data, str):
+            post_data = data.encode("utf-8")
 
-    # 创建请求对象
+    headers.setdefault("User-Agent", "Mozilla/5.0")
+    print(headers)
+    print(post_data)
     req = Request(url, data=post_data, method="POST")
     return _send_request(req, headers, timeout)
 
@@ -70,10 +77,11 @@ def _send_request(req, headers, timeout):
     if headers:
         for key, value in headers.items():
             req.add_header(key, value)
-
+    _SSL_CONTEXT = ssl.create_default_context()
+    _SSL_CONTEXT.verify_flags &= ~ssl.VERIFY_X509_STRICT
     try:
         # 发送请求并获取响应
-        with urlopen(req, timeout=timeout) as res:
+        with urlopen(req, timeout=timeout, context=_SSL_CONTEXT) as res:
             result["status"] = res.status
             result["content"] = res.read()
             result["headers"] = dict(res.headers.items())
@@ -101,7 +109,10 @@ def _send_request(req, headers, timeout):
 
 def _detect_charset(headers):
     """从 Content-Type 头中检测字符集"""
-    content_type = headers.get("Content-Type", "").lower()
-    if "charset=" in content_type:
-        return content_type.split("charset=")[-1].split(";").strip()
+    try:
+        content_type = headers.get("Content-Type", "").lower()
+        if "charset=" in content_type:
+            return content_type.split("charset=")[-1].split(";")[0]
+    except Exception as e:
+        print(f"从 Content-Type 头中检测字符集失败：{str(e)}")
     return None
