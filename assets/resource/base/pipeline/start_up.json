@@ -6,6 +6,7 @@
             "[JumpBack]StickyNote_Check",
             "[JumpBack]GameLoading",
             "[JumpBack]EnterGame",
+            "AlreadyInGame",
             "[JumpBack]StartGumballs"
         ]
     },
@@ -151,5 +152,17 @@
         "post_delay": 1000,
         "action": "StopApp",
         "package": "com.leiting.gumballs.leiting"
+    },
+    "AlreadyInGame": {
+        "recognition": "TemplateMatch",
+        "template": [
+            "fight/UniversalUI/MazePackage.png"
+        ],
+        "roi": [
+            47,
+            1147,
+            136,
+            117
+        ]
     }
 }

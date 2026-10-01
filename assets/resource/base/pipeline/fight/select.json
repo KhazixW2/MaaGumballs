@@ -384,20 +384,36 @@
         "post_delay": 500,
         "timeout": 2000,
         "next": [
-            "Select_Artifact_Next"
+            "Select_Artifact_Main"
         ]
+    },
+    "Select_Artifact_Main": {
+        "next":[
+            "Select_Artifact_Next",
+            "[JumpBack]Select_Artifact_Swipe"
+            
+            ]
+    },
+    "Select_Artifact_Swipe": {
+        "action": "Swipe",
+        "begin": [331, 450, 1, 1],
+        "end": [331, 350, 1, 1],
+        "duration": 400,
+        "post_delay": 1500,
+        "pre_delay": 500
     },
     "Select_Artifact_Next": {
         "recognition": "TemplateMatch",
         "template": "equipments/7level/冒险家竖琴.png",
-        "roi": [
-            44,
-            138,
-            642,
-            561
-        ],
+        "roi": [68,253,600,404],
         "order_by": "Score",
         "action": "Click",
+        "target_offset": [
+            15,
+            15,
+            0,
+            0
+        ],
         "post_delay": 500,
         "timeout": 2000,
         "next": [

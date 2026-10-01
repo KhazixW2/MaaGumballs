@@ -4,9 +4,20 @@
             "Mars_Start",
             "Mars_Fighting",
             "[JumpBack]AlchemyReward",
+            "[JumpBack]Back_From_TempLeave",
             "[JumpBack]MapIsTop",
             "[JumpBack]MapSwipeDownToUp"
+            
         ]
+    },
+    "Back_From_TempLeave":{
+        "recognition": "OCR",
+        "expected": "暂离中",
+        "roi": [473,235,77,39],
+        "action": "Click",
+        "target_offset": [30, -30, 0, 0],
+        "post_delay": 1000,
+        "timeout": 2000
     },
     "Mars_Start": {
         "recognition": "TemplateMatch",
@@ -1067,5 +1078,47 @@
     "Mars_Director_Title_Setting": {
         "recognition": "OCR",
         "expected": "false"
+    },
+    "下楼钥匙": {
+        "recognition": "TemplateMatch",
+        "template": "items/下楼钥匙.png",
+        "roi": [258,551,187,203],
+        "threshold": 0.95,
+        "action": "Click",
+        "target": [352, 650, 1, 1],
+        "pre_delay": 300,
+        "post_delay": 300,
+        "timeout": 3000,
+        "next":["Click_Next_Floor"]
+    },
+    "Click_Next_Floor":{
+        "action": "Click",
+        "target": [625, 900,1,1],
+        "pre_delay": 2500,
+        "post_delay": 500,
+        "next": ["Fight_OpenedDoor"]
+    },
+    "网络错误返回":{
+        "recognition": "OCR",
+        "expected": "重新连接",
+        "roi":[278,718,160,53],
+        "action": "Click",
+        "target_offset": [0, 5, 0, 0],
+        "post_delay": 500,
+        "timeout": 1000
+    },
+    "保存当前截图":{
+        "recognition": "DirectHit",
+        "action":"Custom",
+        "custom_action": "Screenshot",
+        "pre_delay": 3000
+    },
+    "已选仿生人":{
+        "recognition": "TemplateMatch",
+        "template": "startUp/仿生人.png",
+        "roi": [38,22,140,134]
+    },
+    "Mars_Inf":{
+        "next":["[JumpBack]Mars"]
     }
 }
