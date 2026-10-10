@@ -6,11 +6,18 @@ from action.fight.fightUtils import timing_decorator
 
 if TYPE_CHECKING:
     from action.fight.mars101 import Mars101
-
+from utils import logger                     
 
 class MarsHPManager:
     """马尔斯101血量管理器：负责血量检查、治疗、安全压血等逻辑"""
 
+    # 优先级：痊愈术(卷轴) → 神恩术(卷轴) → 治疗术(MP，永远最后)
+    HEAL_ORDER = (("水", "痊愈术"), ("光", "神恩术"), ("水", "治疗术"))
+    HEAL_TARGET = 0.8
+    HEAL_MAX_CAST =5
+    # 轮到治疗术之前，是否把两种卷轴法术重新补探一轮（应对中途补到卷轴）
+    RE_PROBE_SCROLLS = True
+    
     def __init__(self, mars: "Mars101") -> None:
         self.mars: "Mars101" = mars
 
@@ -28,33 +35,80 @@ class MarsHPManager:
             MaxHp = float(StatusDetail["最大生命值"])
             HPStatus = CurrentHP / MaxHp
 
-            if HPStatus < 0.8:
+            if HPStatus < self.HEAL_TARGET:
                 if self.mars.layers <= 60:
                     fightUtils.cast_magic_special("生命颂歌", context)
-                if self.mars.layers >= 110:
+                if self.mars.layers >= 120:
                     fightUtils.cast_magic("气", "静电场", context)
-                cast_state = {"痊愈术": True, "神恩术": True, "治疗术": True}
-                while HPStatus < 0.8:
-                    cast_time += 1
-                    if cast_time > 5:
-                        break
-                    if cast_state["痊愈术"]:
-                        if not fightUtils.cast_magic("水", "痊愈术", context):
-                            cast_state["痊愈术"] = False
-                    elif cast_state["神恩术"]:
-                        if not fightUtils.cast_magic("光", "神恩术", context):
-                            cast_state["神恩术"] = False
-                    elif not fightUtils.cast_magic("水", "治疗术", context):
-                        break
-                    context.run_task("Fight_ReturnMainWindow")
-                    StatusDetail = fightUtils.checkGumballsStatusV2(context)
-                    AfterHP = float(StatusDetail["当前生命值"])
-                    MaxHp = float(StatusDetail["最大生命值"])
-                    HPStatus = AfterHP / MaxHp
+
+                final_hp = self._heal_to_target(context,hp=HPStatus)
+                if final_hp < self.HEAL_TARGET:
+                    logger.warning(f"第 {self.mars.layers} 层补血未达标（{final_hp:.0%}）")
+                    # context.run_task("Fight_ReturnMainWindow")
+                    # StatusDetail = fightUtils.checkGumballsStatusV2(context)
+                    # AfterHP = float(StatusDetail["当前生命值"])
+                    # MaxHp = float(StatusDetail["最大生命值"])
+                    # HPStatus = AfterHP / MaxHp
             if self.mars.layers >= 51 and not fightUtils.checkBuffStatus("神圣重生", context):
                 fightUtils.cast_magic("光", "神圣重生", context)
         return True
 
+    def _heal_to_target(self, context: Context,
+                        target: float = HEAL_TARGET,
+                        max_cast: int = HEAL_MAX_CAST,
+                        hp: float = 1) -> float:
+        """按 痊愈术 → 神恩术 → 治疗术 的优先级补血，返回补完后的 HP 百分比。
+
+        "用完"只记录在本次调用内（局部变量）：
+        下一次补血会重新从痊愈术开始试，所以后续补充到卷轴后，
+        痊愈术会自动恢复成首选，不会被历史状态屏蔽。
+        """
+        exhaust: set[str] = set()        # 本次会话内失效的法术
+        no_effect: dict[str, int] = {}   # 施放了但血量没涨的连续次数
+        re_probed = False                # 本次会话是否已补探过卷轴法术
+
+        for _ in range(max_cast):
+
+
+            spell = next((s for s in self.HEAL_ORDER if s[1] not in exhaust), None)
+
+            # 只剩治疗术可用时，补探一轮卷轴法术（只做一次）
+            if (spell is None or spell[1] == "治疗术") and self.RE_PROBE_SCROLLS \
+                    and not re_probed and (exhaust & {"痊愈术", "神恩术"}):
+                re_probed = True
+                exhaust -= {"痊愈术", "神恩术"}
+                logger.info("即将动用治疗术，补探一次痊愈术/神恩术（可能已补充卷轴）")
+                continue
+
+            if spell is None:
+                logger.warning("痊愈术/神恩术/治疗术 均不可用，停止补血")
+                return hp
+            element, name = spell
+
+            # 判据一：魔法书里找不到（卷轴用完）→ 本次会话内跳过，且不消耗施法轮次
+            if not fightUtils.cast_magic(element, name, context):
+                logger.info(f"{name} 找不到/已用完，本次会话降级")
+                exhaust.add(name)
+                continue
+
+            context.run_task("Fight_ReturnMainWindow")
+            after = self.Get_CurrentHPStatus(context)
+            if after >= target or context.tasker.stopping:
+                return after
+
+            # 判据二：找到了也点了，但血量没涨（图标还在、实际放不出来）→ 连续 2 次才算失效
+            if after <= hp:
+                no_effect[name] = 0
+                continue
+            no_effect[name] = no_effect.get(name, 0) + 1
+            logger.info(f"{name} 施放后血量未变化（{hp:.0%} -> {after:.0%}），"
+                        f"第 {no_effect[name]} 次")
+            if name != "治疗术" and no_effect[name] >= 2:
+                logger.warning(f"{name} 连续 {no_effect[name]} 次无效，本次会话标记为不可用")
+                exhaust.add(name)
+
+        return self.Get_CurrentHPStatus(context)
+    
     def Get_CurrentHPStatus(self, context: Context):
         """获取当前HP百分比"""
         StatusDetail = fightUtils.checkGumballsStatusV2(context)

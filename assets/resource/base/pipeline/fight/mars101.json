@@ -416,8 +416,8 @@
             394
         ],
         "action": "Click",
-        "post_delay": 1000,
-        "timeout": 2000
+        "post_delay": 500,
+        "timeout": 1000
     },
     "Mars_SlabStone": {
         "recognition": "TemplateMatch",
@@ -493,7 +493,7 @@
         "custom_action_param": {
             "layers": 1
         },
-        "post_delay": 300,
+        "post_delay": 50,
         "timeout": 1000
     },
     "Mars_Statue": {
@@ -1120,5 +1120,11 @@
     },
     "Mars_Inf":{
         "next":["[JumpBack]Mars"]
+    },
+    "Mars_AngryMan":{
+        "recognition": "TemplateMatch",
+        "template": "fight/Mars/休息室愤怒的挑战者.png",
+        "roi": [51,630,120,100],
+        "timeout": 2000
     }
 }

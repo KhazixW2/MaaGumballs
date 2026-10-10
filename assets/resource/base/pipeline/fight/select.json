@@ -397,7 +397,7 @@
     "Select_Artifact_Swipe": {
         "action": "Swipe",
         "begin": [331, 450, 1, 1],
-        "end": [331, 350, 1, 1],
+        "end": [331, 300, 1, 1],
         "duration": 400,
         "post_delay": 1500,
         "pre_delay": 500
@@ -415,7 +415,7 @@
             0
         ],
         "post_delay": 500,
-        "timeout": 2000,
+        "timeout": 1000,
         "next": [
             "Select_Confirm"
         ]

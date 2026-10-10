@@ -142,7 +142,7 @@
     "Fight_ReturnMainWindow": {
         "next": [
             "Fight_MainWindow",
-            "[JumpBack]BackText_500ms",
+            "[JumpBack]BackText_100ms",
             "[JumpBack]GameLoading"
         ]
     },

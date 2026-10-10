@@ -26,10 +26,6 @@ class MarsBossHandler:
     @timing_decorator
     def handle_boss_event(self, context: Context):
         """处理Boss层战斗流程"""
-        image = context.tasker.controller.post_screencap().wait().get()
-        if context.run_recognition("Fight_OpenedDoor", image).hit:
-            return True
-
         context.run_task(
                     "WaitStableNode_ForOverride",
                     pipeline_override={
