@@ -30,27 +30,84 @@ class MarsTitleManager:
         3. 检查61层的称号: 位面点满即可
         4. 检查86层的称号: 位面，大铸剑师，大剑师都点满
         """
+        
+        
         if (self.mars.layers >= 1 and self.mars.layers <= 3) and self.isTitle_L1 == False:
-            fightUtils.title_learn("魔法", 1, "魔法学徒", 4, context)
+            context.run_task("TitlePanel_Open") 
+            context.run_task("TitlePanel_Series",
+                             pipeline_override=
+                             {"TitlePanel_Series": {"expected": "魔法"}})
+            context.run_task("WaitStableNode_ForOverride",
+                                                     pipeline_override={
+                                                            "WaitStableNode_ForOverride":{
+                                                                "roi": [65,855,591,134],
+                                                                "pre_wait_freezes": {
+                                                                    "time": 200,
+                                                                    "threshold": 0.96
+                                                                }}
+                                                     })
+            image=context.tasker.controller.post_screencap().wait().get()
+            if not context.run_recognition("TitlePanel_Learnable_Finish", image,
+                pipeline_override={"TitlePanel_Learnable_Finish":
+                    {"roi": [82,948,93,28]}}
+                ).hit:
+                fightUtils.title_learn("魔法", 1, "魔法学徒", 4, context)
             context.run_task("Fight_ReturnMainWindow")
             self.isTitle_L1 = True
             return True
         elif (self.mars.layers >= 10 and self.mars.layers <= 13) and self.isTitle_L10 == False:
-            fightUtils.title_learn("冒险", 1, "寻宝者", 1, context)
-            fightUtils.title_learn("冒险", 2, "勘探家", 1, context)
-            fightUtils.title_learn("冒险", 3, "符文师", 4, context)
+            context.run_task("TitlePanel_Open") 
+            context.run_task("TitlePanel_Series",
+                                         pipeline_override=
+                                         {"TitlePanel_Series": {"expected": "冒险"}})
+            
+            context.run_task("WaitStableNode_ForOverride",
+                                                     pipeline_override={
+                                                            "WaitStableNode_ForOverride":{
+                                                                "roi": [65,855,591,134],
+                                                                "pre_wait_freezes": {
+                                                                    "time": 200,
+                                                                    "threshold": 0.96
+                                                                }}
+                                                     })
+            image=context.tasker.controller.post_screencap().wait().get()
+            if not context.run_recognition("TitlePanel_Learnable_Finish", image,
+                pipeline_override={"TitlePanel_Learnable_Finish":
+                    {"roi": [307,940,113,51]}}
+                ).hit:
+                fightUtils.title_learn("冒险", 1, "寻宝者", 1, context)
+                fightUtils.title_learn("冒险", 2, "勘探家", 1, context)
+                fightUtils.title_learn("冒险", 3, "符文师", 4, context)
             context.run_task("Fight_ReturnMainWindow")
             self.isTitle_L10 = True
             return True
         elif (self.mars.layers >= 61 and self.mars.layers <= 63) and self.isTitle_L61 == False:
-            fightUtils.title_learn("魔法", 1, "魔法学徒", 1, context)
-            fightUtils.title_learn("魔法", 2, "黑袍法师", 1, context)
-            fightUtils.title_learn("魔法", 3, "咒术师", 2, context)
-            fightUtils.title_learn("魔法", 4, "土系大师", 1, context)
-            fightUtils.title_learn("魔法", 5, "位面先知", 1, context)
-            fightUtils.title_learn_branch("魔法", 5, "魔力强化", 3, context)
-            fightUtils.title_learn_branch("魔法", 5, "生命强化", 3, context)
-            fightUtils.title_learn_branch("魔法", 5, "魔法强化", 3, context)
+            context.run_task("TitlePanel_Open") 
+            context.run_task("TitlePanel_Series",
+                                         pipeline_override=
+                                         {"TitlePanel_Series": {"expected": "魔法"}})
+            context.run_task("WaitStableNode_ForOverride",
+                                         pipeline_override={
+                                                "WaitStableNode_ForOverride":{
+                                                    "roi": [65,855,591,134],
+                                                    "pre_wait_freezes": {
+                                                        "time": 200,
+                                                        "threshold": 0.96
+                                                    }}
+                                         })
+            image=context.tasker.controller.post_screencap().wait().get()
+            if not context.run_recognition("TitlePanel_Learnable_Finish", image,
+                pipeline_override={"TitlePanel_Learnable_Finish":
+                    {"roi": [536,942,111,42]}}
+                ).hit:
+            # fightUtils.title_learn("魔法", 1, "魔法学徒", 1, context)
+                fightUtils.title_learn("魔法", 2, "黑袍法师", 1, context)
+                fightUtils.title_learn("魔法", 3, "咒术师", 2, context)
+                fightUtils.title_learn("魔法", 4, "土系大师", 1, context)
+                fightUtils.title_learn("魔法", 5, "位面先知", 1, context)
+                fightUtils.title_learn_branch("魔法", 5, "魔力强化", 3, context)
+                fightUtils.title_learn_branch("魔法", 5, "生命强化", 3, context)
+                fightUtils.title_learn_branch("魔法", 5, "魔法强化", 3, context)
             context.run_task("Fight_ReturnMainWindow")
 
             self.isTitle_L61 = True

@@ -61,6 +61,47 @@ class MarsSettlementManager:
                 context.run_task("Fight_ReturnMainWindow")
             # 压血相关
             # 先关闭魔法助手
+            # 使用剑术卷轴逻辑
+            UseSwordMagic=1
+            for _ in range(6):
+                OpenDetail = context.run_task("Bag_Open")
+                if OpenDetail:
+                    time.sleep(1)
+                    if UseSwordMagic==1:
+                        if fightUtils.findItem(
+                            "剑术卷轴1", True, context, threshold=0.6
+                        ):
+                            continue
+                        else:
+                            UseSwordMagic=2
+                    elif UseSwordMagic==2:
+                        if fightUtils.findItem(
+                            "剑术卷轴2", True, context, threshold=0.6
+                        ):
+                            continue
+                        else:
+                            UseSwordMagic=3
+                    elif UseSwordMagic==3:
+                        if fightUtils.findItem(
+                            "剑术卷轴3", True, context, threshold=0.6
+                        ):
+                            continue
+                        else:
+                            UseSwordMagic=4
+                    elif UseSwordMagic==4:
+                        if fightUtils.findItem(
+                            "剑术卷轴4", True, context, threshold=0.6
+                        ):
+                            continue
+                        else:
+                            break
+            context.run_task("Fight_ReturnMainWindow")
+            
+            # 出图前使用掉所有极光屏障，需要确认当前角色是否为波塞冬
+            if self.mars and self.mars.target_magicgumball_para == "波塞冬":
+                for _ in range(10):
+                    if not fightUtils.cast_magic("水","极光屏障",context):
+                        break
             if self.mars.isUseMagicAssist:
                 fightUtils.cast_magic_special("魔法助手", context)
                 self.mars.isUseMagicAssist = False

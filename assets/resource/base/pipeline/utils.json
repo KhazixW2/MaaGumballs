@@ -18,6 +18,21 @@
         "post_delay": 1000,
         "timeout": 500
     },
+    "BackText_100ms": {
+        "recognition": "OCR",
+        "expected": [
+            "返回"
+        ],
+        "roi": [
+            494,
+            1173,
+            184,
+            75
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 500
+    },
     "BackText_500ms": {
         "recognition": "OCR",
         "expected": [
@@ -54,6 +69,21 @@
         "action": "Click",
         "post_delay": 1000,
         "timeout": 500
+    },"ConfirmButton_100ms": {
+        "recognition": "OCR",
+        "roi": [
+            31,
+            186,
+            662,
+            872
+        ],
+        "expected": [
+            "确定",
+            "确认"
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "timeout": 1000
     },
     "ConfirmButton_500ms": {
         "recognition": "OCR",
