@@ -126,35 +126,58 @@ class MarsSpecialLayerManager:
             logger.info("触发Mars休息室事件")
             if not self.gotoSpecialLayer(context, entrance_detected):
                 return False
-            if self.mars.isUseMagicAssist:
+            if self.mars.layers ==139:# self.mars.target_leave_layer_para:
+                if (
+                    self.mars.isGetMagicAssist
+                    # 大于100层就开启魔法助手
+                    and self.mars.isUseMagicAssist == True
+                ):
+                    logger.info("等待出图，关闭魔法助手")
+                    fightUtils.cast_magic_special("魔法助手", context)
+                    self.mars.isUseMagicAssist = False
+            if self.mars.isUseMagicAssist or self.mars.layers ==139:# self.mars.target_leave_layer_para:
                 fightUtils.cast_magic("土", "石肤术", context)
             if self.mars.layers < 100:
                 context.run_task("Mars_Shower")
             context.run_task("Mars_EatBread")
             if self.mars.target_magicgumball_para == "波塞冬":
-                if self.mars.layers <= 89:
-                    if fightUtils.cast_magic(
-                        "暗",
-                        "死亡波纹",
-                        context,
-                    ):
-                        times = 2
-                        for _ in range(times):
-                            if not fightUtils.cast_magic(
-                                "水",
-                                "冰锥术",
-                                context,
-                                (special_layer_monster_1_x, special_layer_monster_1_y),
-                            ):
-                                break
-                        for _ in range(times):
-                            if not fightUtils.cast_magic(
-                                "水",
-                                "冰锥术",
-                                context,
-                                (special_layer_monster_2_x, special_layer_monster_2_y),
-                            ):
-                                break
+                targetAngryManlayer=129
+            else:
+                targetAngryManlayer=89
+                
+            if self.mars.layers <= targetAngryManlayer:
+                if fightUtils.cast_magic(
+                    "暗",
+                    "死亡波纹",
+                    context,
+                ) or fightUtils.cast_magic("土","地震术",context):
+                    context.run_task("Mars_AngryMan")
+                    times = 2
+                    time.sleep(0.6)
+                    for _ in range(times):
+                        # if context.run_recognition("Mars_AngryMan", context.tasker.controller.post_screencap().wait().get(),
+                        #                             pipeline_override={"Mars_AngryMan": {"roi": [51,630,120,100]}}
+                        #                             ).hit:
+                        if  not fightUtils.cast_magic(
+                            "水",
+                            "冰锥术",
+                            context,
+                            (special_layer_monster_1_x, special_layer_monster_1_y),
+                        ):
+                            break
+                    if self.mars.layers >100:
+                        fightUtils.cast_magic("土","石肤术",context)
+                    for _ in range(times):
+                        # if context.run_recognition("Mars_AngryMan", context.tasker.controller.post_screencap().wait().get(),
+                        #                                                         pipeline_override={"Mars_AngryMan": {"roi": [308,620,120,100]}}
+                        #                                                         ).hit:
+                        if not fightUtils.cast_magic(
+                            "水",
+                            "冰锥术",
+                            context,
+                            (special_layer_monster_2_x, special_layer_monster_2_y),
+                        ):
+                            break
             context.run_task("Fight_ReturnMainWindow")
             self.leaveSpecialLayer(context)
             # 检查一下状态

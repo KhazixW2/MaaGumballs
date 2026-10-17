@@ -631,7 +631,13 @@ class Fight_PreWar(CustomAction):
         argv: CustomAction.RunArg,
     ) -> CustomAction.RunResult:
         # 战前准备
-        context.run_task("Select_MainCharacter")
+        if context.run_recognition(
+            "已选仿生人",
+            context.tasker.controller.post_screencap().wait().get()
+        ).hit:
+            logger.info("已选仿生人，跳过选择角色")
+        else:
+            context.run_task("Select_MainCharacter")
 
         logger.info("出来吧，冈布奥！！")
 

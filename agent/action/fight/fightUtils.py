@@ -386,10 +386,11 @@ def title_learn_branch(
         )
         time.sleep(0.3)
         image = context.tasker.controller.post_screencap().wait().get()
-        if context.run_recognition("ConfirmButton_500ms", image).hit:
-            context.run_task("ConfirmButton_500ms")
-
+        if context.run_recognition("ConfirmButton_100ms", image).hit:
+            context.run_task("ConfirmButton_100ms")
+    time.sleep(0.4)
     context.run_task("TitlePanel_ReturnPanel")
+    time.sleep(0.4)
     return True
 
 

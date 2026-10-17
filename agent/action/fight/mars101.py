@@ -26,12 +26,15 @@ class Mars101(CustomAction):
         super().__init__()
         self.useEarthGate = 0
         self.isGetTitanFoot = False
+        self.isUseTitanFoot = False
         self.isGetMagicAssist = False
         self.isUseMagicAssist = False
         self.is_android_skill_enabled = False
         self.isLeaveMaze = False
         self.is_demontitle_enable = False
         self.isDeath = False
+        self.可使用地震术 = True
+        self.lastlayer=-1        # {层号: {动作名}}，记录每层已经完成的动作
         self.useDemon = 0
         self.layers = 1
 
@@ -48,16 +51,20 @@ class Mars101(CustomAction):
 
         # 进入地图初始化
         logger.info(f"当前层数: {self.layers}, 进入地图初始化")
-        if fightUtils.check_magic_special("魔法助手", context):
-            self.isGetMagicAssist = True
-            logger.info(f"已获得魔法助手")
-            if self.layers > self.target_leave_layer_para - 19:
-                self.isUseMagicAssist = True
-                logger.info(f"已开启魔法助手")
+        if self.layers > 1:
+            if fightUtils.check_magic_special("魔法助手", context):
+                self.isGetMagicAssist = True
+                logger.info(f"已获得魔法助手")
+                if self.layers > 100:
+                    self.isUseMagicAssist = True
+                    logger.info(f"已开启魔法助手")
 
-        if fightUtils.check_magic_special("泰坦之足", context):
-            logger.info(f"已获得泰坦之足")
-            self.isGetTitanFoot = True
+            if fightUtils.check_magic_special("泰坦之足", context):
+                logger.info(f"已获得泰坦之足")
+                self.isGetTitanFoot = True
+                if self.layers <118:
+                    self.isUseTitanFoot = True
+                    logger.info(f"已开启泰坦之足")
 
         # 如果恶魔系称号期望开启，那么在初始化阶段启用手记获取称号
         if self.astrological_title_para:
@@ -243,7 +250,7 @@ class Mars101(CustomAction):
                         },
                     )
                     self.is_android_skill_enabled = True
-        context.run_task("Fight_ReturnMainWindow")
+            context.run_task("Fight_ReturnMainWindow") #修改为识别成功才进行返回
         return True
 
     def handle_boss_event(self, context: Context):
@@ -287,8 +294,11 @@ class Mars101(CustomAction):
                         fightUtils.cast_magic("水", "寒冰护盾", context)
         # 在100~110层时释放地震，减少技能消耗，提高清层效率
         with fightUtils.timing_section("pre.earthquake"):
-            if self.isUseMagicAssist and 100 < self.layers < 110:
-                fightUtils.cast_magic("土", "地震术", context)
+            if self.isUseMagicAssist and 120 < self.layers < 140 and self.layers % 10 != 0:
+                if self.layers == self.lastlayer and self.可使用地震术:
+                    self.lastlayer = self.layers
+                    if not fightUtils.cast_magic("土", "地震术", context):
+                        self.可使用地震术 = False
         # self.Check_DefaultEquipment(context)
         return True
 
@@ -347,7 +357,25 @@ class Mars101(CustomAction):
             logger.info("开启魔法助手帮助推图")
             fightUtils.cast_magic_special("魔法助手", context)
             self.isUseMagicAssist = True
-
+        if (
+                self.isGetTitanFoot
+                # 开启泰坦之足
+                and self.layers < 118
+                and self.isUseTitanFoot == False
+                ):
+                    logger.info("开启泰坦之足帮助推图")
+                    fightUtils.cast_magic_special("泰坦之足", context)
+                    self.isUseTitanFoot = True
+        if (
+                self.isGetTitanFoot
+                # 大于100层就开启魔法助手
+                and self.layers > 118
+                and self.isUseTitanFoot == True
+                ):
+                    logger.info("关闭泰坦之足")
+                    fightUtils.cast_magic_special("泰坦之足", context)
+                    self.isUseTitanFoot = False
+    # 
     def handle_respawn_event(self, context: Context, image=None) -> bool:
         if image is None:
             image = context.tasker.controller.post_screencap().wait().get()

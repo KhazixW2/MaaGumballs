@@ -7,7 +7,10 @@ from typing import List
 import time
 import cv2
 import numpy as np
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from action.fight.mars101 import Mars101
 
 class FightProcessor:
     _instance = None
@@ -45,6 +48,10 @@ class FightProcessor:
             self.max_grid_loop_fail = 3
             self.isCheckDragon = False
             self.targetWish = target_wish
+
+            # 马尔斯主流程实例，由调用方（Mars101.run）绑定；未绑定时相关施法逻辑自动跳过
+            # 注：Mars101 仅在 TYPE_CHECKING 下导入，此处不能写需要运行时求值的类型标注
+            self.mars: "Mars101" | None = None
 
             # 初始化逻辑
             roi_list = self.generate_floor_roi_grid()
