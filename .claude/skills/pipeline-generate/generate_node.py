@@ -225,7 +225,7 @@ def main():
 
     # 回显
     print("\n" + "=" * 50)
-    print(f"基准分辨率: {SCREEN_W}x{SCREEN_H}")
+    print(f"基准分辨率: {screen_w}x{screen_h}")
     print(f"OCR score: {score:.3f}")
     print(f"原始 box: {box}")
     print(f"扩大 ROI: {roi}")
