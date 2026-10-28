@@ -101,7 +101,7 @@ class GoDownstairsTrick_Test(CustomAction):
             },
             "火系": {
                 "火术士项链": "equipments/1level/火术士项链.png",
-                "灼眼者面罩": "equipments/2level/",
+                "灼眼者面罩": "equipments/2level/灼眼者面罩.png",
                 "火蜥蜴腕轮": "equipments/3level/火蜥蜴腕轮.png",
                 "毁灭者石板": "equipments/4level/毁灭者石板.png",
                 "末日指轮": "equipments/5level/末日指轮.png",
@@ -201,13 +201,17 @@ class GoDownstairsTrick_Test(CustomAction):
             img_2 = context.tasker.controller.post_screencap().wait().get()
             temp = 0
             for key in targetList:
-                if not targetList[key]:
+                logger.info(f"黑装备-{equipment} 开始检查目标装备-{key}")
+                logger.info(f"上轮状态: {targetList[key].hit}")
+                if not targetList[key].hit:
                     afterResult = self.CheckEternalSuit(
                         context, img_2, equipmentsList[equipment][key]
                     )
-                    if afterResult:
-                        logger.info(f"黑装备-{equipment} 检查到目标装备-{key}")
+                    if afterResult.hit:
+                        logger.info(f"检查到目标装备: {key}")
                         temp += 1
+                    else:
+                        logger.info("此次未获得目标装备。")
 
             context.run_task("BackText")
 

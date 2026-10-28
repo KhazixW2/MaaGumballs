@@ -1008,6 +1008,22 @@
         "timeout": 3000,
         "post_delay": 500
     },
+    "Mars_GetDemonTitle_Confirm": {
+        "recognition": "TemplateMatch",
+        "template": "fight/Mars/恶魔系称号.png",
+        "action": "Click",
+        "roi": [
+            116,
+            661,
+            487,
+            153
+        ],
+        "post_delay": 500,
+        "timeout": 3000,
+        "next": [
+            "Mars_GetDemonTitle_Enabled"
+        ]
+    },
     "Mars_GetDemonTitle_Confirm_2": {
         "recognition": "OCR",
         "expected": "恶魔系称号",
