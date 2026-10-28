@@ -1,4 +1,4 @@
-maafw==5.10.5
+maafw==5.14.3
 loguru>=0.7.0
 opencv-python>=4.10
 plyer>=2.1.0
