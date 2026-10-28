@@ -203,6 +203,7 @@ class DailyGoldCoin_BuyClayPot_Costing(CustomAction):
             context.tasker.controller.post_screencap().wait().get(),
         ).hit:
             logger.info("触发了土罐彩蛋")
+            context.run_task("DailyGoldCoin_BuyClayPot_Kickback")
             context.run_task("DailyGoldCoin_BuyClayPot_Kickback_Confirm")
 
         context.run_task("ReturnBigMap")
