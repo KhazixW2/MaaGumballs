@@ -167,12 +167,14 @@ class MarsEventDispatcher:
         if bossReward and context.run_recognition("Mars_BossReward", image).hit:
             logger.info("触发MarsBoss奖励事件")
             context.run_task("Mars_BossReward")
-            if self.mars.isGetTitanFoot == False and self.mars.layers >= 80:
+            if self.mars.isGetTitanFoot == False and self.mars.layers >= 81:
                 if fightUtils.cast_magic_special("泰坦之足", context):
                     self.mars.isGetTitanFoot = True
+                    self.mars.note_TitanFoot_Status()
             if self.mars.isGetMagicAssist == False:
                 if fightUtils.cast_magic_special("魔法助手", context):
                     self.mars.isGetMagicAssist = True
+                    self.mars.note_MagicAssist_Status()
             return True
         return True
 

@@ -12,9 +12,9 @@ class MarsHPManager:
     """马尔斯101血量管理器：负责血量检查、治疗、安全压血等逻辑"""
 
     # 优先级：痊愈术(卷轴) → 神恩术(卷轴) → 治疗术(MP，永远最后)
-    HEAL_ORDER = (("水", "痊愈术"), ("光", "神恩术"), ("水", "治疗术"))
+    HEAL_ORDER = [("水", "痊愈术"), ("光", "神恩术"), ("水", "治疗术")]
     HEAL_TARGET = 0.8
-    HEAL_MAX_CAST =5
+    HEAL_MAX_CAST =1
     # 轮到治疗术之前，是否把两种卷轴法术重新补探一轮（应对中途补到卷轴）
     RE_PROBE_SCROLLS = True
     
@@ -25,9 +25,20 @@ class MarsHPManager:
         """检查冈布奥状态，保持80%以上HP"""
         tempNum = self.mars.layers % 10
         if (
-            (11 <= self.mars.layers <= 79) and (tempNum == 1 or tempNum == 5 or tempNum == 9)
-        ) or self.mars.layers >= 80:
-            if self.mars.layers <= 60 and self.mars.useEarthGate > 0:
+            (11 <= self.mars.layers <= 59) and (tempNum == 1 or tempNum == 5 or tempNum == 9)
+        ) or self.mars.layers >= 60:
+            if self.mars.layers <= 60 and self.mars.useEarthGate > 0 :
+                return True
+            SimpleHp=fightUtils.checkGumballsStatusSimple(context)
+            if self.mars.layers < 50 and SimpleHp > 1000 and self.mars.useEarthGate == 0:
+                return True
+            if self.mars.layers < 70 and SimpleHp > (1000 + 50 * (self.mars.layers - 50)):
+                return True
+            if self.mars.layers <100 and SimpleHp > 5000:
+                return True
+            if self.mars.layers <120 and SimpleHp > 6000 and self.mars.useEarthGate>1:
+                return True
+            if self.mars.layers <150 and SimpleHp > (6000 + 60 * (self.mars.layers - 120)):
                 return True
             cast_time = 0
             StatusDetail = fightUtils.checkGumballsStatusV2(context)
@@ -89,6 +100,7 @@ class MarsHPManager:
             if not fightUtils.cast_magic(element, name, context):
                 logger.info(f"{name} 找不到/已用完，本次会话降级")
                 exhaust.add(name)
+                self.HEAL_ORDER= self.HEAL_ORDER[1:] + self.HEAL_ORDER[:1]#
                 continue
 
             context.run_task("Fight_ReturnMainWindow")

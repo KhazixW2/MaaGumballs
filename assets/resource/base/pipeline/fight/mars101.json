@@ -1019,6 +1019,17 @@
         "timeout": 3000,
         "post_delay": 500
     },
+    "Mars_GetDemonTitle_Confirm": {
+        "recognition": "OCR",
+        "expected": "恶魔系",
+        "action": "Click",
+        "roi": [289,672,137,147],
+        "post_delay": 500,
+        "timeout": 3000,
+        "next": [
+            "Mars_GetDemonTitle_Enabled"
+        ]
+    },
     "Mars_GetDemonTitle_Confirm_2": {
         "recognition": "OCR",
         "expected": "恶魔系称号",
@@ -1126,5 +1137,11 @@
         "template": "fight/Mars/休息室愤怒的挑战者.png",
         "roi": [51,630,120,100],
         "timeout": 2000
+    },
+    "Mars_EmptyFloor":{
+        "recognition": "TemplateMatch",
+        "template": "fight/UniversalUI/EmptyFloor.png",
+        "roi": [78,673,91,85],
+        "timeout": 500
     }
 }

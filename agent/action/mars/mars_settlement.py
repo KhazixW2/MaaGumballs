@@ -133,7 +133,7 @@ class MarsSettlementManager:
                     fightUtils.title_learn("巨龙", 3, "中级龙族血统", 3, context)
                     fightUtils.title_learn("巨龙", 4, "高级龙族血统", 3, context)
 
-                if self.mars.useEarthGate > 1:
+                if self.mars.useEarthGate > 0:
                     fightUtils.title_learn("巨龙", 5, "邪龙血统", 1, context)
                     fightUtils.title_learn_branch("巨龙", 5, "攻击强化", 3, context)
                     fightUtils.title_learn_branch(

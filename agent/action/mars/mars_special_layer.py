@@ -140,7 +140,7 @@ class MarsSpecialLayerManager:
             if self.mars.layers < 100:
                 context.run_task("Mars_Shower")
             context.run_task("Mars_EatBread")
-            if self.mars.target_magicgumball_para == "波塞冬":
+            if self.mars.target_magicgumball_para == "波塞冬" and self.mars.useEarthGate > 1:
                 targetAngryManlayer=129
             else:
                 targetAngryManlayer=89
@@ -151,33 +151,32 @@ class MarsSpecialLayerManager:
                     "死亡波纹",
                     context,
                 ) or fightUtils.cast_magic("土","地震术",context):
-                    context.run_task("Mars_AngryMan")
                     times = 2
                     time.sleep(0.6)
                     for _ in range(times):
-                        # if context.run_recognition("Mars_AngryMan", context.tasker.controller.post_screencap().wait().get(),
-                        #                             pipeline_override={"Mars_AngryMan": {"roi": [51,630,120,100]}}
-                        #                             ).hit:
-                        if  not fightUtils.cast_magic(
-                            "水",
-                            "冰锥术",
-                            context,
-                            (special_layer_monster_1_x, special_layer_monster_1_y),
-                        ):
-                            break
-                    if self.mars.layers >100:
-                        fightUtils.cast_magic("土","石肤术",context)
-                    for _ in range(times):
-                        # if context.run_recognition("Mars_AngryMan", context.tasker.controller.post_screencap().wait().get(),
-                        #                                                         pipeline_override={"Mars_AngryMan": {"roi": [308,620,120,100]}}
-                        #                                                         ).hit:
-                        if not fightUtils.cast_magic(
-                            "水",
-                            "冰锥术",
-                            context,
-                            (special_layer_monster_2_x, special_layer_monster_2_y),
-                        ):
-                            break
+                        if not context.run_recognition("Mars_EmptyFloor", context.tasker.controller.post_screencap().wait().get(),
+                                                    pipeline_override={"Mars_EmptyFloor": {"roi": [78,673,91,85]}}
+                                                    ).hit:
+                            if  not fightUtils.cast_magic(
+                                "水",
+                                "冰锥术",
+                                context,
+                                (special_layer_monster_1_x, special_layer_monster_1_y),
+                            ):
+                                break
+                            time.sleep(0.6)
+                        if not context.run_recognition("Mars_EmptyFloor", context.tasker.controller.post_screencap().wait().get(),
+                                                    pipeline_override={"Mars_EmptyFloor": {"roi": [350,675,97,90]}}
+                                                    ).hit:
+                            if not fightUtils.cast_magic(
+                                "水",
+                                "冰锥术",
+                                context,
+                                (special_layer_monster_2_x, special_layer_monster_2_y),
+                            ):
+                                break
+                        if self.mars.layers >100:
+                            fightUtils.cast_magic("土","石肤术",context)
             context.run_task("Fight_ReturnMainWindow")
             self.leaveSpecialLayer(context)
             # 检查一下状态

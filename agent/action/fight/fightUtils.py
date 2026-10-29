@@ -285,6 +285,13 @@ def title_learn(
         [446, 886, 62, 52],
         [560, 881, 69, 67],
     ]
+    titleRecctRecog=[
+        [0, 0, 0, 0],
+        [71,862,112,122],
+        [190,865,112,116],
+        [307,862,114,118],
+        [424,862,113,119],
+        [541,859,106,120],]
 
     for i in range(0, expectedLevel):
         logger.info(f"学习第{i+1}级{titleName}")
@@ -293,6 +300,9 @@ def title_learn(
             pipeline_override={
                 "TitlePanel_Learnable_Click": {
                     "target": titileRect[titleLevel],
+                },
+                "TitlePanel_Learnable_Check": {
+                    "roi": titleRecctRecog[titleLevel],
                 },
                 "TitlePanel_TitleCheck_New": {
                     "expected": titleName,
@@ -371,11 +381,15 @@ def title_learn_branch(
             pipeline_override={
                 "TitlePanel_Learnable_Click": {
                     "target": titileRect[titleLevel],
+                    "post_delay":600
+                },
+                "TitlePanel_Learnable_Check": {
+                    "post_delay":600
                 },
                 "TitlePanel_TitleCheck_New": {
                     "expected": titleName,
                     "roi": titleName_roi,
-                    "target_offset": [0, 0, 0, 0],
+                    "target_offset": [5, 5, 0, 0],
                     "order_by": "Vertical",
                 },
                 "TitlePanel_Series": {"expected": titleType},
@@ -708,7 +722,19 @@ def checkBuffStatus(buffName: str, context: Context):
     logger.info(f"未发现: {buffName} buff")
     return False
 
-
+def checkGumballsStatusSimple(context: Context):
+    hpValue=-1
+    image = context.tasker.controller.post_screencap().wait().get()
+    hpValueStatus=context.run_recognition("Fight_GetHP",image, pipeline_override={
+        "Fight_GetHP": {
+                    "roi": [153,1213,151,55],
+                }
+    }
+    )
+    if hpValueStatus.hit:
+        hpValue=int(hpValueStatus.best_result.text)
+        # logger.info(f"当前生命值: {hpValue}")
+        return hpValue
 def checkGumballsStatusV2(context: Context):
     """检查当前战斗中的Gumball角色状态信息
 
@@ -1128,6 +1154,7 @@ def Saveyourlife(context: Context):
         # 小SL, 保住狗命
         context.run_task("LogoutGame")
         context.run_task("ReturnMaze")
+        context.run_task("Back_From_TempLeave")
     else:
         logger.info("没有检测到冈布奥倒下！可能没死吧！！继续战斗！！")
     return True
@@ -1148,22 +1175,37 @@ def handle_dragon_event(map_str: str, context: Context):
     return False
 
 
+# 层数识别的最多尝试次数与重试间隔（原来是无上限 while，遇到 OCR 一直命中非层数文字会死循环）
+MAX_LAYER_READ_ATTEMPTS = 10
+LAYER_READ_RETRY_SLEEP = 0.4
+
+
 def handle_currentlayer_event(context: Context):
     context.run_task("Fight_ReturnMainWindow")
     tempLayers = -1
-    while tempLayers <= 0 and (
-        RunResult := context.run_recognition(
-            "Fight_CheckLayer",
-            context.tasker.controller.post_screencap().wait().get(),
-        )
-    ):
-        if not RunResult.hit:
-            break
-        tempLayers = extract_num_layer(RunResult.best_result.text)
+    for attempt in range(1, MAX_LAYER_READ_ATTEMPTS + 1):
         if context.tasker.stopping:
             logger.info("检测到停止任务, 开始退出agent")
             return -1
-    return tempLayers
+
+        image = context.tasker.controller.post_screencap().wait().get()
+        RunResult = context.run_recognition("Fight_CheckLayer", image)
+        if not RunResult or not RunResult.hit:
+            time.sleep(LAYER_READ_RETRY_SLEEP)
+            continue
+
+        tempLayers = extract_num_layer(RunResult.best_result.text)
+        if tempLayers > 0:
+            return tempLayers
+
+        logger.warning(
+            f"层数识别异常（第 {attempt}/{MAX_LAYER_READ_ATTEMPTS} 次，"
+            f"文字={RunResult.best_result.text!r}），重试"
+        )
+        time.sleep(LAYER_READ_RETRY_SLEEP)
+
+    logger.warning(f"层数识别失败（已尝试 {MAX_LAYER_READ_ATTEMPTS} 次），返回 -1")
+    return -1
 
 
 def handle_skillShop_event(

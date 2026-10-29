@@ -81,7 +81,7 @@ class MarsTitleManager:
             context.run_task("Fight_ReturnMainWindow")
             self.isTitle_L10 = True
             return True
-        elif (self.mars.layers >= 61 and self.mars.layers <= 63) and self.isTitle_L61 == False:
+        elif (self.mars.layers >= 65 and self.mars.layers <= 67) and self.isTitle_L61 == False:
             context.run_task("TitlePanel_Open") 
             context.run_task("TitlePanel_Series",
                                          pipeline_override=

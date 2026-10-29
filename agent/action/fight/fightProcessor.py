@@ -329,7 +329,8 @@ class FightProcessor:
             self.visited[r][c] += 1
             # logger.debug(f"攻击怪物({r + 1},{c + 1})，距离门：{monster[0]}")
             for _ in range(self.hit_monster_count):
-                context.tasker.controller.post_click(x + w // 2, y + h // 2).wait()
+                context.tasker.controller.post_click(x + w // 2, y + h // 2)
+                # context.tasker.controller.post_click(x + w // 2, y + h // 2).wait()
 
         return monster_count > 0
 

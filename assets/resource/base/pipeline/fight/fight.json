@@ -62,6 +62,7 @@
             "[JumpBack]ConfirmButton",
             "[JumpBack]Fight_LeaveMaze_StopButton",
             "[JumpBack]Fight_LeaveMaze_Leave",
+            "[JumpBack]保存当前截图",
             "[JumpBack]BackText"
         ]
     },

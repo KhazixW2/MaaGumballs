@@ -30,8 +30,8 @@
             75
         ],
         "action": "Click",
-        "post_delay": 500,
-        "timeout": 500
+        "post_delay": 100,
+        "timeout": 300
     },
     "BackText_500ms": {
         "recognition": "OCR",
@@ -60,8 +60,8 @@
             75
         ],
         "action": "Click",
-        "post_delay": 500,
-        "timeout": 500
+        "post_delay": 700,
+        "timeout": 700
     },
     "FlipPage": {
         "recognition": "OCR",
@@ -317,5 +317,25 @@
     "CountTask_RunNode": {
         "doc": "这是count的辅助节点，搭配count action使用",
         "next": ["Activity_Start"]
+    },
+    "CloseChatPannel":{
+        
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "fight/UniversalUI/ChatIcon.png",
+                "roi":[19,987,105,91]
+            },{
+                "recognition": "TemplateMatch",
+                "template": "fight/UniversalUI/Chatbox.png",
+                "roi":[513,995,85,87]
+            }
+        ],
+        "target": [70,1029,3,2],
+        "action": "Click",
+        "post_delay": 300,
+        "timeout": 1000
+
     }
 }

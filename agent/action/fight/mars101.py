@@ -3,6 +3,7 @@ from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
 from utils import logger, send_message
+from utils import runtime_state
 
 from action.fight.fightUtils import timing_decorator
 from action.fight import fightUtils
@@ -37,6 +38,149 @@ class Mars101(CustomAction):
         self.lastlayer=-1        # {层号: {动作名}}，记录每层已经完成的动作
         self.useDemon = 0
         self.layers = 1
+        self._flags_restored = False  # 三个状态位是否成功从运行时记录恢复
+
+    # ---------------- 跨重启运行时状态 ----------------
+    RUNTIME_STATE_NS = "mars101"
+    EARTH_GATE_STATE_TTL = 12 * 60 * 60  # 12 小时没更新就当作新的一局
+    FRESH_RUN_LAYER = 3  # 当前层 <= 3 视为新进图
+    DEMON_MAX_USE = 3  # 每局最多使用几个小恶魔
+    FLAG_KEYS = ("isGetMagicAssist", "isGetTitanFoot", "is_demontitle_enable")
+
+    def _restore_runtime_state(self):
+        """initialize() 读完层数后调用：恢复跨重启状态。
+
+        大地之门次数 / 小恶魔次数 / 三个状态位（魔法助手、泰坦之足、恶魔系称号）都无法从画面反推，
+        统一按同一套规则处理：
+          记录有效 → 恢复；新进图（当前层 <= 3 且存档层更大）或记录过期(12h) → 全部清零并删记录。
+          大地之门额外受"目标次数"约束：目标为 0 时清零，恢复值不超过目标。
+        三个状态位恢复成功时会把 `_flags_restored` 置 True，initialize() 便跳过对应的现场检测。
+        """
+        record = runtime_state.get(self.RUNTIME_STATE_NS) or {}
+        if not isinstance(record, dict):
+            record = {}
+        saved_gate = int(record.get("useEarthGate", 0) or 0)
+        saved_demon = int(record.get("useDemon", 0) or 0)
+        saved_layer = int(record.get("layers", 0) or 0)
+        updated_at = float(record.get("updated_at", 0) or 0)
+        target = int(getattr(self, "target_earthgate_para", 0) or 0)
+        now = time.time()
+
+        expired = (
+            self.EARTH_GATE_STATE_TTL > 0
+            and updated_at > 0
+            and now - updated_at > self.EARTH_GATE_STATE_TTL
+        )
+        fresh_run = self.layers <= self.FRESH_RUN_LAYER and saved_layer > self.layers
+
+        reset_reason = None
+        if fresh_run:
+            reset_reason = f"当前第 {self.layers} 层（新进图），存档是第 {saved_layer} 层"
+        elif expired:
+            reset_reason = f"记录已过期（{(now - updated_at) / 3600:.1f} 小时未更新）"
+
+        if reset_reason:
+            logger.info(f"不恢复运行时记录（{reset_reason}）")
+            self.useEarthGate = 0
+            self.useDemon = 0
+            self.isGetMagicAssist = False
+            self.isGetTitanFoot = False
+            self.is_demontitle_enable = False
+            self._flags_restored = False
+            runtime_state.clear(self.RUNTIME_STATE_NS)
+            return
+
+        # ---- 大地之门次数 ----
+        if target <= 0:
+            self.useEarthGate = 0
+            logger.info("不恢复大地之门次数（本次目标大地次数为 0）")
+        else:
+            self.useEarthGate = min(max(saved_gate, 0), target)
+            if self.useEarthGate > 0:
+                logger.info(
+                    f"恢复大地之门使用次数: {self.useEarthGate}/{target}（记录于第 {saved_layer} 层）"
+                )
+
+        # ---- 小恶魔次数：清零 / 恢复规则与大地之门一致 ----
+        self.useDemon = min(max(saved_demon, 0), self.DEMON_MAX_USE)
+        if self.useDemon > 0:
+            logger.info(
+                f"恢复小恶魔使用次数: {self.useDemon}/{self.DEMON_MAX_USE}"
+                f"（记录于第 {saved_layer} 层）"
+            )
+
+        # ---- 三个状态位：魔法助手 / 泰坦之足 / 恶魔系称号 ----
+        if all(key in record for key in self.FLAG_KEYS):
+            self.isGetMagicAssist = bool(record.get("isGetMagicAssist"))
+            self.isGetTitanFoot = bool(record.get("isGetTitanFoot"))
+            self.is_demontitle_enable = bool(record.get("is_demontitle_enable"))
+            self._flags_restored = True
+            # 由"已获得"推导"是否启用"，与 initialize() 里探测后的逻辑保持一致
+            if self.layers > 1:
+                if self.isGetMagicAssist and self.layers > 100:
+                    self.isUseMagicAssist = True
+                if self.isGetTitanFoot and self.layers < 118:
+                    self.isUseTitanFoot = True
+            logger.info(
+                f"恢复状态位（记录于第 {saved_layer} 层）: 魔法助手={self.isGetMagicAssist}"
+                f"（启用={self.isUseMagicAssist}），泰坦之足={self.isGetTitanFoot}"
+                f"（启用={self.isUseTitanFoot}），恶魔系称号={self.is_demontitle_enable}"
+            )
+        else:
+            self._flags_restored = False
+
+    def _persist_runtime_state(self, **extra):
+        """把跨重启需要的字段整体落盘（整条覆盖写，顺带清掉历史遗留字段）。"""
+        record = {
+            "useEarthGate": int(self.useEarthGate),
+            "useDemon": int(self.useDemon),
+            "isGetMagicAssist": bool(self.isGetMagicAssist),
+            "isGetTitanFoot": bool(self.isGetTitanFoot),
+            "is_demontitle_enable": bool(self.is_demontitle_enable),
+            "target_earthgate": int(getattr(self, "target_earthgate_para", 0) or 0),
+            "updated_at": time.time(),
+        }
+        if isinstance(self.layers, int) and self.layers > 0:
+            record["layers"] = self.layers
+        else:
+            # 层数没识别出来（0 / -1）时沿用上一次记录的层数，避免下次被误判成"新进图"
+            previous = runtime_state.get(self.RUNTIME_STATE_NS) or {}
+            if isinstance(previous, dict) and int(previous.get("layers", 0) or 0) > 0:
+                record["layers"] = int(previous["layers"])
+        record.update(extra)
+        runtime_state.put(self.RUNTIME_STATE_NS, record)
+
+    def note_earth_gate_used(self):
+        """大地之门成功用了一次：自增并立刻落盘。"""
+        self.useEarthGate += 1
+        self._persist_runtime_state()
+        logger.info(
+            f"大地之门使用次数已记录: {self.useEarthGate}/{self.target_earthgate_para}"
+        )
+
+    def note_demon_used(self):
+        """用过一个小恶魔：自增并立刻落盘。"""
+        self.useDemon += 1
+        self._persist_runtime_state()
+        logger.info(f"小恶魔使用次数已记录: {self.useDemon}/{self.DEMON_MAX_USE}")
+    def note_MagicAssist_Status(self):
+            self.isGetMagicAssist = True
+            self._persist_runtime_state()
+            logger.info(f"已获得魔法助手")
+    def note_TitanFoot_Status(self):
+            self.isGetTitanFoot = True
+            self._persist_runtime_state()
+            logger.info(f"已获得泰坦之足")
+    def reset_runtime_state(self):
+        """一局结束（出图/结算）时清空记录。"""
+        runtime_state.clear(self.RUNTIME_STATE_NS)
+        self.useEarthGate = 0
+        self.useDemon = 0
+        self.isGetMagicAssist = False
+        self.isGetTitanFoot = False
+        self.is_demontitle_enable = False
+        self._flags_restored = False
+        logger.info("本局结束，已清除大地之门/小恶魔/称号状态等运行时记录")
 
     def initialize(self, context: Context):
         self.__init__()
@@ -48,45 +192,72 @@ class Mars101(CustomAction):
             self.layers = fightUtils.extract_num_layer(
                 RunResult.nodes[0].recognition.best_result.text
             )
-
-        # 进入地图初始化
+        
         logger.info(f"当前层数: {self.layers}, 进入地图初始化")
-        if self.layers > 1:
+        
+        self._restore_runtime_state()
+        # 测试用加点
+        # self.title_manager = MarsTitleManager(self)# 测试用
+        # fightUtils.title_learn("冒险", 2, "勘探家", 2, context)
+        # self.Check_DefaultTitle(context)# 测试用
+        context.run_task("CloseChatPannel")
+        if self.layers > 1 and self._flags_restored:
+            # 三个状态位已从运行时记录恢复（isUse* 的推导在 _restore_runtime_state 里已完成），
+            # 这里直接跳过两次魔法书检测，省时间
+            logger.info(
+                "状态位来自运行时记录，跳过魔法助手/泰坦之足检测："
+                f"魔法助手={self.isGetMagicAssist}（启用={self.isUseMagicAssist}）"
+                f"，泰坦之足={self.isGetTitanFoot}（启用={self.isUseTitanFoot}）"
+            )
+        elif self.layers > 1:
             if fightUtils.check_magic_special("魔法助手", context):
                 self.isGetMagicAssist = True
+                self.note_MagicAssist_Status()
                 logger.info(f"已获得魔法助手")
-                if self.layers > 100:
-                    self.isUseMagicAssist = True
-                    logger.info(f"已开启魔法助手")
-
             if fightUtils.check_magic_special("泰坦之足", context):
+                self.note_TitanFoot_Status()
                 logger.info(f"已获得泰坦之足")
                 self.isGetTitanFoot = True
-                if self.layers <118:
-                    self.isUseTitanFoot = True
-                    logger.info(f"已开启泰坦之足")
+
+        if self.layers > 100 and self.isGetMagicAssist:
+            self.isUseMagicAssist = True
+            logger.info(f"已开启魔法助手")
+        if self.layers <118 and self.isGetTitanFoot:
+            self.isUseTitanFoot = True
+            logger.info(f"已开启泰坦之足")
+        # 把本次探测到的状态落盘：同层重启时可直接复用，换层则按新状态覆盖
+        self._persist_runtime_state()
 
         # 如果恶魔系称号期望开启，那么在初始化阶段启用手记获取称号
+        # 注意：这段既是"检测"也是"获取"。记录里已确认拿到（True）时直接跳过；
+        # 记录里是 False 时仍然跑一次，因为这是本局拿到它的唯一途径。
         if self.astrological_title_para:
-            context.run_task("Fight_ReturnMainWindow")
-            OpenDetail = context.run_task("Bag_Open")
-            if OpenDetail:
-                time.sleep(1)
-                fightUtils.findItem("阿瑞斯的手记", True, context, threshold=0.8)
-            time.sleep(1)
+            if self._flags_restored and self.is_demontitle_enable:
+                logger.info("记录显示已拥有恶魔系称号，跳过阿瑞斯的手记流程")
+            else:
+                for _ in range(2): #重复检测保证正确率
+                    context.run_task("Fight_ReturnMainWindow")
+                    OpenDetail = context.run_task("Bag_Open")
+                    if OpenDetail:
+                        time.sleep(1)
+                        fightUtils.findItem("阿瑞斯的手记", True, context, threshold=0.8)
+                    time.sleep(1)
 
-            if context.run_recognition(
-                "Mars_GetDemonTitle_Confirm",
-                context.tasker.controller.post_screencap().wait().get(),
-            ).hit:
-                taskdetail = context.run_task("Mars_GetDemonTitle_Confirm")
-            else:
-                taskdetail = context.run_task("Mars_GetDemonTitle_Confirm_2")
-            if taskdetail.nodes and taskdetail.nodes[0].completed:
-                logger.info("已获得恶魔系称号")
-                self.is_demontitle_enable = True
-            else:
-                logger.info("获取恶魔系称号失败")
+                    if context.run_recognition(
+                        "Mars_GetDemonTitle_Enabled",
+                        context.tasker.controller.post_screencap().wait().get(),
+                    ).hit:
+                        taskdetail = context.run_task("Mars_GetDemonTitle_Confirm")
+                    else:
+                        taskdetail = context.run_task("Mars_GetDemonTitle_Confirm_2")
+                    if taskdetail.nodes and taskdetail.nodes[0].completed:
+                        logger.info("已获得恶魔系称号")
+                        self.is_demontitle_enable = True
+                        self._persist_runtime_state()
+                    else:
+                        logger.info("获取恶魔系称号失败")
+                        self.is_demontitle_enable=False
+                        self._persist_runtime_state()
 
         if self.director_para:
             # 名导心得相关
@@ -129,6 +300,14 @@ class Mars101(CustomAction):
     def Check_CurrentLayers(self, context: Context):
         tempLayers = fightUtils.handle_currentlayer_event(context)
         self.layers = tempLayers
+        if tempLayers <= 0:
+            if context.tasker.stopping:
+                logger.info("检测到停止任务，结束本次任务")
+            else:
+                logger.warning(
+                    f"当前层数识别失败（{tempLayers}），结束本次玛尔斯任务，交给看门狗重启"
+                )
+            return False
         return True
 
     def Check_GridAndMonster(
@@ -175,6 +354,17 @@ class Mars101(CustomAction):
         # context.run_task("Screenshot")
         return False
 
+    def once_per_layer(self, key: str) -> bool:
+        """同一层内同一个 key 只允许通过一次；换层后自动可用。"""
+        if self.layers <= 0:              # 层数识别失败（-1/0）时不记账，避免误判
+            return False
+        done = self._layer_once_done.setdefault(self.layers, set())
+        if key in done:
+            logger.debug(f"第 {self.layers} 层已执行过 {key}，跳过")
+            return False
+        done.add(key)
+        self._layer_once_done = {self.layers: done}   # 只保留当前层，防无限增长
+        return True
     def Check_DefaultEquipment(self, context: Context):
         """
         检查默认装备
@@ -407,18 +597,18 @@ class Mars101(CustomAction):
             self.layers > self.target_leave_layer_para - 29
             and (self.layers - 1) % 10 == 0
         ):
-            if self.is_demontitle_enable and self.useDemon < 3:
+            if self.is_demontitle_enable and self.useDemon < self.DEMON_MAX_USE:
                 fightUtils.openBagAndUseItem("小恶魔", True, context)
-                self.useDemon += 1
+                self.note_demon_used()
             if (
                 self.target_earthgate_para == 2
                 and self.useEarthGate < self.target_earthgate_para
                 and self.layers >= 100
-                and self.target_leave_layer_para >= 129
+                and self.target_leave_layer_para >= 139
             ):
                 # 把当前的大地次数记作目标大地次数，不要尝试大地，提前出图
                 self.target_earthgate_para = self.useEarthGate
-                self.target_leave_layer_para = 119
+                self.target_leave_layer_para = 129
         with fightUtils.timing_section("post.reward"):
             self.handle_MarsReward_event(context)
         context.run_task("Fight_ReturnMainWindow")
@@ -470,7 +660,7 @@ class Mars101(CustomAction):
         # 重新清理当前层，防止影响出图层
 
         should_leave_maze = (self.layers >= self.target_leave_layer_para - 2) or (
-            101 > self.layers > 97 and self.isGetMagicAssist == False
+            111 > self.layers > 107 and self.isGetMagicAssist == False
         )
         goto_special_layer_hit = False
         if should_leave_maze:

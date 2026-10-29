@@ -23,7 +23,7 @@ class MarsEarthGateManager:
         if (
             ((self.mars.layers > 60) and (self.mars.layers % 10 == 9))
             # 在61~63层时释放大地，或者x9(>60)层时释放大地
-            or (61 <= self.mars.layers <= 63)
+            or (self.mars.layers == 66)
         ) and self.mars.useEarthGate < self.mars.target_earthgate_para:
             # 识别是否门关着
             image = context.tasker.controller.post_screencap().wait().get()
@@ -44,7 +44,7 @@ class MarsEarthGateManager:
                         self.mars.Check_CurrentLayers(context)
                         if self.mars.layers != templayer and self.mars.layers != -1:
                             logger.info(f"大地之门特效结束, 当前层数为{self.mars.layers}")
-                            self.mars.useEarthGate += 1
+                            self.mars.note_earth_gate_used()
                             return True
                         time.sleep(1)
         return False
