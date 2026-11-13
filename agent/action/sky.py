@@ -449,6 +449,38 @@ class AutoSky(CustomAction):
         context.run_task("AutoSky_ReturnSkyMap")
         return False
 
+    def _set_clone_enabled(self, context: Context, enable: bool) -> bool:
+        """设置克隆体开关(开启/关闭)。
+
+        部分账号/版本没有"克隆体入口"图标,此时直接跑
+        ``AutoSky_Enable_Clone`` / ``AutoSky_Disable_Clone`` 会进不去面板,
+        只能在 next 列表里空转到 timeout 才失败(表现为任务卡住)。
+        所以先用 ``AutoSky_Clone_Entry`` 预检入口图标,没有就直接跳过。
+
+        Args:
+            context: MaaFramework 上下文。
+            enable: True 表示开启克隆体,False 表示关闭克隆体。
+
+        Returns:
+            bool: True 表示已成功进入面板并完成开关设置。
+        """
+        img = context.tasker.controller.post_screencap().wait().get()
+        if not context.run_recognition("AutoSky_Clone_Entry", img).hit:
+            logger.warning(
+                "未找到克隆体入口图标,跳过克隆体开关设置"
+                "(当前账号/版本可能没有克隆体功能)"
+            )
+            return False
+
+        task_name = "AutoSky_Enable_Clone" if enable else "AutoSky_Disable_Clone"
+        result = context.run_task(task_name)
+        if not (result and result.nodes):
+            logger.warning(f"{task_name} 执行异常,克隆体开关可能未生效")
+            return False
+
+        logger.info(f"克隆体已{'开启' if enable else '关闭'}")
+        return True
+
     def _handle_rift_by_color(self, context: Context) -> None:
         """时空裂痕无法直接摧毁时的处理:
 
@@ -1080,10 +1112,10 @@ class AutoSky(CustomAction):
         self._temple_enabled = self._node_enabled(context, "AutoSky_ActivateTemple")
         if self._clone_enabled:
             logger.info("已启用克隆体，尝试开启克隆体并启用战损检测")
-            context.run_task("AutoSky_Enable_Clone")
+            self._set_clone_enabled(context, True)
         else:
             logger.info("未启用克隆体，尝试关闭克隆体并跳过战损检测")
-            context.run_task("AutoSky_Disable_Clone")
+            self._set_clone_enabled(context, False)
 
         # 1.3 读能量包配置(目标数 + 是否启用)
         target_battery, use_battery = self._read_battery_config(context)

@@ -22,6 +22,7 @@
     "AutoSky_ReturnBigMap": {
         "doc": "自动天空特别定制的返回大地图,添加了取消了点击确定按钮",
         "recognition": "DirectHit",
+        "timeout": 5000,
         "next": [
             "CheckBigMap",
             "[JumpBack]AutoSky_TroopLoss_Backtext",
@@ -465,7 +466,7 @@
     },
     "AutoSky_TroopLoss": {
         "recognition": "OCR",
-        "doc": "兼容旧版克隆体战损识别，命中后取消本次战斗结算并重新挑战",
+        "doc": "兼容旧版克隆体战损识别，命中后取消本次战斗结算并重新挑战(与 AutoSky_CloneDied 走同一条取消结算链路)",
         "expected": "克隆体战损",
         "roi": [
             244,
@@ -474,7 +475,10 @@
             71
         ],
         "post_delay": 1000,
-        "timeout": 3000
+        "timeout": 3000,
+        "next": [
+            "AutoSky_CloneDied_Cancel"
+        ]
     },
     "AutoSky_TroopLoss_Backtext": {
         "recognition": "OCR",
@@ -533,7 +537,23 @@
         "post_delay": 200,
         "timeout": 2000
     },
+    "AutoSky_Clone_Entry": {
+        "doc": "克隆体入口图标(只识别不点击)。部分账号/版本没有克隆体入口,Python 用本节点预检后再决定是否执行开关流程",
+        "recognition": "TemplateMatch",
+        "template": "dailyTask/AutoSky_Enter_Clone.png",
+        "roi": [
+            432,
+            1116,
+            261,
+            154
+        ],
+        "action": "DoNothing",
+        "post_delay": 0,
+        "timeout": 2000
+    },
     "AutoSky_Disable_Clone": {
+        "doc": "关闭克隆体。入口图标不存在时,next 列表会在 timeout 后判定失败(不会一直空转)",
+        "timeout": 2000,
         "next": [
             "AutoSky_Disable_Clone_Start"
         ]
@@ -588,6 +608,8 @@
         ]
     },
     "AutoSky_Enable_Clone": {
+        "doc": "开启克隆体。入口图标不存在时,next 列表会在 timeout 后判定失败(不会一直空转)",
+        "timeout": 2000,
         "next": [
             "AutoSky_Enable_Clone_Start"
         ]
@@ -777,6 +799,8 @@
         "timeout": 2000
     },
     "AutoSky_Bag_UseBattery": {
+        "doc": "使用能量包。背包入口图标缺失或'5个'选项始终识别不到时,next 列表会在 timeout 后判定失败",
+        "timeout": 5000,
         "next": [
             "AutoSky_Bag_ClickBattery_Use",
             "[JumpBack]AutoSky_Bag_ClickBattery",
@@ -812,6 +836,8 @@
         "timeout": 2000
     },
     "AutoSky_ReturnSkyMap": {
+        "doc": "返回天空地图。返回图标不可见时,next 列表会在 timeout 后判定失败",
+        "timeout": 3000,
         "next": [
             "AutoSky_SkyMapWindow",
             "[JumpBack]BackText_500ms"
@@ -989,6 +1015,8 @@
         ]
     },
     "AutoSky_CheckSkyLevel": {
+        "doc": "打开探索信息并读取天空等级。入口/等级识别不到时,next 列表会在 timeout 后判定失败",
+        "timeout": 3000,
         "next": [
             "AutoSky_CheckSkyLevel_Check",
             "[JumpBack]AutoSky_CheckSkyLevel_Click"
