@@ -102,24 +102,24 @@ class MarsSettlementManager:
 
             context.run_task("Fight_ReturnMainWindow")
             # 压血相关
-            # # 这里进夹层压血
-            # if self.mars.target_earthgate_para >= 0 and self.mars.is_demontitle_enable:
-            #     self.mars.gotoSpecialLayer(context)
-            #     fightUtils.cast_magic("土", "石肤术", context)
-            #     if not fightUtils.cast_magic("暗", "死亡波纹", context):
-            #         if not fightUtils.cast_magic("火", " 末日审判", context):
-            #             fightUtils.cast_magic("土", "地震术", context)
-            #     for _ in range(20):
-            #         if fightUtils.checkBuffStatus("神圣重生", context):
-            #             logger.info("发现神圣重生buff, 使用祝福术尝试复活")
-            #             fightUtils.cast_magic("光", "祝福术", context)
-            #         else:
-            #             time.sleep(3)
-            #             break
-            #     self.mars.Control_TenpecentHP(context)
-            #     context.run_task("Screenshot")
-            #     self.mars.leaveSpecialLayer(context)
-            #     context.run_task("Fight_ReturnMainWindow")
+            # 这里进夹层压血
+            if self.mars.target_earthgate_para >= 0 and self.mars.is_demontitle_enable:
+                self.mars.gotoSpecialLayer(context)
+                fightUtils.cast_magic("土", "石肤术", context)
+                if not fightUtils.cast_magic("暗", "死亡波纹", context):
+                    if not fightUtils.cast_magic("火", " 末日审判", context):
+                        fightUtils.cast_magic("土", "地震术", context)
+                for _ in range(20):
+                    if fightUtils.checkBuffStatus("神圣重生", context):
+                        logger.info("发现神圣重生buff, 使用祝福术尝试复活")
+                        fightUtils.cast_magic("光", "祝福术", context)
+                    else:
+                        time.sleep(3)
+                        break
+                self.mars.Control_TenpecentHP(context)
+                context.run_task("Screenshot")
+                self.mars.leaveSpecialLayer(context)
+                context.run_task("Fight_ReturnMainWindow")
 
             fightUtils.title_learn("战斗", 5, "剑圣", 1, context)
             context.run_task("Fight_ReturnMainWindow")
@@ -137,58 +137,59 @@ class MarsSettlementManager:
                         "武器大师执照", True, context, threshold=0.8
                     ):
                         break
+            # 压血相关
+            # 这里进夹层压血
+            if self.mars.target_earthgate_para >= 0 and self.mars.is_demontitle_enable:
+                self.mars.gotoSpecialLayer(context)
+                death = None
+                for i in range(20):
+                    fightUtils.cast_magic("光", "祝福术", context)
+                    death = context.run_recognition(
+                        "Fight_FindRespawn",
+                        context.tasker.controller.post_screencap().wait().get(),
+                    )
+                    if death.hit:
+                        logger.info(f"已死亡，准备出图")
+                        self.mars.isDeath = True
+                        context.run_task("Screenshot")
+                        break
+                    elif self.mars.layers == 99:
+                        logger.info(f"当前在99层，大概率无法死亡，走正常流程离开")
+                        time.sleep(3)
+                        context.run_task("Fight_ReturnMainWindow")
+                        self.mars.leaveSpecialLayer(context)
+                        context.run_task("Fight_ReturnMainWindow")
+                        context.run_task("Screenshot")
+                        break
+                    if i > 15:
+                        time.sleep(3)
+                        if not self.mars.Check_GridAndMonster(context, False):
+                            context.run_task("Screenshot")
+                            logger.info(f"怪物不在了，无法死亡，走正常流程离开")
+                            time.sleep(3)
+                            context.run_task("Fight_ReturnMainWindow")
+                            self.mars.leaveSpecialLayer(context)
+                            context.run_task("Fight_ReturnMainWindow")
+                            context.run_task("Screenshot")
+                            break
+                context.run_task(
+                    "WaitStableNode_ForOverride",
+                    pipeline_override={
+                        "WaitStableNode_ForOverride": {"pre_wait_freezes": {"time": 100}}
+                    },
+                )
+                if death:
+                    logger.info("可以出图了")
+                    context.run_task("Fight_FindLeaveText")
+                    time.sleep(3)
+                    if context.run_recognition(
+                        "ConfirmButton",
+                        context.tasker.controller.post_screencap().wait().get(),
+                    ).hit:
+                        context.run_task("ConfirmButton")
         else:
             logger.info("需要手动结算，不放柱子直接暂离")
-        # 压血相关
-        # # 这里进夹层压血
-        # if self.mars.target_earthgate_para >= 0:
-        #     self.mars.gotoSpecialLayer(context)
-        #     death = None
-        #     for i in range(20):
-        #         fightUtils.cast_magic("光", "祝福术", context)
-        #         death = context.run_recognition(
-        #             "Fight_FindRespawn",
-        #             context.tasker.controller.post_screencap().wait().get(),
-        #         )
-        #         if death:
-        #             logger.info(f"已死亡，准备出图")
-        #             self.mars.isDeath = True
-        #             context.run_task("Screenshot")
-        #             break
-        #         elif self.mars.layers == 99:
-        #             logger.info(f"当前在99层，大概率无法死亡，走正常流程离开")
-        #             time.sleep(3)
-        #             context.run_task("Fight_ReturnMainWindow")
-        #             self.mars.leaveSpecialLayer(context)
-        #             context.run_task("Fight_ReturnMainWindow")
-        #             context.run_task("Screenshot")
-        #             break
-        #         if i > 15:
-        #             time.sleep(3)
-        #             if not self.mars.Check_GridAndMonster(context, False):
-        #                 context.run_task("Screenshot")
-        #                 logger.info(f"怪物不在了，无法死亡，走正常流程离开")
-        #                 time.sleep(3)
-        #                 context.run_task("Fight_ReturnMainWindow")
-        #                 self.mars.leaveSpecialLayer(context)
-        #                 context.run_task("Fight_ReturnMainWindow")
-        #                 context.run_task("Screenshot")
-        #                 break
-        #     context.run_task(
-        #         "WaitStableNode_ForOverride",
-        #         pipeline_override={
-        #             "WaitStableNode_ForOverride": {"pre_wait_freezes": {"time": 100}}
-        #         },
-        #     )
-        #     if death:
-        #         logger.info("可以出图了")
-        #         context.run_task("Fight_FindLeaveText")
-        #         time.sleep(3)
-        #         if context.run_recognition(
-        #             "ConfirmButton",
-        #             context.tasker.controller.post_screencap().wait().get(),
-        #         ):
-        #             context.run_task("ConfirmButton")
+        
 
         self.mars.isLeaveMaze = True
         # 到这可以出图了

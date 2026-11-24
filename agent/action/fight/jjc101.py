@@ -723,15 +723,21 @@ class JJC_CalEarning(CustomAction):
                 },
             },
         ):
+            logger.info("识别到结算界面。")
             if recoDetail.hit:
-                EarningDetail = fightUtils.pair_by_distance(recoDetail.all_results, 400)
-                if EarningDetail["获得金币"]:
-                    temp = int(EarningDetail["获得金币"]) // 10000
-                    send_message(
-                        f"MaaGB",
-                        f"获得金币: {temp}w",
-                    )
-                logger.info(EarningDetail)
+                try:
+                    EarningDetail = fightUtils.pair_by_distance(recoDetail.all_results, 400)
+                    if EarningDetail["获得金币"]:
+                        temp = int(EarningDetail["获得金币"]) // 10000
+                        send_message(
+                            f"MaaGB",
+                            f"获得金币: {temp}w",
+                        )
+                    logger.info(EarningDetail)
+                except Exception as e:
+                    context.run_task("Screenshot")
+                    send_message("maa","结算计算金币失败了！")
+                    logger.info(str(e))
 
         context.run_task("ReturnBigMap")
         time.sleep(3)

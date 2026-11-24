@@ -9,6 +9,9 @@ from action.fight.foreignDomainUtils import foreignDomainUtils
 import time
 import json
 
+# 星球固定为 4 个, 收集完即视为星球任务完成
+PLANET_TOTAL = 4
+
 
 @AgentServer.custom_action("TSD_explore")
 class TSD_explore(CustomAction):
@@ -24,7 +27,7 @@ class TSD_explore(CustomAction):
         self.fleet_list = []  # 当前可用的舰队列表
         self.planetList: list = []  # 记录探索的星球
 
-        self.FDUtils = foreignDomainUtils(self)
+        self.FDUtils = foreignDomainUtils()
 
     # 获取舰队战力值
     def getAllFleetPower(self, context: Context) -> bool:
@@ -89,7 +92,6 @@ class TSD_explore(CustomAction):
         )
         if exploreList.hit:
             self.exploreNums = len(exploreList.filtered_results)
-            self.FDUtils.check = False  # 存在目标，需要在运行到左上角时从右下角开始检查
             return exploreList.filtered_results
         else:
             self.exploreNums = 0
@@ -163,6 +165,8 @@ class TSD_explore(CustomAction):
             if task1.status.succeeded == False:
                 context.run_task("BackText")
                 return False
+            # 目标已被成功处理, 记为一次实质进展
+            self.FDUtils.mark_progress()
             self.exploreNums -= 1
             self.fleet_list.append(self.fleet_list.pop(0))  # 轮换舰队顺序
             taskEntry["explore"]["pipeline_override"]["TSD_SelectFreeFleetInList"][
@@ -197,29 +201,26 @@ class TSD_explore(CustomAction):
             return True
         return False
 
-    # 检测目标是否还存在
+    # 检测目标是否还存在(返回 False 表示该任务已无可处理目标)
     def checkTargetExist(
         self, context: Context, taskType: str, threshold: float
-    ) -> bool | CustomAction.RunResult:
-
-        if taskType in ["monster_boss", "planet"]:
-            # 这两个任务直接可以从右下角开始检测
-            self.FDUtils.swipeMapToBottomRight(context)
+    ) -> bool:
+        if taskType == "planet" and len(self.planetList) >= PLANET_TOTAL:
+            # 星球不会消失, 靠"已完成星球数量"判断任务结束
+            logger.info(f"已完成 {len(self.planetList)} 个星球, 星球任务结束")
+            return False
 
         flag = True
         # 检查是否存在目标
         while flag:
             if context.tasker.stopping:
                 logger.info("检测到停止任务, 开始退出agent")
-                return CustomAction.RunResult(success=False)
+                return False
             targetList = self.GetTaskTargetList(context, taskType, threshold)
             if self.exploreNums > 0:
-                self.FDUtils.check = (
-                    False  # 存在目标，到达地图边界就需要再次从右下角开始检查
-                )
                 if taskType == "planet":
                     time.sleep(1)
-                    if len(self.planetList) < 4:
+                    if len(self.planetList) < PLANET_TOTAL:
                         # 获取星球的名字
                         box = targetList[0].box
                         btn = context.tasker.controller.post_click(
@@ -246,7 +247,14 @@ class TSD_explore(CustomAction):
                                 if self.exploreNums == 0:
                                     logger.info(f"该星球已发现过且已无小怪，请继续探索")
                                     context.run_task("BackText")  # 返回地图并移动
-                                    self.FDUtils.swipeMap(context)
+                                    if not self.FDUtils.swipeMap(
+                                        context, expect_target=True
+                                    ):
+                                        # 连续多圈都没找到下一个星球, 放弃
+                                        logger.warning(
+                                            f"地图扫描完毕, 仅找到 {len(self.planetList)} 个星球: {self.planetList}"
+                                        )
+                                        return False
                                 else:
                                     # 该星球已发现过，但是仍有怪物未清除
                                     flag = False
@@ -258,13 +266,21 @@ class TSD_explore(CustomAction):
                                     self.planetList.append(
                                         planetName.filtered_results[0].text
                                     )
-                                    self.FDUtils.swipeMap(context)
+                                    # 新星球探索完毕, 记为一次实质进展
+                                    self.FDUtils.mark_progress()
+                                    if not self.FDUtils.swipeMap(
+                                        context, expect_target=True
+                                    ):
+                                        logger.warning(
+                                            f"地图扫描完毕, 仅找到 {len(self.planetList)} 个星球: {self.planetList}"
+                                        )
+                                        return False
                                 else:
                                     logger.info("发现新星球")
                                     flag = False
                     else:
-                        # 已经探索过4个星球，结束探索
-                        logger.info("已探索4个星球，结束探索")
+                        # 已经探索过的星球数量达到上限，结束探索
+                        logger.info(f"已探索 {PLANET_TOTAL} 个星球，结束探索")
                         flag = False
                         return False
                 else:
@@ -272,13 +288,12 @@ class TSD_explore(CustomAction):
                     flag = False
             else:
                 logger.info(f"未找到探索目标，将移动地图再次搜索")
-                if (
-                    self.FDUtils.swipeMap(context) == False
-                ):  # 已经完整探索一遍未发现目标，结束任务
+                # 星球一定存在于地图上, 空圈只是这轮漏识别, 应重扫;
+                # 小怪/废墟/ Boss 处理完就消失, 整圈没有即任务完成
+                if not self.FDUtils.swipeMap(context, expect_target=False):
+                    # 已经完整探索一遍未发现目标，结束任务
                     flag = False
                     return False
-                else:
-                    self.FDUtils.swipeMap(context)
         return True
 
     def run(
@@ -324,7 +339,8 @@ class TSD_explore(CustomAction):
         logger.info(f"选择出战舰队列表：{ self.fight_fleets }")
 
         # 所有舰队返回
-        self.FDUtils.returnFleets(context)
+        if not self.FDUtils.returnFleets(context):
+            return CustomAction.RunResult(success=False)
 
         # # 开始探索
         for key in taskList:
@@ -332,10 +348,17 @@ class TSD_explore(CustomAction):
             if taskList[key]["enabled"] == True:
                 logger.info(f"开始执行【{ taskList[key]['name'] }】任务")
                 self.fleet_list = (
-                    self.FDUtils.default_fleets
+                    list(self.FDUtils.default_fleets)
                     if key == "explore"
-                    else self.fight_fleets
-                )  # 如果是探索任务，使用全部舰队
+                    else list(self.fight_fleets)
+                )  # 如果是探索任务，使用全部舰队；复制一份避免轮换时污染原列表
+                # 扫描状态按任务重置, 保证"整圈无进展"能跨 checkTargetExist 调用累计
+                self.FDUtils.reset_sweep()
+                # 这两个任务需要先定位到右下角再开始扫描
+                if key in ["monster_boss", "planet"]:
+                    if not self.FDUtils.swipeMapToBottomRight(context):
+                        logger.warning(f"【{ taskList[key]['name'] }】地图定位失败")
+                        continue
                 while self.checkTargetExist(context, key, taskList[key]["threshold"]):
                     if context.tasker.stopping:
                         logger.info("检测到停止任务, 开始退出agent")
