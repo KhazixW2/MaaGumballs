@@ -215,7 +215,7 @@ class DailyForeignDomain_Explore(CustomAction):
 
     def __init__(self):
         super().__init__()
-        self.FDUtils = foreignDomainUtils(self)
+        self.FDUtils = foreignDomainUtils()
 
     def run(
         self, context: Context, argv: CustomAction.RunArg
@@ -226,12 +226,14 @@ class DailyForeignDomain_Explore(CustomAction):
         self.FDUtils.closeUnionMsgBox(context)
 
         # 所有舰队返回
-        self.FDUtils.returnFleets_FD(context)
+        if not self.FDUtils.returnFleets_FD(context):
+            return CustomAction.RunResult(success=False)
 
         # 移动到地图右下角开始
-        self.FDUtils.swipeMapToBottomRight(context)
+        if not self.FDUtils.prepare_sweep(context):
+            return CustomAction.RunResult(success=False)
         planets = ["X", "U", "E", "G"]
-        default_fleets = ["奥鲁维", "卡纳斯", "游荡者", "深渊"]
+        default_fleets = list(self.FDUtils.default_fleets)
 
         time.sleep(2)
         while len(planets) > 0:
@@ -240,8 +242,7 @@ class DailyForeignDomain_Explore(CustomAction):
                 return CustomAction.RunResult(success=False)
 
             remove_list = []
-            for i in range(0, len(planets)):
-                key = planets[i]
+            for key in planets:
                 img = context.tasker.controller.post_screencap().wait().get()
                 recoDetail = context.run_recognition(
                     "FD_FindPlanet",
@@ -253,7 +254,7 @@ class DailyForeignDomain_Explore(CustomAction):
                         }
                     },
                 )
-                if recoDetail.hit:
+                if recoDetail is not None and recoDetail.hit:
                     logger.info(f"检测到星球{key}")
                     box = recoDetail.best_result.box
                     context.tasker.controller.post_click(
@@ -272,11 +273,17 @@ class DailyForeignDomain_Explore(CustomAction):
                         })
                     default_fleets.pop(0)
                     remove_list.append(key)
+                    # 该星球已派遣完成, 记为一次实质进展
+                    self.FDUtils.mark_progress()
 
-            if i == len(planets) - 1:
-                self.FDUtils.swipeMap(context)
             for key in remove_list:
                 planets.remove(key)
+
+            if planets and not self.FDUtils.swipeMap(context, expect_target=True):
+                # 星球不会消失, 空圈只说明这轮漏识别, 会回右下角重扫;
+                # 连续多圈都没进展才走到这里, 结束查找避免死循环
+                logger.warning(f"地图扫描完毕, 仍有星球未找到: {planets}")
+                break
         logger.info("所有星球已全部找到")
         for key in self.FDUtils.fleetRoiList:
             box = self.FDUtils.fleetRoiList[key]
